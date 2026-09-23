@@ -221,5 +221,5 @@ export async function gerarRelatorio(
  * revalida. Mesmo contrato de `turmas.criarPelaTela`.
  */
 export async function gerarPelaTela(token: string) {
-  return paraTela("/facilitador/assessments", () => gerarRelatorio(token));
+  return paraTela("/facilitador/acervo-de-mapas", () => gerarRelatorio(token));
 }

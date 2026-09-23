@@ -34,7 +34,7 @@ import styles from './page.module.css'
  * Substitui o textarea "Conteúdo" como lugar de escrever módulo. O textarea
  * continua existindo no formulário do curso, e continua sendo a EMENTA — o que
  * saiu dele foi a obrigação de digitar o programa como prosa, que era o motivo
- * de /facilitador/ead não ter o que espelhar.
+ * de /facilitador/biblioteca-gravada não ter o que espelhar.
  *
  * A lista chega pronta do servidor e toda action invalida `/admin/cursos`, então
  * esta tela não guarda cópia: depois de gravar, quem redesenha é o Next com a

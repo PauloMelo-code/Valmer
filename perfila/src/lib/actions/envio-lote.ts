@@ -49,7 +49,7 @@ async function exigirSessao(acao: Acao): Promise<Sessao> {
   const sessao = await getSession();
   if (!sessao) throw new Error("Nao autenticado");
   if (!temPermissao(sessao.papel, "assessments", acao)) {
-    throw new Error(`Sem permissao para ${acao} assessments`);
+    throw new Error(`Sem permissao para ${acao} mapas`);
   }
   return sessao;
 }
@@ -63,8 +63,9 @@ type Leitor = Pick<typeof db, "select">;
  * ESTA e a guarda que impede um parceiro de enviar para a turma de outro, e
  * ela mora aqui porque Server Action e endpoint POST publico: a tela so
  * oferece as turmas proprias, mas quem montar o POST na mao manda o uuid que
- * quiser. Devolver "Turma nao encontrada" para a turma alheia — em vez de "sem
- * permissao" — tambem evita confirmar que aquele uuid existe.
+ * quiser. Devolver "Grupo de mapeamento nao encontrado" para o grupo
+ * alheio — em vez de "sem permissao" — tambem evita confirmar que aquele uuid
+ * existe.
  *
  * O dono do lote sai daqui, e nao da sessao: assim o admin, que enxerga todas
  * as turmas, envia em nome do parceiro certo e cobra do saldo certo, sem campo
@@ -83,7 +84,7 @@ async function turmaDoDono(tx: Leitor, id: string, sessao: Sessao) {
     )
     .limit(1);
 
-  if (!turma) throw new RecusaDeRegra("Turma nao encontrada");
+  if (!turma) throw new RecusaDeRegra("Grupo de mapeamento nao encontrado");
   return turma;
 }
 
@@ -208,7 +209,7 @@ export async function criarLote(dados: unknown) {
         usuario_id: turma.facilitador_id,
         tipo: "uso" as const,
         quantidade: -custoUnitario,
-        descricao: `Passaporte ${turma.tipo_relatorio} de ${novo.avaliado_nome} (turma "${turma.nome}")`,
+        descricao: `Passaporte ${turma.tipo_relatorio} de ${novo.avaliado_nome} (grupo "${turma.nome}")`,
         assessment_id: novo.id,
         modified_by: sessao.userId,
       })),
@@ -276,7 +277,7 @@ export async function removerPendentes(turmaId: string) {
       );
 
     if (pendentes.length === 0) {
-      throw new RecusaDeRegra(`A turma "${turma.nome}" nao tem passaporte pendente para remover.`);
+      throw new RecusaDeRegra(`O grupo "${turma.nome}" nao tem passaporte pendente para remover.`);
     }
 
     const estorno = pendentes.reduce((soma, mapa) => soma + mapa.creditos_usados, 0);
@@ -302,7 +303,7 @@ export async function removerPendentes(turmaId: string) {
         usuario_id: turma.facilitador_id,
         tipo: "estorno" as const,
         quantidade: mapa.creditos_usados,
-        descricao: `Estorno do passaporte de ${mapa.avaliado_nome}, removido da turma "${turma.nome}"`,
+        descricao: `Estorno do passaporte de ${mapa.avaliado_nome}, removido do grupo "${turma.nome}"`,
         assessment_id: mapa.id,
         modified_by: sessao.userId,
       })),

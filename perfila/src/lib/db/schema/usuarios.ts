@@ -17,7 +17,7 @@ import { papelUsuario, tipoRelatorio } from "./enums";
 /**
  * Quantas amostras gratuitas todo parceiro recebe ao abrir a conta.
  *
- * E o numero que a tela /facilitador/degustacao ja mostrava fixo em
+ * E o numero que a tela /facilitador/experimente-gratis ja mostrava fixo em
  * um arquivo fixo — trazido para o banco como DEFAULT da coluna, e nao como
  * regra de action nenhuma. Assim o comportamento de hoje (todo mundo tem 180)
  * continua identico, e o parceiro criado amanha nasce com o mesmo saldo sem
@@ -54,7 +54,7 @@ export const usuarios = pgTable(
     creditos: integer("creditos").notNull().default(0),
     /**
      * Saldo de DEGUSTACAO: amostras gratuitas do relatorio, para o parceiro
-     * mostrar o produto antes de vender (/facilitador/degustacao). Uma
+     * mostrar o produto antes de vender (/facilitador/experimente-gratis). Uma
      * degustacao consome 1 daqui e ZERO de `creditos` — ver
      * `actions/assessments.ts:criar` e `assessments.degustacao`.
      *
@@ -91,7 +91,7 @@ export const usuarios = pgTable(
       .default(DEGUSTACOES_INICIAIS),
     /**
      * Qual nivel de relatorio ESTE parceiro oferece como amostra em
-     * /facilitador/degustacao. Configuracao dele, e nao da plataforma: quem
+     * /facilitador/experimente-gratis. Configuracao dele, e nao da plataforma: quem
      * vende para RH mostra o S1, quem vende para executivo mostra o S3, e a
      * escolha nao muda preco nenhum — degustacao custa 1 amostra em qualquer
      * nivel (ver `creditos_degustacao` acima).

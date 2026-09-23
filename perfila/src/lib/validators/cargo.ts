@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Cargo da Arquitetura de Cargos, com o alvo DISC da posicao.
+ * Cargo da tela Perfil Ideal por Cargo, com o alvo DISC da posicao.
  *
  * Os quatro alvos andam JUNTOS: ou todos preenchidos ou todos vazios, e
  * somando 100 quando preenchidos. A mesma regra esta no CHECK

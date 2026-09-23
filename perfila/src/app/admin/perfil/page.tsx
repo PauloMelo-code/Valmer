@@ -13,7 +13,7 @@ import styles from '../../facilitador/perfil/page.module.css'
  * Existe porque /facilitador/perfil é fechada para o admin — o layout do portal
  * do parceiro o manda para /admin —, e sem esta tela o dono da plataforma seria
  * a única pessoa sem como enviar a própria foto. Ela é a mesma foto que aparece
- * na vitrine de mentores: ver `/facilitador/mentores`.
+ * na vitrine de mentores: ver `/facilitador/guias-de-expedicao`.
  *
  * Reaproveita os componentes e o estilo da tela do parceiro, na pasta ao lado,
  * pelo mesmo motivo de `admin/facilitadores/[id]/FormFacilitador.tsx`: são o

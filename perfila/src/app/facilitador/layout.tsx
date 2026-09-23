@@ -7,7 +7,7 @@ import { BASE_FACILITADOR, NAV_FACILITADOR } from '@/lib/routes'
 import { urlAssinadaOuNula } from '@/lib/storage'
 
 export const metadata: Metadata = {
-  title: 'Impacto Academy · Portal do Parceiro',
+  title: 'Impacto Academy · Portal do Facilitador',
 }
 
 /**
@@ -32,9 +32,9 @@ export default async function FacilitadorLayout({ children }: { children: React.
     <AppShell
       grupos={NAV_FACILITADOR}
       base={BASE_FACILITADOR}
-      subtitulo="Portal do Parceiro"
-      raiz="Parceiro"
-      buscaPlaceholder="Buscar avaliado, turma…"
+      subtitulo="Portal do Facilitador"
+      raiz="Facilitador"
+      buscaPlaceholder="Buscar avaliado, grupo…"
       perfilHref="/facilitador/perfil"
       usuario={{
         nome: sessao.nome.split(' ').slice(0, 2).join(' '),

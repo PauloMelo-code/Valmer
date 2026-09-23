@@ -2,7 +2,8 @@ import { z } from "zod";
 import { emailPessoa, nomePessoa } from "./assessment";
 
 /**
- * Um envio rapido: uma turma e os destinatarios que recebem o passaporte.
+ * Um envio expresso: um grupo de mapeamento e os destinatarios que recebem o
+ * passaporte.
  *
  * Nome e e-mail passam pelas MESMAS regras da tela de novo mapa — sao os
  * mesmos campos, na mesma tabela, impressos na mesma capa de relatorio. Duas
@@ -21,7 +22,7 @@ import { emailPessoa, nomePessoa } from "./assessment";
  * levas, e cada leva e tudo-ou-nada por si.
  */
 export const envioLoteSchema = z.object({
-  turma_id: z.string().uuid("Escolha a turma que vai receber os passaportes"),
+  turma_id: z.string().uuid("Escolha o grupo de mapeamento que vai receber os passaportes"),
   destinatarios: z
     .array(z.object({ avaliado_nome: nomePessoa, avaliado_email: emailPessoa }))
     .min(1, "Adicione ao menos um destinatario")

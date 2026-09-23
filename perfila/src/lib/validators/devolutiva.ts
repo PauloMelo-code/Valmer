@@ -13,7 +13,7 @@ import { z } from "zod";
  * diferente de nao ter cronometro nenhum (nulo).
  */
 export const criarDevolutivaSchema = z.object({
-  assessment_id: z.string().uuid("Assessment invalido"),
+  assessment_id: z.string().uuid("Mapa invalido"),
   /** Opcional: o admin abre a devolutiva em nome de um parceiro. */
   facilitador_id: z.string().uuid().optional(),
 });

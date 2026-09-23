@@ -26,7 +26,7 @@ async function exigirSessao(acao: Acao): Promise<Sessao> {
   const sessao = await getSession();
   if (!sessao) throw new Error("Nao autenticado");
   if (!temPermissao(sessao.papel, TABELA, acao)) {
-    throw new Error(`Sem permissao para ${acao} turmas`);
+    throw new Error(`Sem permissao para ${acao} grupos de mapeamento`);
   }
   return sessao;
 }
@@ -105,7 +105,7 @@ export async function criar(dados: unknown) {
 
   const facilitadorId = validado.facilitador_id ?? sessao.userId;
   if (sessao.papel !== "admin" && facilitadorId !== sessao.userId) {
-    throw new Error("Sem permissao para criar turma em nome de outro facilitador");
+    throw new Error("Sem permissao para criar grupo de mapeamento em nome de outro facilitador");
   }
 
   return db.transaction(async (tx) => {
@@ -160,7 +160,7 @@ export async function atualizar(id: string, dados: unknown, updatedAtOriginal: D
   const validado = atualizarTurmaSchema.parse(dados);
 
   const anterior = await obter(id);
-  if (!anterior) throw new RecusaDeRegra("Turma nao encontrada");
+  if (!anterior) throw new RecusaDeRegra("Grupo de mapeamento nao encontrado");
 
   const resultado = await db
     .update(turmas)
@@ -184,7 +184,7 @@ export async function atualizar(id: string, dados: unknown, updatedAtOriginal: D
 
   if (resultado.length === 0) {
     throw new RecusaDeRegra(
-      "Esta turma foi alterada por outra aba. Recarregue a pagina e tente de novo.",
+      "Este grupo foi alterado por outra aba. Recarregue a pagina e tente de novo.",
     );
   }
 
@@ -217,7 +217,7 @@ export async function excluir(id: string) {
   const sessao = await exigirSessao("deletar");
 
   const anterior = await obter(id);
-  if (!anterior) throw new RecusaDeRegra("Turma nao encontrada");
+  if (!anterior) throw new RecusaDeRegra("Grupo de mapeamento nao encontrado");
 
   const [contagem] = await db
     .select({ ativos: sql<number>`count(*)::int` })
@@ -227,7 +227,7 @@ export async function excluir(id: string) {
   const ativos = contagem?.ativos ?? 0;
   if (ativos > 0) {
     throw new RecusaDeRegra(
-      `Esta turma tem ${ativos} assessment(s) ativo(s). Exclua-os antes de excluir a turma.`,
+      `Este grupo tem ${ativos} mapa(s) ativo(s). Exclua-os antes de excluir o grupo.`,
     );
   }
 
@@ -242,7 +242,7 @@ export async function excluir(id: string) {
     .where(and(eq(turmas.id, id), eq(turmas.is_deleted, false), escopoDoDono(sessao)))
     .returning();
 
-  if (resultado.length === 0) throw new RecusaDeRegra("Turma nao encontrada");
+  if (resultado.length === 0) throw new RecusaDeRegra("Grupo de mapeamento nao encontrado");
 
   await registrarAuditoria({
     userId: sessao.userId,
@@ -272,7 +272,7 @@ export async function criarPelaTela(
 ): Promise<{ ok: true; id: string } | { ok: false; erro: string }> {
   try {
     const nova = await criar(dados);
-    revalidatePath("/facilitador/campanhas");
+    revalidatePath("/facilitador/grupos-de-mapeamento");
     return { ok: true, id: nova.id };
   } catch (erro) {
     if (erro instanceof RecusaDeRegra) return { ok: false, erro: erro.message };

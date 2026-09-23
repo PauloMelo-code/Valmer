@@ -28,7 +28,7 @@ import styles from './page.module.css'
  * lia de um arquivo fixo: dois números de crédito na mesma tela, discordando,
  * e nenhum jeito de a pessoa saber qual valia.
  *
- * A degustação entrou na mesma regra e pelo mesmo motivo: /facilitador/degustacao
+ * A degustação entrou na mesma regra e pelo mesmo motivo: /facilitador/experimente-gratis
  * passou a debitar `usuarios.creditos_degustacao` de verdade, e este cartão
  * continuava mostrando os 180 fixos do arquivo — a primeira amostra enviada já
  * fazia as duas telas do mesmo portal discordarem.
@@ -57,16 +57,21 @@ export default async function DashboardPage() {
   // por quanto o parceiro revende — ver `resumoDaOperacao`.
   const indicadoresDaTela = [
     {
-      label: 'Total de clientes',
+      label: 'Meus clientes',
       icon: 'users' as const,
       valor: String(resumo.clientes),
       nota: resumo.clientes === 0 ? 'Nenhum cliente cadastrado ainda' : 'Na sua carteira',
     },
     {
-      label: 'Devolutivas',
+      label: 'Sessões de leitura',
       icon: 'chat' as const,
       valor: resumo.devolutivasTempo,
-      nota: `${resumo.devolutivasFinalizadas} finalizada(s)`,
+      // "1 sessão realizada", e não "1 sessão(ões) realizada(s)": o parêntese
+      // é o autor confessando que não quis escrever o plural.
+      nota:
+        resumo.devolutivasFinalizadas === 1
+          ? '1 sessão realizada'
+          : `${resumo.devolutivasFinalizadas} sessões realizadas`,
     },
     {
       label: 'Mapas concluídos',
@@ -75,7 +80,7 @@ export default async function DashboardPage() {
       nota: 'Respondidos pelos avaliados',
     },
     {
-      label: 'Créditos utilizados',
+      label: 'Créditos de mapeamento utilizados',
       icon: 'card' as const,
       valor: String(consumidos),
       nota: `${conta.creditos} disponíveis agora`,
@@ -94,11 +99,11 @@ export default async function DashboardPage() {
         subtitle={`Resumo da sua operação nesta ${dataPorExtenso(agora)}.`}
         actions={
           <>
-            <Button href="/facilitador/envio-rapido" icon={<Icon name="zap" />}>
-              Envio rápido
+            <Button href="/facilitador/envio-expresso" icon={<Icon name="zap" />}>
+              Envio expresso
             </Button>
-            <Button href="/facilitador/campanhas/nova" variant="primary" icon={<Icon name="plus" />}>
-              Nova turma
+            <Button href="/facilitador/grupos-de-mapeamento/nova" variant="primary" icon={<Icon name="plus" />}>
+              Novo grupo
             </Button>
           </>
         }
@@ -118,7 +123,7 @@ export default async function DashboardPage() {
         ))}
       </AutoGrid>
 
-      {/* Saldos e programa de benefícios */}
+      {/* Saldos e níveis de credenciamento */}
       <AutoGrid min={260}>
         <Card className={styles.saldo}>
           <Row gap={10}>
@@ -126,7 +131,7 @@ export default async function DashboardPage() {
               <Icon name="card" />
             </span>
             <div>
-              <div className={ui.cardTitle}>Créditos</div>
+              <div className={ui.cardTitle}>Créditos de Mapeamento</div>
               <div className={ui.cardSub}>Saldo da plataforma</div>
             </div>
           </Row>
@@ -150,7 +155,7 @@ export default async function DashboardPage() {
             </div>
           </Stack>
           <Button
-            href="/facilitador/creditos"
+            href="/facilitador/creditos-de-mapeamento"
             variant="link"
             className={styles.saldoAcao}
             iconRight={<Icon name="chevR" />}
@@ -165,31 +170,31 @@ export default async function DashboardPage() {
               <Icon name="gift" />
             </span>
             <div>
-              <div className={ui.cardTitle}>Degustações</div>
+              <div className={ui.cardTitle}>Experimente Grátis</div>
               <div className={ui.cardSub}>Saldo de testes gratuitos</div>
             </div>
           </Row>
           <div className={styles.saldoValor}>
             <span className={ui.metricXl}>{amostras.saldo}</span>
-            <span className={styles.saldoUnidade}>amostras</span>
+            <span className={styles.saldoUnidade}>testes grátis</span>
           </div>
           <Stack gap={8}>
             <div className={ui.dataRow}>
-              <span className={ui.dataRowLabel}>Concedidas</span>
+              <span className={ui.dataRowLabel}>Concedidos</span>
               <span className={ui.dataRowValue}>{amostras.concedidas}</span>
             </div>
             <div className={ui.dataRow}>
-              <span className={ui.dataRowLabel}>Utilizadas</span>
+              <span className={ui.dataRowLabel}>Utilizados</span>
               <span className={ui.dataRowValue}>{amostras.utilizadas}</span>
             </div>
           </Stack>
           <Button
-            href="/facilitador/degustacao"
+            href="/facilitador/experimente-gratis"
             variant="link"
             className={styles.saldoAcao}
             iconRight={<Icon name="chevR" />}
           >
-            Configurar degustação
+            Configurar testes grátis
           </Button>
         </Card>
 
@@ -197,7 +202,7 @@ export default async function DashboardPage() {
 
           <div className={styles.programaTopo}>
             <div>
-              <div className={`${ui.eyebrow} ${ui.eyebrowOnInk}`}>Programa de benefícios</div>
+              <div className={`${ui.eyebrow} ${ui.eyebrowOnInk}`}>Níveis de credenciamento</div>
               <div className={styles.programaCategoria}>{programa.categoria}</div>
             </div>
             <Pill tone="onInk">Expira {programa.expiraEm}</Pill>
@@ -242,16 +247,16 @@ export default async function DashboardPage() {
                 <b>{programa.proximaCategoria}</b>.{' '}
               </>
             ) : (
-              <>Você está na categoria mais alta do programa. </>
+              <>Você está no último nível de credenciamento. </>
             )}
-            <Link href="/facilitador/beneficios" className={styles.programaLink}>
-              Ver benefícios
+            <Link href="/facilitador/niveis-de-credenciamento" className={styles.programaLink}>
+              Ver níveis
             </Link>
           </div>
         </Card>
       </AutoGrid>
 
-      {/* Vendas e cursos */}
+      {/* Vendas e certificações */}
       <AutoGrid min={320}>
         <Card className={styles.painel}>
           <GraficoCreditos movimentos={extrato} />
@@ -259,14 +264,14 @@ export default async function DashboardPage() {
 
         <Card className={styles.cursos}>
           <div className={ui.sectionHead}>
-            <div className={ui.cardTitle}>Nossos cursos</div>
-            <Button href="/facilitador/cursos" variant="link">
+            <div className={ui.cardTitle}>Certificações Impacto</div>
+            <Button href="/facilitador/certificacoes" variant="link">
               Ver todos
             </Button>
           </div>
           <Stack gap={10}>
             {cursosDestaque.map((curso) => (
-              <Link href="/facilitador/cursos" key={curso.title} className={styles.cursoItem}>
+              <Link href="/facilitador/certificacoes" key={curso.title} className={styles.cursoItem}>
                 <span className={styles.cursoCapa} style={{ background: curso.capa }}>
                   {curso.abbr}
                 </span>

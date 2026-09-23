@@ -1,5 +1,5 @@
 /**
- * Programa de beneficios: ciclo do parceiro e categoria alcancada.
+ * Niveis de Credenciamento: ciclo do parceiro e categoria alcancada.
  *
  * Nada aqui e gravado. A categoria e DERIVADA dos creditos movimentados no
  * ciclo corrente, do mesmo jeito que o perfil DISC deriva dos contadores e a

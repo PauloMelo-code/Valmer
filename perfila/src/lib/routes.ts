@@ -4,7 +4,7 @@
  * A plataforma tem três ambientes com navegação própria:
  *
  * - `/admin`             → Valmer, dono da plataforma
- * - `/facilitador`       → parceiro ou empresa que compra créditos
+ * - `/facilitador`       → facilitador ou empresa que compra créditos
  * - `/avaliacao/<token>` → quem responde, sem login e sem menu
  *
  * Os dois primeiros compartilham a mesma moldura; muda só o conjunto
@@ -20,13 +20,18 @@ export type NavItem = {
   /**
    * Rótulo na sidebar — também usado no breadcrumb.
    *
-   * O rótulo é vocabulário da Impacto, e a rota é identificador: os dois
-   * mudam separado. "Assessments" virou "Mapas Comportamentais" e
-   * "Campanhas" virou "Turmas" a pedido do cliente, para o produto não
-   * repetir o vocabulário da plataforma concorrente. As rotas
-   * `/assessments` e `/campanhas` continuam como estão, e junto com elas os
-   * nomes de tabela, de arquivo e de campo. Ao renomear outro item, mexa só
-   * no `label`.
+   * Rótulo E rota são vocabulário da Impacto, e mudaram juntos em 23/09/2026,
+   * a pedido do Valmer: o portal não podia continuar repetindo o vocabulário
+   * da plataforma de referência nem na barra nem na URL. `/assessments`
+   * virou `/acervo-de-mapas`, `/campanhas` virou `/grupos-de-mapeamento`, e
+   * assim por diante — a lista completa, com o 301 de cada rota antiga, está
+   * em `next.config.ts`.
+   *
+   * O que NÃO mudou: nome de tabela, de coluna, de chave de permissão
+   * (`turmas:criar`) e de arquivo de migration. Aquilo é identificador, não
+   * é lido por ninguém de fora, e renomear teria custado uma migration por
+   * enfeite. Ao renomear outro item, mude `label` e `href` juntos e
+   * acrescente o redirect.
    */
   label: string
   icon: IconName
@@ -44,30 +49,30 @@ export const NAV_FACILITADOR: NavGroup[] = [
   {
     label: 'Operação',
     items: [
-      { href: '/facilitador', label: 'Visão Geral', icon: 'dash' },
-      { href: '/facilitador/assessments', label: 'Mapas Comportamentais', icon: 'file' },
-      { href: '/facilitador/envio-rapido', label: 'Aplicação Rápida', icon: 'zap' },
-      { href: '/facilitador/campanhas', label: 'Turmas', icon: 'bag' },
-      { href: '/facilitador/dna', label: 'DNA Organizacional', icon: 'dna' },
-      { href: '/facilitador/arquitetura', label: 'Arquitetura de Cargos', icon: 'layers' },
-      { href: '/facilitador/devolutiva', label: 'Devolutiva', icon: 'chat' },
+      { href: '/facilitador', label: 'Painel de Comando', icon: 'dash' },
+      { href: '/facilitador/acervo-de-mapas', label: 'Acervo de Mapas', icon: 'file' },
+      { href: '/facilitador/envio-expresso', label: 'Envio Expresso', icon: 'zap' },
+      { href: '/facilitador/grupos-de-mapeamento', label: 'Grupos de Mapeamento', icon: 'bag' },
+      { href: '/facilitador/territorio-da-empresa', label: 'Território da Empresa', icon: 'dna' },
+      { href: '/facilitador/perfil-ideal-por-cargo', label: 'Perfil Ideal por Cargo', icon: 'layers' },
+      { href: '/facilitador/sessao-de-leitura', label: 'Sessão de Leitura', icon: 'chat' },
     ],
   },
   {
     label: 'Conta',
     items: [
-      { href: '/facilitador/beneficios', label: 'Trilha do Parceiro', icon: 'star' },
-      { href: '/facilitador/creditos', label: 'Créditos', icon: 'card' },
-      { href: '/facilitador/degustacao', label: 'Demonstração', icon: 'gift' },
-      { href: '/facilitador/clientes', label: 'Clientes', icon: 'users' },
+      { href: '/facilitador/niveis-de-credenciamento', label: 'Níveis de Credenciamento', icon: 'star' },
+      { href: '/facilitador/creditos-de-mapeamento', label: 'Créditos de Mapeamento', icon: 'card' },
+      { href: '/facilitador/experimente-gratis', label: 'Experimente Grátis', icon: 'gift' },
+      { href: '/facilitador/meus-clientes', label: 'Meus Clientes', icon: 'users' },
     ],
   },
   {
-    label: 'Aprendizado',
+    label: 'Academia Impacto',
     items: [
-      { href: '/facilitador/cursos', label: 'Cursos', icon: 'book' },
-      { href: '/facilitador/mentores', label: 'Mentores', icon: 'award' },
-      { href: '/facilitador/ead', label: 'EAD', icon: 'play' },
+      { href: '/facilitador/certificacoes', label: 'Certificações', icon: 'book' },
+      { href: '/facilitador/guias-de-expedicao', label: 'Guias de Expedição', icon: 'award' },
+      { href: '/facilitador/biblioteca-gravada', label: 'Biblioteca Gravada', icon: 'play' },
     ],
   },
   {
@@ -115,14 +120,17 @@ export const NAV_ADMIN: NavGroup[] = [
  *
  * Ele precisa ser curto porque os cinco slots da barra dividem 390px em 78px
  * cada: "Mapas Comportamentais" não cabe, e cinco rótulos cortados não dizem
- * nada. "Parceiros" no lugar de "Facilitadores" pelo mesmo motivo, e é
- * vocabulário que o produto já usa ("Portal do Parceiro").
+ * nada. "Parceiros" no lugar de "Facilitadores" pelo mesmo motivo.
+ *
+ * Estes rótulos curtos são ENCURTAMENTOS do nome novo, e não sobras do nome
+ * velho: "Mapas" é Acervo de Mapas e "Créditos" é Créditos de Mapeamento.
+ * "Turmas" virou "Grupos" porque ali sim era o termo antigo.
  */
 const ATALHOS_CURTOS: Record<string, string> = {
   '/facilitador': 'Início',
-  '/facilitador/assessments': 'Mapas',
-  '/facilitador/campanhas': 'Turmas',
-  '/facilitador/creditos': 'Créditos',
+  '/facilitador/acervo-de-mapas': 'Mapas',
+  '/facilitador/grupos-de-mapeamento': 'Grupos',
+  '/facilitador/creditos-de-mapeamento': 'Créditos',
   '/admin': 'Início',
   '/admin/facilitadores': 'Parceiros',
   '/admin/assessments': 'Mapas',
@@ -157,10 +165,10 @@ export type Breadcrumb = {
 
 /** Sub-rótulos fixos das telas de detalhe e criação. */
 const STATIC_SUBS: Record<string, string> = {
-  '/facilitador/assessments/novo': 'Novo mapa',
-  '/facilitador/campanhas/nova': 'Nova turma',
-  '/facilitador/dna/novo': 'Novo DNA',
-  '/facilitador/ead': 'Treinamentos',
+  '/facilitador/acervo-de-mapas/novo': 'Novo mapa',
+  '/facilitador/grupos-de-mapeamento/nova': 'Novo grupo',
+  '/facilitador/territorio-da-empresa/novo': 'Novo território',
+  '/facilitador/biblioteca-gravada': 'Treinamentos',
   '/admin/facilitadores/novo': 'Novo facilitador',
 }
 
@@ -191,8 +199,8 @@ export function resolveBreadcrumb(
   const staticSub = STATIC_SUBS[pathname]
   if (staticSub) return { title, sub: staticSub }
 
-  // DNA aberto: o terceiro nível é o nome da empresa.
-  const prefixoDna = `${BASE_FACILITADOR}/dna/`
+  // Território da Empresa aberto: o terceiro nível é o nome da empresa.
+  const prefixoDna = `${BASE_FACILITADOR}/territorio-da-empresa/`
   if (pathname.startsWith(prefixoDna)) {
     const dna = dnas.find((item) => item.slug === pathname.slice(prefixoDna.length))
     if (dna) return { title, sub: dna.name }

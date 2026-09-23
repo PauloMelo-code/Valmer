@@ -3,7 +3,7 @@
  *
  * Escrito UMA vez e ligado em todas as telas que ja prometiam "Exportar":
  * /admin/facilitadores, /admin/assessments, /admin/creditos, /admin/questoes,
- * /facilitador/campanhas e /facilitador/clientes. O arquivo sai pela rota
+ * /facilitador/grupos-de-mapeamento e /facilitador/meus-clientes. O arquivo sai pela rota
  * `app/api/exportar/[tipo]`, porque Server Action nao devolve resposta com
  * Content-Disposition.
  *
@@ -210,7 +210,7 @@ export const EXPORTACOES: Record<string, Exportacao> = {
   },
 
   turmas: {
-    arquivo: "turmas",
+    arquivo: "grupos-de-mapeamento",
     recurso: "turmas",
     async montar() {
       const itens = await listarTurmas();
@@ -220,8 +220,8 @@ export const EXPORTACOES: Record<string, Exportacao> = {
           "Nome",
           "Area",
           "Relatorio",
-          "Criada em",
-          "Criada por",
+          "Criado em",
+          "Criado por",
           "Enviados",
           "Respondidos",
           "Download liberado",
@@ -241,7 +241,8 @@ export const EXPORTACOES: Record<string, Exportacao> = {
   },
 
   /**
-   * As respostas de UMA turma: o download da linha da lista de turmas.
+   * As respostas de UM grupo: o download da linha da lista de grupos de
+   * mapeamento.
    *
    * Reusa `assessmentsDaTurma`, a mesma leitura da tela de detalhe, com o
    * recorte por dono dentro. O uuid vem da URL, que e fronteira: um valor que
@@ -255,7 +256,7 @@ export const EXPORTACOES: Record<string, Exportacao> = {
    * clicou ja tem na tela.
    */
   turma: {
-    arquivo: "respostas-da-turma",
+    arquivo: "respostas-do-grupo",
     recurso: "turmas",
     async montar(busca) {
       const colunas = [

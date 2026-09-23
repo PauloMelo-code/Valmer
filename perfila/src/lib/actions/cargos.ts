@@ -19,7 +19,7 @@ import { atualizarCargoSchema, criarCargoSchema } from "@/lib/validators/cargo";
 import { paraTela, RecusaDeRegra } from "./recusa";
 
 const TABELA = "cargos";
-const TELA = "/facilitador/arquitetura";
+const TELA = "/facilitador/perfil-ideal-por-cargo";
 
 async function exigirSessao(acao: Acao): Promise<Sessao> {
   const sessao = await getSession();

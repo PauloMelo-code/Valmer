@@ -44,6 +44,11 @@ COMO ESCREVER
   "alavancar" e os parentes deles.
 - Frases curtas. Uma ideia por frase.
 - Voz ativa. O sujeito vem antes do verbo.
+- NUNCA nomeie este documento por dentro dele. Não escreva "devolutiva",
+  "assessment", "relatório", "laudo" nem "mapa" no texto que você entrega.
+  As palavras acima são o vocabulário do ofício, dirigido a você; quem lê é a
+  pessoa avaliada, e para ela o documento não precisa de nome. Em vez de "nesta
+  devolutiva você vai ver", escreva direto o que ela vai ver.
 
 PONTUAÇÃO E RITMO
 - Nunca use travessão nem meia-risca, ou seja, nenhum traço longo no meio da

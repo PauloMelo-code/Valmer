@@ -1,4 +1,4 @@
-/** Trilha do Parceiro — os niveis e a matriz de vantagens. */
+/** Niveis de Credenciamento — os niveis e a matriz de vantagens. */
 
 export type Categoria = {
   name: string
@@ -97,8 +97,8 @@ export const beneficios: Beneficio[] = [
     name: 'Formacao em Perfil Comportamental',
     cells: ['no', '15%', '25%', '50%', 'yes'],
   },
-  { name: 'Cursos da plataforma', cells: ['no', '15%', '25%', '40%', 'yes'] },
-  { name: 'Mentoria individual', cells: ['no', 'no', '25%', '50%', 'yes'] },
+  { name: 'Certificacoes da plataforma', cells: ['no', '15%', '25%', '40%', 'yes'] },
+  { name: 'Sessao com Guia de Expedicao', cells: ['no', 'no', '25%', '50%', 'yes'] },
   { name: 'Livro Impacto Academy', cells: ['no', 'yes', 'yes', 'yes', 'yes'] },
   { name: 'Grupo de WhatsApp exclusivo', cells: ['no', 'yes', 'yes', 'yes', 'yes'] },
 ]

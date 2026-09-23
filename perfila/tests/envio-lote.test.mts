@@ -308,7 +308,7 @@ describe("envio em lote", () => {
 
     await assert.rejects(
       () => acoes.criarLote({ turma_id: turmaDeB, destinatarios: destinatarios(2) }),
-      /Turma nao encontrada/,
+      /Grupo de mapeamento nao encontrado/,
       "a turma alheia responde como turma inexistente: um 'sem permissao' confirmaria que o uuid e de alguem",
     );
 
@@ -320,7 +320,7 @@ describe("envio em lote", () => {
 
   it("nao remove pendentes da turma de outro parceiro", async () => {
     entrarComo(facilitadorA);
-    await assert.rejects(() => acoes.removerPendentes(turmaDeB), /Turma nao encontrada/);
+    await assert.rejects(() => acoes.removerPendentes(turmaDeB), /Grupo de mapeamento nao encontrado/);
   });
 });
 

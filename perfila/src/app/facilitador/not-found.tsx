@@ -11,7 +11,7 @@ export default function NaoEncontrado() {
         subtitle="O endereço acessado não existe ou o registro foi removido."
         actions={
           <Button href="/facilitador" variant="primary">
-            Ir para o Dashboard
+            Ir para o Painel de Comando
           </Button>
         }
       />

@@ -38,6 +38,45 @@ const nextConfig: NextConfig = {
     serverActions: { bodySizeLimit: '3mb' },
   },
 
+  /**
+   * As treze rotas do portal foram renomeadas em 23/09/2026 (ver `lib/routes.ts`).
+   * Link de rota antiga ja saiu daqui: esta em e-mail enviado, em conversa de
+   * WhatsApp e no favorito do navegador do parceiro. Sem estas linhas, cada um
+   * deles vira 404 — e o cliente conclui que o portal quebrou, nao que o nome
+   * mudou.
+   *
+   * `statusCode: 301` e nao `permanent: true`: o atalho do Next emite 308, e o
+   * pedido era 301. Para o GET de um link clicado os dois fazem a mesma coisa;
+   * o 301 e o que o navegador e o buscador ja tem em cache ha vinte anos.
+   *
+   * `/:path*` casa zero ou mais segmentos, entao uma linha cobre a rota nua e
+   * as filhas: `/facilitador/campanhas` e `/facilitador/campanhas/nova` caem
+   * na mesma regra.
+   */
+  async redirects() {
+    const renomeadas: [string, string][] = [
+      ['assessments', 'acervo-de-mapas'],
+      ['envio-rapido', 'envio-expresso'],
+      ['campanhas', 'grupos-de-mapeamento'],
+      ['dna', 'territorio-da-empresa'],
+      ['arquitetura', 'perfil-ideal-por-cargo'],
+      ['devolutiva', 'sessao-de-leitura'],
+      ['beneficios', 'niveis-de-credenciamento'],
+      ['creditos', 'creditos-de-mapeamento'],
+      ['degustacao', 'experimente-gratis'],
+      ['clientes', 'meus-clientes'],
+      ['cursos', 'certificacoes'],
+      ['mentores', 'guias-de-expedicao'],
+      ['ead', 'biblioteca-gravada'],
+    ]
+
+    return renomeadas.map(([antiga, nova]) => ({
+      source: `/facilitador/${antiga}/:path*`,
+      destination: `/facilitador/${nova}/:path*`,
+      statusCode: 301 as const,
+    }))
+  },
+
   async headers() {
     return [
       { source: '/avaliacao/:path*', headers: SEM_INDICE_SEM_REFERER },

@@ -19,13 +19,13 @@ import { atualizarDevolutivaSchema, criarDevolutivaSchema } from "@/lib/validato
 import { paraTela, RecusaDeRegra } from "./recusa";
 
 const TABELA = "devolutivas";
-const TELA = "/facilitador/devolutiva";
+const TELA = "/facilitador/sessao-de-leitura";
 
 async function exigirSessao(acao: Acao): Promise<Sessao> {
   const sessao = await getSession();
   if (!sessao) throw new Error("Nao autenticado");
   if (!temPermissao(sessao.papel, TABELA, acao)) {
-    throw new Error(`Sem permissao para ${acao} devolutivas`);
+    throw new Error(`Sem permissao para ${acao} sessões de leitura`);
   }
   return sessao;
 }
@@ -93,7 +93,7 @@ export async function criar(dados: unknown) {
 
   const facilitadorId = validado.facilitador_id ?? sessao.userId;
   if (sessao.papel !== "admin" && facilitadorId !== sessao.userId) {
-    throw new Error("Sem permissao para criar devolutiva em nome de outro facilitador");
+    throw new Error("Sem permissao para criar sessão de leitura em nome de outro facilitador");
   }
 
   return db.transaction(async (tx) => {
@@ -109,7 +109,7 @@ export async function criar(dados: unknown) {
       )
       .limit(1);
 
-    if (!assessment) throw new RecusaDeRegra("Assessment nao encontrado");
+    if (!assessment) throw new RecusaDeRegra("Mapa nao encontrado");
 
     const [nova] = await tx
       .insert(devolutivas)
@@ -148,7 +148,7 @@ export async function atualizar(id: string, dados: unknown, updatedAtOriginal: D
   const validado = atualizarDevolutivaSchema.parse(dados);
 
   const anterior = await obter(id);
-  if (!anterior) throw new RecusaDeRegra("Devolutiva nao encontrada");
+  if (!anterior) throw new RecusaDeRegra("Sessão de leitura nao encontrada");
 
   const resultado = await db
     .update(devolutivas)
@@ -172,7 +172,7 @@ export async function atualizar(id: string, dados: unknown, updatedAtOriginal: D
 
   if (resultado.length === 0) {
     throw new RecusaDeRegra(
-      "Esta devolutiva foi alterada por outra aba. Recarregue a pagina e tente de novo.",
+      "Esta sessão de leitura foi alterada por outra aba. Recarregue a pagina e tente de novo.",
     );
   }
 
@@ -194,7 +194,7 @@ export async function excluir(id: string) {
   const sessao = await exigirSessao("deletar");
 
   const anterior = await obter(id);
-  if (!anterior) throw new RecusaDeRegra("Devolutiva nao encontrada");
+  if (!anterior) throw new RecusaDeRegra("Sessão de leitura nao encontrada");
 
   const resultado = await db
     .update(devolutivas)
@@ -207,7 +207,7 @@ export async function excluir(id: string) {
     .where(and(eq(devolutivas.id, id), eq(devolutivas.is_deleted, false), escopoDoDono(sessao)))
     .returning();
 
-  if (resultado.length === 0) throw new RecusaDeRegra("Devolutiva nao encontrada");
+  if (resultado.length === 0) throw new RecusaDeRegra("Sessão de leitura nao encontrada");
 
   await registrarAuditoria({
     userId: sessao.userId,

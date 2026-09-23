@@ -183,7 +183,7 @@ export function GestaoCursos({ cursos }: { cursos: CursoComPrograma[] }) {
                 </p>
               </details>
 
-              {/* O programa de verdade: é isto que /facilitador/ead espelha. */}
+              {/* O programa de verdade: é isto que /facilitador/biblioteca-gravada espelha. */}
               <Programa curso={curso} />
 
               <Row gap={12} justify="space-between" wrap>

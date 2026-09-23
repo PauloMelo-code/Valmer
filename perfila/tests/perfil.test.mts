@@ -306,7 +306,7 @@ describe("busca da barra superior", () => {
     const [item] = (await busca.buscar(`zoraide.alfa.${marca}`)).itens;
 
     assert.equal(item!.tipo, "avaliado");
-    assert.equal(item!.href, `/facilitador/assessments?q=${encodeURIComponent(item!.detalhe)}`);
+    assert.equal(item!.href, `/facilitador/acervo-de-mapas?q=${encodeURIComponent(item!.detalhe)}`);
   });
 
   /**

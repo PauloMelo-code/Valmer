@@ -96,7 +96,7 @@ export async function atualizar(dados: unknown) {
 
 /**
  * Grava a configuracao da degustacao: qual nivel de relatorio o parceiro
- * oferece como amostra em /facilitador/degustacao.
+ * oferece como amostra em /facilitador/experimente-gratis.
  *
  * Mora aqui, e nao numa action nova, porque e o que ja define este arquivo: o
  * que o PROPRIO parceiro muda na propria linha de `usuarios`. Mesmo recorte
@@ -304,7 +304,7 @@ function revalidarMolduras() {
 export async function salvarConfigDegustacaoPelaTela(dados: unknown): Promise<Resposta> {
   try {
     await salvarConfigDegustacao(dados);
-    revalidatePath("/facilitador/degustacao");
+    revalidatePath("/facilitador/experimente-gratis");
     return { ok: true };
   } catch (erro) {
     return comoResposta(erro);

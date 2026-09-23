@@ -1,5 +1,5 @@
 /**
- * Leituras das telas de gestao: portal do parceiro e painel do admin.
+ * Leituras das telas de gestao: portal do facilitador e painel do admin.
  *
  * Devolve os dados no MESMO formato que `src/data/facilitadores.ts` entregava
  * ao prototipo (`Facilitador`, `Assessment`, `Transacao`), entao as tabelas e
@@ -402,7 +402,7 @@ export async function empresasPorId(ids: string[]): Promise<Record<string, strin
 }
 
 /**
- * Situacao do parceiro no programa de beneficios, no ciclo vigente.
+ * Situacao do parceiro nos Niveis de Credenciamento, no ciclo vigente.
  *
  * As somas acontecem no banco, com a janela do ciclo no WHERE: o que a tela
  * precisa sao dois totais, e trazer o extrato inteiro para soma-lo aqui viraria

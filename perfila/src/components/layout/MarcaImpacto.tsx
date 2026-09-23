@@ -3,7 +3,7 @@
  * -------------
  * Símbolo oficial da Impacto Academy. Vive em `components/layout/`
  * porque vale para o produto inteiro: login, assessment, admin, portal
- * do parceiro e relatório.
+ * do facilitador e relatório.
  *
  * O nome ao lado do símbolo é sempre "Impacto Academy", em todo lugar.
  * Decisão do Paulo em 10/09/2026, que REVOGA a regra de dois nomes de

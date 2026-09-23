@@ -116,7 +116,8 @@ export async function buscar(termo: unknown): Promise<ResultadoBusca> {
   // Uma consulta a mais que o limite: e assim que se sabe que ha mais sem
   // contar a tabela inteira.
   const teto = LIMITE + 1;
-  const raiz = sessao.papel === "admin" ? "/admin" : "/facilitador";
+  const listaDeMapas =
+    sessao.papel === "admin" ? "/admin/assessments" : "/facilitador/acervo-de-mapas";
 
   const [avaliados, encontradas] = await Promise.all([
     temPermissao(sessao.papel, "assessments", "ler")
@@ -161,14 +162,14 @@ export async function buscar(termo: unknown): Promise<ResultadoBusca> {
       detalhe: linha.email,
       // Leva a lista de mapas ja filtrada por este avaliado. O filtro da lista
       // casa por e-mail, que e o que separa dois homonimos.
-      href: `${raiz}/assessments?q=${encodeURIComponent(linha.email)}`,
+      href: `${listaDeMapas}?q=${encodeURIComponent(linha.email)}`,
     })),
     ...encontradas.slice(0, LIMITE).map((linha) => ({
       tipo: "turma" as const,
       id: linha.id,
       titulo: linha.nome,
-      detalhe: `Turma · ${linha.area}`,
-      href: sessao.papel === "admin" ? null : "/facilitador/campanhas",
+      detalhe: `Grupo · ${linha.area}`,
+      href: sessao.papel === "admin" ? null : "/facilitador/grupos-de-mapeamento",
     })),
   ];
 

@@ -19,7 +19,7 @@ import { atualizarClienteSchema, criarClienteSchema } from "@/lib/validators/cli
 import { paraTela, RecusaDeRegra } from "./recusa";
 
 const TABELA = "clientes";
-const TELA = "/facilitador/clientes";
+const TELA = "/facilitador/meus-clientes";
 
 async function exigirSessao(acao: Acao): Promise<Sessao> {
   const sessao = await getSession();

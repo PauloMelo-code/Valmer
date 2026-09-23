@@ -6,7 +6,7 @@
  *
  * - ESCREVER modulo e aula e do admin, passa pelo rbac (`cursos:*`) e mora na
  *   action.
- * - LER e do parceiro. A aba /facilitador/ead precisa mostrar o que o admin
+ * - LER e do parceiro. A aba /facilitador/biblioteca-gravada precisa mostrar o que o admin
  *   publicou, e o rbac diz que `cursos:ler` e so do admin — guardar a leitura
  *   atras dele trancaria o parceiro fora da propria trilha. Quem barra
  *   visitante e a guarda de sessao do layout de /facilitador, que ja existe.

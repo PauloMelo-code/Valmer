@@ -14,7 +14,7 @@ const MINIMO = 2
 
 const ROTULO_GRUPO = {
   avaliado: 'Avaliados',
-  turma: 'Turmas',
+  turma: 'Grupos de Mapeamento',
 } as const
 
 /**

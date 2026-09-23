@@ -15,8 +15,8 @@ export const criarTurmaSchema = z.object({
   nome: z
     .string()
     .trim()
-    .min(3, "Nome da turma muito curto")
-    .max(120, "Nome da turma muito longo"),
+    .min(3, "Nome do grupo muito curto")
+    .max(120, "Nome do grupo muito longo"),
   area: z.enum(["global", "pessoal", "profissional"]),
   tipo_relatorio: z.enum(["S1", "S2", "S3", "S4"]),
   permite_download: z.boolean(),

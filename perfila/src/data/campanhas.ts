@@ -66,7 +66,7 @@ export const campanhas: Campanha[] = [
   },
 ]
 
-/** Resumo exibido no subtítulo da tela de Campanhas. */
+/** Resumo exibido no subtítulo da tela de Grupos de Mapeamento. */
 export const campanhasResumo = {
   quantidade: campanhas.length,
   passaportes: campanhas.reduce((soma, campanha) => soma + campanha.total, 0),

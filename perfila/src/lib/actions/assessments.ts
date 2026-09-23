@@ -1,7 +1,7 @@
 /**
  * Regra de negocio dos assessments, em um lugar so.
  *
- * Toda tela — portal do facilitador, painel do admin, envio rapido — chama
+ * Toda tela — portal do facilitador, painel do admin, envio expresso — chama
  * estas funcoes. Nenhuma delas repete a regra de credito, de escopo ou de
  * auditoria: se a regra mudar aqui, muda em todas.
  */
@@ -29,7 +29,7 @@ async function exigirSessao(acao: Acao): Promise<Sessao> {
   const sessao = await getSession();
   if (!sessao) throw new Error("Nao autenticado");
   if (!temPermissao(sessao.papel, "assessments", acao)) {
-    throw new Error(`Sem permissao para ${acao} assessments`);
+    throw new Error(`Sem permissao para ${acao} mapas`);
   }
   return sessao;
 }
@@ -86,7 +86,7 @@ export async function criar(dados: unknown) {
 
   const facilitadorId = validado.facilitador_id ?? sessao.userId;
   if (sessao.papel !== "admin" && facilitadorId !== sessao.userId) {
-    throw new Error("Sem permissao para criar assessment em nome de outro facilitador");
+    throw new Error("Sem permissao para criar mapa em nome de outro facilitador");
   }
 
   const expiraEm = validadeDoLink(new Date());
@@ -120,7 +120,7 @@ export async function criar(dados: unknown) {
     if (validado.degustacao) {
       if (dono.creditos_degustacao < 1) {
         throw new RecusaDeRegra(
-          "Sem degustacoes disponiveis. As amostras gratuitas acabaram; envie este mapa como assessment normal ou peca mais degustacoes ao administrador.",
+          "Sem testes grátis disponíveis. Os testes gratuitos acabaram; envie este mapa normalmente ou peça mais testes grátis ao administrador.",
         );
       }
     } else if (dono.creditos < custo) {
@@ -174,7 +174,7 @@ export async function criar(dados: unknown) {
         usuario_id: facilitadorId,
         tipo: "uso",
         quantidade: -custo,
-        descricao: `Assessment ${validado.tipo_relatorio} de ${validado.avaliado_nome}`,
+        descricao: `Mapa ${validado.tipo_relatorio} de ${validado.avaliado_nome}`,
         assessment_id: novo.id,
         modified_by: sessao.userId,
       });
@@ -259,7 +259,7 @@ export async function atualizar(id: string, dados: unknown, updatedAtOriginal: D
   const validado = atualizarAssessmentSchema.parse(dados);
 
   const anterior = await obter(id);
-  if (!anterior) throw new Error("Assessment nao encontrado");
+  if (!anterior) throw new Error("Mapa nao encontrado");
 
   const resultado = await db
     .update(assessments)
@@ -306,7 +306,7 @@ export async function excluir(id: string) {
   const sessao = await exigirSessao("deletar");
 
   const anterior = await obter(id);
-  if (!anterior) throw new Error("Assessment nao encontrado");
+  if (!anterior) throw new Error("Mapa nao encontrado");
 
   const resultado = await db
     .update(assessments)
@@ -319,7 +319,7 @@ export async function excluir(id: string) {
     .where(and(eq(assessments.id, id), eq(assessments.is_deleted, false), escopoDoDono(sessao)))
     .returning();
 
-  if (resultado.length === 0) throw new Error("Assessment nao encontrado");
+  if (resultado.length === 0) throw new Error("Mapa nao encontrado");
 
   await registrarAuditoria({
     userId: sessao.userId,

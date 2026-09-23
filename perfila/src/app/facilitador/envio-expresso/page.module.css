@@ -1,0 +1,193 @@
+.cardBusca {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Faixa superior: escolher ou criar o grupo de mapeamento de destino. */
+.busca {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  padding: var(--space-20) var(--space-24);
+  border-bottom: 1px solid var(--color-border-soft);
+}
+
+.buscaLabel {
+  font-size: var(--fs-12);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-muted);
+}
+
+.buscaLinha {
+  display: flex;
+  gap: var(--space-10);
+}
+
+.buscaCampo {
+  flex: 1;
+  border-radius: var(--radius-md);
+}
+
+/* Alinha o botão à altura do campo de busca (40px). */
+.buscaBotao {
+  height: var(--control-user);
+}
+
+.corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  padding: var(--space-20) var(--space-24);
+}
+
+/* ---------- Abas ---------- */
+.abas {
+  display: flex;
+  gap: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.aba {
+  padding: var(--space-8) var(--space-12);
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font-size: var(--fs-13);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-subtle);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.aba:hover {
+  color: var(--color-text);
+}
+
+.abaAtiva {
+  border-bottom-color: var(--color-accent);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text);
+}
+
+/* ---------- Formulário de destinatário ---------- */
+.campos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-14);
+}
+
+.acoes {
+  display: flex;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+}
+
+/* ---------- Lista de destinatários do lote ---------- */
+.destinatarios {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.destinatario {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  padding: var(--space-8) var(--space-12);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-13);
+}
+
+.destinatarioNome {
+  font-weight: var(--fw-semibold);
+}
+
+/* ---------- Card lateral ---------- */
+.ajuda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  font-size: var(--fs-13);
+}
+
+.passos {
+  margin: 0;
+  padding-left: var(--space-18);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  color: var(--color-text-muted);
+  line-height: var(--leading-normal);
+}
+
+.saldo {
+  margin-top: var(--space-6);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-12);
+  padding: var(--space-12);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+}
+
+.saldoLabel {
+  color: var(--color-text-muted);
+}
+
+.saldoValor {
+  font-weight: var(--fw-semibold);
+}
+
+@media screen and (max-width: 560px) {
+  .campos {
+    grid-template-columns: 1fr;
+  }
+
+  .busca,
+  .corpo {
+    padding: var(--space-16);
+  }
+}
+
+@media screen and (max-width: 720px) {
+  /* O select do grupo e o botão "Novo grupo" lado a lado deixam 186px para o
+     nome do grupo em 390px, e todo rótulo vira reticências. Empilhados, o nome
+     do grupo cabe inteiro — que é a única coisa que a pessoa lê aqui. */
+  .buscaLinha {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* Cada ação pega a linha toda. Lado a lado, "Adicionar" e "Importar planilha"
+     passam da largura da tela e a segunda quebra para baixo com metade do
+     tamanho da primeira — duas ações do mesmo peso com tamanhos diferentes.
+     Vale também para o "Gerar N passaporte(s) · X crédito(s)", que é o rótulo
+     mais longo do portal. */
+  .acoes > * {
+    flex: 1 1 100%;
+  }
+
+  /* Este arquivo desfazia, sozinho, a regra de alvo de toque do Button: o
+     `height: var(--control-user)` acima vale 40px e vence a altura mínima do
+     componente por vir de uma classe da própria tela. O botão "Novo grupo"
+     carrega as duas classes, e a da tela ganhava. */
+  .buscaBotao {
+    height: var(--alvo-toque);
+  }
+
+  /* As abas eram ~34px de altura: padding de 8px em cima e embaixo sobre uma
+     linha de 13px. Não herdam altura de lugar nenhum — `globals.css` não
+     declara `line-height` em html nem em body —, então o alvo tinha de ser
+     escrito aqui. O padding lateral cresce junto para o toque não pegar as
+     duas abas de uma vez. */
+  .aba {
+    min-height: var(--alvo-toque);
+    padding: var(--space-8) var(--space-16);
+  }
+}

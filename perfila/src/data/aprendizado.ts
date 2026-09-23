@@ -1,4 +1,4 @@
-/** Cursos, mentores e a trilha de EAD. */
+/** Os cursos das Certificações e os guias de expedição. */
 
 /**
  * Paleta de capas. São tons do próprio sistema (nunca cores avulsas),
@@ -16,22 +16,19 @@ const CAPAS = [
 export type Curso = {
   title: string
   desc: string
-  /** Sigla exibida na miniatura do dashboard. */
+  /** Sigla exibida na miniatura do Painel de Comando. */
   abbr: string
   capa: string
 }
 
+/**
+ * Quatro cursos, e não seis. "Masterclass Anual" e "Curso de Relacionamentos"
+ * saíram a pedido do Valmer em 23/09/2026 — o primeiro anunciava Iane Parente,
+ * pessoa real que já tinha saído da lista de mentores pelo mesmo motivo, e o
+ * segundo veio junto no mesmo pedido. Os outros quatro ficam até o catálogo
+ * próprio da Impacto ser entregue. Ninguém volta para esta lista sem o aval dele.
+ */
 const cursosBase: Omit<Curso, 'capa'>[] = [
-  {
-    title: 'Masterclass Anual',
-    desc: 'Imersão online com Iane Parente e convidados, que vai impulsionar a sua carreira como analista.',
-    abbr: 'MA',
-  },
-  {
-    title: 'Curso de Relacionamentos',
-    desc: 'Descubra, na prática, como lidar com as diferenças e tornar a comunicação mais eficaz.',
-    abbr: 'CR',
-  },
   {
     title: 'Curso de Liderança',
     desc: 'Treinamento baseado no best-seller Decifre e Influencie Pessoas, para extrair o máximo do seu time.',
@@ -59,7 +56,7 @@ export const cursos: Curso[] = cursosBase.map((curso, index) => ({
   capa: CAPAS[index % CAPAS.length]!,
 }))
 
-/** Os três primeiros cursos aparecem resumidos no Dashboard. */
+/** Os três primeiros cursos aparecem resumidos no Painel de Comando. */
 export const cursosDestaque = cursos.slice(0, 3)
 
 export type Mentor = {
@@ -100,6 +97,6 @@ export const mentores: Mentor[] = [
  * duracao "07:05 · Vimeo" estava escrita a mao.
  *
  * O programa agora e tabela (`db/schema/ead.ts`): o admin cadastra modulo e
- * aula em /admin/cursos e /facilitador/ead le o que foi PUBLICADO, por
+ * aula em /admin/cursos e /facilitador/biblioteca-gravada le o que foi PUBLICADO, por
  * `lib/ead.ts`. Nada de EAD volta para este arquivo.
  */

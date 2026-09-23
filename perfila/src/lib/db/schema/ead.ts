@@ -4,7 +4,7 @@
  * O modulo morava dentro de `cursos.conteudo` — um textarea cujo placeholder
  * pedia "Programa, modulos e os enderecos das aulas". Programa digitado como
  * prosa nao da para ordenar, nao da para dizer qual aula tem video e nao da
- * para espelhar em outra tela: era por isso que /facilitador/ead mostrava sete
+ * para espelhar em outra tela: era por isso que /facilitador/biblioteca-gravada mostrava sete
  * titulos escritos no codigo, com a aula 1 marcada como concluida em
  * `data/aprendizado.ts` e um "1 de 7" que era constante de build.
  *

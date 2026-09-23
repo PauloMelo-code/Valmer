@@ -33,7 +33,7 @@ type TopbarProps = {
   /**
    * Tela de perfil deste ambiente, para onde o menu do nome leva.
    *
-   * Opcional porque só o portal do parceiro tem uma: no admin o menu continua
+   * Opcional porque só o portal do facilitador tem uma: no admin o menu continua
    * sendo o bloco de identificação que sempre foi, sem destino inventado.
    */
   perfilHref?: string

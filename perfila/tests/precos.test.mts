@@ -361,7 +361,7 @@ describe("degustacao", () => {
           tipo_relatorio: "S1",
           degustacao: true,
         }),
-      /Sem degustacoes disponiveis/,
+      /Sem testes grátis disponíveis/,
     );
   });
 });

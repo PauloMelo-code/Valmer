@@ -2,7 +2,7 @@
  * Escrita do programa do curso: modulo e aula.
  *
  * Antes disto o programa era o textarea `cursos.conteudo`, e por isso a aba
- * /facilitador/ead nao tinha o que espelhar — mostrava sete titulos escritos em
+ * /facilitador/biblioteca-gravada nao tinha o que espelhar — mostrava sete titulos escritos em
  * `data/aprendizado.ts`. Aqui o modulo vira linha, a aula vira linha, e a aba
  * do parceiro passa a ler o que o admin publicou.
  *

@@ -188,7 +188,7 @@ describe("turmas", () => {
 
   it("recusa excluir turma com assessment ativo, com mensagem legivel", async () => {
     entrarComo(facilitadorA);
-    await assert.rejects(() => acoes.excluir(turmaDeA), /assessment\(s\) ativo\(s\)/);
+    await assert.rejects(() => acoes.excluir(turmaDeA), /mapa\(s\) ativo\(s\)/);
 
     const [linha] = await db.select().from(turmas).where(eq(turmas.id, turmaDeA));
     assert.equal(linha!.is_deleted, false, "a turma recusada continua visivel");

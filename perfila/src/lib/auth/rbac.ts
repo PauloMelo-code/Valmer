@@ -40,7 +40,7 @@ const permissoes: Record<string, Papel[]> = {
   // garante isso e o `id = sessao.userId` no WHERE da action, nao esta linha.
   "perfil:atualizar": ["admin", "facilitador"],
   // O curso e escrito e publicado pelo dono da plataforma. O facilitador ve a
-  // vitrine em /facilitador/cursos, que nao passa por estas permissoes, e o
+  // vitrine em /facilitador/certificacoes, que nao passa por estas permissoes, e o
   // aluno entra por outra plataforma, com login proprio.
   "cursos:criar": ["admin"],
   "cursos:ler": ["admin"],

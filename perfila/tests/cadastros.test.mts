@@ -396,7 +396,7 @@ describe("devolutivas", () => {
     entrarComo(facilitadorA);
     await assert.rejects(
       () => acoesDevolutivas.criar({ assessment_id: assessmentDeB }),
-      /Assessment nao encontrado/,
+      /Mapa nao encontrado/,
     );
   });
 

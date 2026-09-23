@@ -64,7 +64,7 @@ export const atualizarPerfilSchema = z.strictObject({
 
 /**
  * Configuracao da degustacao: qual nivel de relatorio o parceiro oferece de
- * amostra em /facilitador/degustacao.
+ * amostra em /facilitador/experimente-gratis.
  *
  * O enum e EMPRESTADO de `criarAssessmentSchema`, e nao redigitado: o nivel
  * configurado aqui e exatamente o que vai para `tipo_relatorio` na criacao do
