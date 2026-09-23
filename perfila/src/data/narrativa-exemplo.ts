@@ -15,7 +15,7 @@ import type { NarrativaRelatorio } from '@/lib/relatorio/tipos'
 
 export const narrativaExemplo: NarrativaRelatorio = {
   resumoPerfil:
-    'Paulo, existe em você uma combinação pouco comum. Você tem o calor de quem cria vínculo com quase qualquer pessoa e, junto disso, a impaciência de quem quer ver a conversa virar ação. Você entra nos ambientes com energia e conquista espaço rápido. Essa proximidade é o que você usa para mover ideias, projetos e pessoas. Sua força vem de fazer com que os outros queiram ir junto. Some a isso a coragem de decidir antes que a certeza chegue. Você costuma tirar o grupo da paralisia e dar o primeiro passo enquanto todo mundo ainda pesa os prós e os contras.',
+    'Adriana, existe em você uma combinação pouco comum. Você tem o calor de quem cria vínculo com quase qualquer pessoa e, junto disso, a impaciência de quem quer ver a conversa virar ação. Você entra nos ambientes com energia e conquista espaço rápido. Essa proximidade é o que você usa para mover ideias, projetos e pessoas. Sua força vem de fazer com que os outros queiram ir junto. Some a isso a coragem de decidir antes que a certeza chegue. Você costuma tirar o grupo da paralisia e dar o primeiro passo enquanto todo mundo ainda pesa os prós e os contras.',
   pontosFortes: [
     'Poder de mobilizar pessoas. Você contagia quem está por perto com uma ideia e transforma um assunto abstrato em algo que os outros sentem vontade de fazer acontecer. Isso é raro. A maioria consegue explicar, mas poucos conseguem entusiasmar.',
     'Coragem para começar. Você dá o primeiro passo com as garantias que já tem em mãos. Onde outros pedem mais uma análise, você testa, ajusta no caminho e aprende com o que o teste devolve.',
@@ -50,7 +50,7 @@ export const narrativaExemplo: NarrativaRelatorio = {
  * A narrativa que a PÁGINA deve mostrar quando não há nenhuma gravada.
  *
  * O exemplo acima foi escrito para OUTRA pessoa: ele começa chamando o leitor
- * de "Paulo" e descreve o perfil de "Paulo". Entregá-lo a um avaliado não é um
+ * de "Adriana" e descreve o perfil de "Adriana". Entregá-lo a um avaliado não é um
  * texto genérico, é o texto de terceiro com o nome de terceiro dentro, no único
  * documento que sai da plataforma e chega ao cliente final do parceiro.
  *

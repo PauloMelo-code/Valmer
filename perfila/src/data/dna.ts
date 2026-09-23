@@ -1,4 +1,4 @@
-/** DNA Organizacional — perfil coletivo de uma empresa. */
+/** Território da Empresa — perfil coletivo de uma empresa. */
 
 import { initials } from '@/lib/text'
 
@@ -74,8 +74,8 @@ export type Respondente = {
 
 const respondentesBase: Omit<Respondente, 'iniciais'>[] = [
   {
-    name: 'Elias da Silva Maia',
-    email: 'elmaiasilva83@gmail.com',
+    name: 'Bruno Carvalho',
+    email: 'bruno.carvalho@example.com',
     perfil: 'ID',
     d: 52,
     i: 74,
@@ -84,8 +84,8 @@ const respondentesBase: Omit<Respondente, 'iniciais'>[] = [
     date: '02/12/2025 12:59',
   },
   {
-    name: 'Antonio Rodrigues Vidal',
-    email: 'vidalantonio6167@gmail.com',
+    name: 'Eduardo Salles',
+    email: 'eduardo.salles@example.com',
     perfil: 'CS',
     d: 33,
     i: 49,
@@ -94,8 +94,8 @@ const respondentesBase: Omit<Respondente, 'iniciais'>[] = [
     date: '01/12/2025 11:33',
   },
   {
-    name: 'Ferdiney Ferreira da Silva',
-    email: 'ferdineyryos@gmail.com',
+    name: 'Fabiana Rezende',
+    email: 'fabiana.rezende@example.com',
     perfil: 'DI',
     d: 65,
     i: 53,
@@ -104,8 +104,8 @@ const respondentesBase: Omit<Respondente, 'iniciais'>[] = [
     date: '03/12/2025 13:25',
   },
   {
-    name: 'Thais da Silva Muniz',
-    email: 'thaismuniz83@gmail.com',
+    name: 'Camila Ferraz',
+    email: 'camila.ferraz@example.com',
     perfil: 'DI',
     d: 58,
     i: 51,

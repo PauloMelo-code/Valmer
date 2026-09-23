@@ -2,7 +2,7 @@
 
 /**
  * Iniciais para avatar: primeira letra do primeiro e do último nome.
- * "Elias da Silva Maia" → "EM"
+ * "Bruno Carvalho" → "BC"
  */
 export function initials(fullName: string): string {
   const parts = fullName.trim().split(/\s+/)

@@ -1,7 +1,7 @@
 /**
  * Painel do respondente
  * ---------------------
- * Os valores abaixo são os do relatório de exemplo (Paulo V S Melo,
+ * Os valores abaixo são os do relatório de exemplo (Adriana Prado,
  * realizado em 02/09/2026) e batem com o PDF de 56 páginas.
  */
 

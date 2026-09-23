@@ -43,14 +43,14 @@ export const canaisSuporte = [
   },
   {
     icon: 'chat',
-    label: 'Suporte comercial · Juliana Rocha',
-    valor: '+55 (11) 93341-0392',
+    label: 'Suporte comercial · Beatriz Nunes',
+    valor: '+55 (11) 90000-0001',
     destaque: true,
   },
   {
     icon: 'headset',
     label: 'Suporte técnico',
-    valor: '+55 (11) 93341-0392',
+    valor: '+55 (11) 90000-0001',
     destaque: true,
   },
 ] as const

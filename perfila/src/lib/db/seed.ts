@@ -54,9 +54,9 @@ config({ path: [".env.local", ".env"] });
  */
 const idUsuario: Record<string, string> = {
   valmer: "5e0d7c9a-4f21-4b8e-9c3d-1a6f8e2b7d40",
-  "juliana-rocha": "b3f2a8c1-7d5e-4a90-8f16-c4e9d2a75b31",
-  "marcos-tavares": "9c81d4f7-2b3a-4e65-a7d8-f01e6c5b9a22",
-  "dani-pires": "d7a45e92-6c1f-4d38-b5a0-8e3f7c2d1b13",
+  "beatriz-nunes": "b3f2a8c1-7d5e-4a90-8f16-c4e9d2a75b31",
+  "rogerio-lima": "9c81d4f7-2b3a-4e65-a7d8-f01e6c5b9a22",
+  "carla-menezes": "d7a45e92-6c1f-4d38-b5a0-8e3f7c2d1b13",
 };
 
 const idAssessment: Record<string, string> = {
