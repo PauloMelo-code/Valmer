@@ -1,5 +1,7 @@
 'use client'
 
+import { useMemo, useState } from 'react'
+
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -22,7 +24,8 @@ import {
 } from '@/components/ui/Table'
 import { useToast } from '@/components/ui/Toast'
 import { opcoes } from '@/data/opcoes'
-import { getTipoRelatorio, type CodigoRelatorio } from '@/data/planos'
+import { getTipoRelatorio, tiposRelatorio, type CodigoRelatorio } from '@/data/planos'
+import { dentroDoPeriodo } from '@/lib/filtro-grupos'
 import styles from './page.module.css'
 
 export type ItemTurma = {
@@ -44,16 +47,64 @@ const ROTULO_AREA: Record<ItemTurma['area'], string> = {
   profissional: 'Profissional',
 }
 
+/** O mesmo texto que a linha mostra — é o que o filtro precisa casar. */
+function rotuloTipo(codigo: CodigoRelatorio) {
+  return `${codigo} · ${getTipoRelatorio(codigo).nome}`
+}
+
+/**
+ * As opções do filtro de tipo saem dos níveis que EXISTEM (S1..S4), e não de
+ * `opcoes.relatorioFiltro`: aquela lista fala "DISC" e "DISC + Tipos
+ * Psicológicos + Valores", nomes que nenhum grupo tem gravado. Filtrar por eles
+ * devolveria zero linha sempre — um filtro que esconde tudo é pior que nenhum,
+ * porque parece que o parceiro não tem grupo.
+ */
+const TIPOS = ['Todos', ...tiposRelatorio.map((tipo) => rotuloTipo(tipo.codigo))]
+
+const AREAS = ['Todas', ...Object.values(ROTULO_AREA)]
+
 /**
  * A lista em si. As linhas já vieram do servidor com o recorte por dono
  * aplicado — aqui só há a interatividade, que é o que exige o cliente.
  *
- * Os filtros continuam avisando que ainda não filtram: eles pedem busca por
- * data e por degustação, e nenhuma das duas existe no banco. Aviso honesto
- * vale mais que um filtro que esconde linha por engano.
+ * O filtro é no cliente, como na lista de mapas e na de territórios: esconder
+ * linha que já é da pessoa não precisa de ida nova ao banco, e uma consulta por
+ * tecla digitada não melhoraria nada numa lista deste tamanho.
+ *
+ * "Experimente Grátis" continua avisando em vez de filtrar: não existe o campo
+ * no cadastro do grupo nem tabela de degustação (ver `schema/turmas.ts`), então
+ * ele só poderia esconder linha por engano. Aviso honesto vale mais.
  */
 export function ListaTurmas({ itens }: { itens: ItemTurma[] }) {
   const { toast } = useToast()
+
+  const [busca, setBusca] = useState('')
+  const [tipo, setTipo] = useState(TIPOS[0]!)
+  const [area, setArea] = useState(AREAS[0]!)
+  const [de, setDe] = useState('')
+  const [ate, setAte] = useState('')
+
+  function limpar() {
+    setBusca('')
+    setTipo(TIPOS[0]!)
+    setArea(AREAS[0]!)
+    setDe('')
+    setAte('')
+  }
+
+  const filtrando =
+    busca.trim() !== '' || tipo !== TIPOS[0] || area !== AREAS[0] || de !== '' || ate !== ''
+
+  const filtrados = useMemo(() => {
+    const termo = busca.trim().toLowerCase()
+
+    return itens.filter((turma) => {
+      if (termo !== '' && !turma.nome.toLowerCase().includes(termo)) return false
+      if (tipo !== TIPOS[0] && rotuloTipo(turma.tipo) !== tipo) return false
+      if (area !== AREAS[0] && ROTULO_AREA[turma.area] !== area) return false
+      return dentroDoPeriodo(turma.criadaEm, de, ate)
+    })
+  }, [itens, busca, tipo, area, de, ate])
 
   const passaportes = itens.reduce((soma, turma) => soma + turma.total, 0)
 
@@ -67,10 +118,12 @@ export function ListaTurmas({ itens }: { itens: ItemTurma[] }) {
             <Button href="/api/exportar/turmas" download icon={<Icon name="download" />}>
               Exportar
             </Button>
-            <Button
-              icon={<Icon name="link" />}
-              onClick={() => toast('Meus links ainda não disponíveis', 'aviso')}
-            >
+            {/* Não existe "link do grupo": o link é do avaliado, um por
+                passaporte, com o token que é a única credencial dele. A lista
+                de todos os links do parceiro, com o copiar que já funciona em
+                cada linha, é o acervo de mapas — este botão leva até lá em vez
+                de prometer uma tela que seria a mesma. */}
+            <Button href="/facilitador/acervo-de-mapas" icon={<Icon name="link" />}>
               Meus links
             </Button>
             {/* Remover pendentes EXISTE e funciona — mas por turma, e não
@@ -101,49 +154,84 @@ export function ListaTurmas({ itens }: { itens: ItemTurma[] }) {
       <Card padding="none" scrollX>
         <FilterBar>
           <Field label="Nome" className={tableStyles.filterGrow}>
-            {(id) => <Input id={id} placeholder="Buscar por nome" />}
+            {(id) => (
+              <Input
+                id={id}
+                placeholder="Buscar por nome"
+                value={busca}
+                onChange={(evento) => setBusca(evento.target.value)}
+              />
+            )}
           </Field>
+          {/* O campo fica, e continua dizendo a verdade: a escolha volta para
+              "Todos" e o aviso explica que o dado não existe. Deixá-lo mudar de
+              rótulo sem filtrar seria a tela mentindo em silêncio. */}
           <Field label="Experimente Grátis" className={tableStyles.filterLg}>
-            {(id) => <Select id={id} options={opcoes.degustacao} label="Experimente Grátis" />}
+            {(id) => (
+              <Select
+                id={id}
+                options={opcoes.degustacao}
+                label="Experimente Grátis"
+                value={opcoes.degustacao[0]}
+                onChange={() =>
+                  toast(
+                    'Filtrar por Experimente Grátis ainda não é possível: o cadastro do grupo não tem esse campo.',
+                    'aviso',
+                  )
+                }
+              />
+            )}
           </Field>
           <Field label="Tipo de relatório" className={tableStyles.filterXl}>
             {(id) => (
-              <Select id={id} options={opcoes.relatorioFiltro} label="Tipo de relatório" />
+              <Select id={id} options={TIPOS} label="Tipo de relatório" value={tipo} onChange={setTipo} />
             )}
           </Field>
+          <Field label="Finalidade" className={tableStyles.filterMd}>
+            {(id) => <Select id={id} options={AREAS} label="Finalidade" value={area} onChange={setArea} />}
+          </Field>
+          {/* `type="date"` em vez de máscara própria: o campo nativo já traz
+              calendário, teclado numérico no celular e o formato do idioma de
+              quem abre, e devolve `aaaa-mm-dd` — que é o que o filtro compara.
+              O `min`/`max` cruzado impede o intervalo invertido, que esconderia
+              a lista inteira sem dizer por quê. */}
           <Field label="Data inicial" className={tableStyles.filterDate}>
-            {(id) => <Input id={id} placeholder="dd/mm/aaaa" inputMode="numeric" />}
+            {(id) => (
+              <Input
+                id={id}
+                type="date"
+                value={de}
+                max={ate || undefined}
+                onChange={(evento) => setDe(evento.target.value)}
+              />
+            )}
           </Field>
           <Field label="Data final" className={tableStyles.filterDate}>
-            {(id) => <Input id={id} placeholder="dd/mm/aaaa" inputMode="numeric" />}
+            {(id) => (
+              <Input
+                id={id}
+                type="date"
+                value={ate}
+                min={de || undefined}
+                onChange={(evento) => setAte(evento.target.value)}
+              />
+            )}
           </Field>
-          <Button
-            variant="dark"
-            size="lg"
-            onClick={() => toast('Busca de grupos ainda não disponível', 'aviso')}
-          >
-            Pesquisar
-          </Button>
-          <Button
-            variant="ghost"
-            size="lg"
-            onClick={() => toast('Limpar filtros ainda não disponível', 'aviso')}
-          >
+          {/* A lista filtra a cada tecla, como a de mapas e a de territórios:
+              não sobrou nada para um "Pesquisar" fazer depois disso, e por isso
+              ele saiu em vez de virar um clique sem efeito. Este devolve os
+              campos — sem ele a lista continuaria filtrada por uma data que
+              ninguém lembra de ter preenchido. */}
+          <Button variant="dark" size="lg" onClick={limpar} disabled={!filtrando}>
             Limpar
           </Button>
         </FilterBar>
 
-        {itens.length === 0 ? (
-          <EmptyState>
-            <p>
-              Você ainda não tem grupos de mapeamento. Um grupo reúne os passaportes enviados e
-              define o tipo de relatório gerado.
-            </p>
-            <Button href="/facilitador/grupos-de-mapeamento/nova" variant="primary" icon={<Icon name="plus" />}>
-              Novo grupo
-            </Button>
-          </EmptyState>
-        ) : (
+        {/* Tabela vazia é tela sem resposta: quem chega não sabe se ainda não
+            criou grupo nenhum ou se o filtro escondeu tudo. Os dois casos têm
+            mensagens diferentes de propósito, cada uma levando à ação que
+            resolve o seu. */}
+        {filtrados.length > 0 ? (
           <Table>
             <thead>
               <tr>
@@ -156,16 +244,14 @@ export function ListaTurmas({ itens }: { itens: ItemTurma[] }) {
               </tr>
             </thead>
             <tbody role="rowgroup">
-              {itens.map((turma) => {
+              {filtrados.map((turma) => {
                 const pendentes = turma.total - turma.respondidos
                 const completa = turma.total > 0 && pendentes === 0
                 return (
                   <Tr key={turma.id}>
                     <Td>
                       <div className={tableStyles.primary}>{turma.nome}</div>
-                      <div className={tableStyles.secondary}>
-                        {turma.tipo} · {getTipoRelatorio(turma.tipo).nome}
-                      </div>
+                      <div className={tableStyles.secondary}>{rotuloTipo(turma.tipo)}</div>
                     </Td>
                     <Td rotulo="Finalidade">
                       <Pill>{ROTULO_AREA[turma.area]}</Pill>
@@ -244,6 +330,28 @@ export function ListaTurmas({ itens }: { itens: ItemTurma[] }) {
               })}
             </tbody>
           </Table>
+        ) : itens.length === 0 ? (
+          <EmptyState>
+            <p>
+              Você ainda não tem grupos de mapeamento. Um grupo reúne os passaportes enviados e
+              define o tipo de relatório gerado.
+            </p>
+            <Button href="/facilitador/grupos-de-mapeamento/nova" variant="primary" icon={<Icon name="plus" />}>
+              Novo grupo
+            </Button>
+          </EmptyState>
+        ) : (
+          <EmptyState>
+            <p>
+              Nenhum grupo corresponde ao filtro.{' '}
+              {itens.length === 1
+                ? 'Seu único grupo continua aqui.'
+                : `Seus ${itens.length} grupos continuam aqui.`}
+            </p>
+            <Button variant="secondary" onClick={limpar}>
+              Limpar filtros
+            </Button>
+          </EmptyState>
         )}
 
         <TableFooter
@@ -254,7 +362,7 @@ export function ListaTurmas({ itens }: { itens: ItemTurma[] }) {
             </>
           }
         >
-          Mostrando {itens.length} de {itens.length}
+          Mostrando {filtrados.length} de {itens.length}
         </TableFooter>
       </Card>
     </>

@@ -155,7 +155,7 @@ const linhasUso = dadosAssessments.map((assessment) => ({
   usuario_id: idUsuario[assessment.facilitadorId]!,
   tipo: "uso" as const,
   quantidade: -assessment.creditosUsados,
-  descricao: `Assessment ${assessment.tipoRelatorio} · ${assessment.avaliadoNome}`,
+  descricao: `Mapa ${assessment.tipoRelatorio} · ${assessment.avaliadoNome}`,
   assessment_id: idAssessment[assessment.id]!,
   created_at: dataBr(assessment.criadoEm),
   modified_by: idUsuario[assessment.facilitadorId]!,

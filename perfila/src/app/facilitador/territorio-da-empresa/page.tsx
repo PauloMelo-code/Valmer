@@ -1,128 +1,53 @@
-'use client'
-
-import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
-import { Field, Input } from '@/components/ui/Field'
-import { Icon } from '@/components/ui/Icon'
-import { IconButton } from '@/components/ui/IconButton'
-import { PageHeader } from '@/components/ui/PageHeader'
-import { FilterBar, RowActions, Table, Td, Th, Tr, tableStyles } from '@/components/ui/Table'
-import { useToast } from '@/components/ui/Toast'
-import { dnas } from '@/data/dna'
-import styles from './page.module.css'
+import { listar } from '@/lib/actions/territorios'
+import { ListaTerritorios } from './ListaTerritorios'
 
 /**
- * Os DNAs são lista fixa de `@/data`, sem tabela no banco. Abrir o detalhe é a
- * única ação que existe de verdade; as outras avisam o que ainda falta.
+ * Territórios da Empresa do parceiro, vindos do banco.
+ *
+ * Server Component: a consulta acontece aqui, com sessão e escopo do dono no
+ * WHERE, e a interatividade (filtros, formulário de edição, ações da linha)
+ * fica no componente cliente ao lado. Mesmo desenho do Perfil Ideal por Cargo.
+ *
+ * Esta tela lia `data/dna.ts` — quatro empresas fixas, com as médias escritas à
+ * mão. Ninguém cadastrava nada e nada do que aparecia era de quem estava logado.
+ *
+ * As datas são formatadas aqui, e não no cliente: o servidor roda em UTC e o
+ * navegador no fuso de quem abre a tela, então formatar dos dois lados faria a
+ * mesma linha aparecer com horas diferentes antes e depois da hidratação.
  */
-export default function DnaPage() {
-  const { toast } = useToast()
+const DATA_HORA_BR = new Intl.DateTimeFormat('pt-BR', {
+  timeZone: 'America/Sao_Paulo',
+  dateStyle: 'short',
+  timeStyle: 'short',
+})
 
-  return (
-    <>
-      <PageHeader
-        title="Território da Empresa"
-        subtitle="Mapeie o perfil coletivo das empresas a partir dos inventários respondidos."
-        actions={
-          <Button href="/facilitador/territorio-da-empresa/novo" variant="primary" icon={<Icon name="plus" />}>
-            Adicionar território
-          </Button>
-        }
-      />
+/**
+ * O dia da linha em `aaaa-mm-dd`, no MESMO fuso da data exibida.
+ *
+ * É o que o filtro de data compara com o `<input type="date">`. `en-CA` dá esse
+ * formato pronto; `toISOString()` daria o dia em UTC, e um território criado às
+ * 22h de São Paulo cairia no dia seguinte — sumindo de um filtro que termina no
+ * dia em que a tela diz que ele foi criado.
+ */
+const DIA_ISO = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'America/Sao_Paulo',
+  dateStyle: 'short',
+})
 
-      <Card padding="none" scrollX>
-        <FilterBar>
-          <Field label="Nome" className={tableStyles.filterGrow}>
-            {(id) => <Input id={id} placeholder="Buscar por nome" />}
-          </Field>
-          <Field label="Data inicial" className={tableStyles.filterDate}>
-            {(id) => <Input id={id} placeholder="dd/mm/aaaa" inputMode="numeric" />}
-          </Field>
-          <Field label="Data final" className={tableStyles.filterDate}>
-            {(id) => <Input id={id} placeholder="dd/mm/aaaa" inputMode="numeric" />}
-          </Field>
-          <Button
-            variant="dark"
-            size="lg"
-            onClick={() => toast('Busca de territórios ainda não disponível', 'aviso')}
-          >
-            Pesquisar
-          </Button>
-          <Button
-            variant="ghost"
-            size="lg"
-            onClick={() => toast('Limpar filtros ainda não disponível', 'aviso')}
-          >
-            Limpar
-          </Button>
-        </FilterBar>
+export default async function TerritorioDaEmpresaPage() {
+  const territorios = await listar()
 
-        <Table>
-          <thead>
-            <tr>
-              <Th>Empresa</Th>
-              <Th>Inventários</Th>
-              <Th>Criado por</Th>
-              <Th>Criado em</Th>
-              <Th align="right">Ações</Th>
-            </tr>
-          </thead>
-          <tbody role="rowgroup">
-            {dnas.map((dna) => (
-              <Tr key={dna.slug}>
-                <Td>
-                  <Link href={`/facilitador/territorio-da-empresa/${dna.slug}`} className={tableStyles.linkCell}>
-                    {dna.name}
-                  </Link>
-                  <div className={`${tableStyles.secondary} ${styles.idioma}`}>
-                    <span className={styles.bandeira} aria-hidden />
-                    Português (BR)
-                  </div>
-                </Td>
-                <Td rotulo="Inventários">
-                  <span className={styles.inventarios}>{dna.inventarios ?? '—'}</span>
-                </Td>
-                <Td muted rotulo="Criado por">{dna.by}</Td>
-                <Td muted rotulo="Criado em">{dna.date}</Td>
-                <Td align="right">
-                  <RowActions>
-                    <IconButton icon="eye" label="Abrir" href={`/facilitador/territorio-da-empresa/${dna.slug}`} />
-                    <IconButton
-                      icon="edit"
-                      label="Editar"
-                      onClick={() => toast('Edição do território ainda não disponível', 'aviso')}
-                    />
-                    <IconButton
-                      icon="file"
-                      label="Ver relatório"
-                      onClick={() => toast('Relatório do território ainda não disponível', 'aviso')}
-                    />
-                    <IconButton
-                      icon="chart"
-                      label="Gráficos"
-                      onClick={() => toast('Gráficos do território ainda não disponíveis', 'aviso')}
-                    />
-                    <IconButton
-                      icon="download"
-                      label="Baixar PDF"
-                      onClick={() => toast('Download do PDF ainda não disponível', 'aviso')}
-                    />
-                    <IconButton
-                      icon="trash"
-                      label="Remover"
-                      tone="danger"
-                      onClick={() =>
-                        toast('Remover ainda não disponível: esta lista ainda não grava', 'aviso')
-                      }
-                    />
-                  </RowActions>
-                </Td>
-              </Tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card>
-    </>
-  )
+  const itens = territorios.map((territorio) => ({
+    id: territorio.id,
+    nome: territorio.nome,
+    slug: territorio.slug,
+    descricao: territorio.descricao,
+    inventarios: territorio.inventarios,
+    dono: territorio.criado_por,
+    criadoEm: DATA_HORA_BR.format(territorio.created_at),
+    dia: DIA_ISO.format(territorio.created_at),
+    atualizadoEm: territorio.updated_at,
+  }))
+
+  return <ListaTerritorios itens={itens} />
 }

@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/Table'
 import { useToast } from '@/components/ui/Toast'
 import { atualizarPelaTela, criarPelaTela, excluirPelaTela } from '@/lib/actions/cargos'
+import { folhaDeCargo } from '@/lib/folha-de-cargo'
 import ui from '@/styles/common.module.css'
 
 export type ItemCargo = {
@@ -59,6 +60,21 @@ const NOVO: Rascunho = { id: null, atualizadoEm: null, nome: '', d: '', i: '', s
 
 const texto = (valor: number | null) => (valor === null ? '' : String(valor))
 
+/** Sem acento e em minúscula: "Júnior" tem de ser achado digitando "junior". */
+const semAcento = (valor: string) =>
+  valor
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+
+/**
+ * "23/09/2026 14:30" → "2026-09-23", que é exatamente o formato que o
+ * `input type="date"` devolve — assim a comparação de datas é de texto, e
+ * nenhum `new Date` entra no caminho para ler 09/23 como setembro em um lado e
+ * como mês 23 no outro.
+ */
+const diaIso = (criadoEm: string) => criadoEm.slice(0, 10).split('/').reverse().join('-')
+
 const RECADO_ALVO =
   'Os quatro percentuais precisam somar 100%, ou ficar os quatro em branco.'
 
@@ -67,7 +83,8 @@ const RECADO_ALVO =
  *
  * A lista chega pronta do servidor, já com o recorte por dono no WHERE, e as
  * actions invalidam esta rota depois de gravar — por isso a tela não guarda
- * cópia dos cargos. Estado aqui é só o do formulário.
+ * cópia dos cargos. Estado aqui é só o do formulário e o do filtro, que
+ * esconde linha da lista que já veio e nunca vai buscar outra.
  *
  * Um formulário só atende adicionar, editar e duplicar: as três terminam na
  * mesma gravação, e duplicar abre a cópia preenchida em vez de gravar calado,
@@ -78,6 +95,12 @@ export function ListaCargos({ itens }: { itens: ItemCargo[] }) {
   const [rascunho, setRascunho] = useState<Rascunho | null>(null)
   const [erro, setErro] = useState<string | null>(null)
   const [gravando, iniciarGravacao] = useTransition()
+  // Filtro da barra de cima. Mora AQUI, e não na URL nem numa consulta nova: a
+  // lista inteira já está na mão, com o recorte por dono aplicado no servidor,
+  // e filtrar o que está na tela não pode ler o cargo de outro parceiro.
+  const [busca, setBusca] = useState('')
+  const [de, setDe] = useState('')
+  const [ate, setAte] = useState('')
 
   function abrir(rascunhoNovo: Rascunho) {
     setErro(null)
@@ -149,6 +172,49 @@ export function ListaCargos({ itens }: { itens: ItemCargo[] }) {
       if (rascunho?.id === item.id) setRascunho(null)
       toast(`Cargo "${item.nome}" removido.`)
     })
+  }
+
+  const termo = semAcento(busca.trim())
+  const filtrando = termo !== '' || de !== '' || ate !== ''
+
+  const visiveis = itens.filter((cargo) => {
+    const dia = diaIso(cargo.criadoEm)
+    return (
+      (termo === '' || semAcento(cargo.nome).includes(termo)) &&
+      (de === '' || dia >= de) &&
+      (ate === '' || dia <= ate)
+    )
+  })
+
+  function limparFiltro() {
+    setBusca('')
+    setDe('')
+    setAte('')
+  }
+
+  /**
+   * Folha de impressão de UM cargo, para salvar em PDF pelo diálogo do próprio
+   * navegador (o texto da folha mora em `lib/folha-de-cargo.ts`).
+   *
+   * Janela nova com documento próprio, e não `window.print()` nesta página: o
+   * portal não tem folha de impressão, e imprimir a tela levaria menu lateral,
+   * barra de cima e a lista inteira para o papel.
+   */
+  function imprimir(cargo: ItemCargo) {
+    const janela = window.open('', '_blank', 'width=800,height=900')
+    if (!janela) {
+      toast('O navegador bloqueou a janela de impressão. Libere o pop-up e clique de novo.', 'aviso')
+      return
+    }
+
+    janela.document.write(folhaDeCargo(cargo, new Date().toLocaleString('pt-BR')))
+    janela.document.close()
+    janela.focus()
+    // Fecha depois de imprimir OU de cancelar (o diálogo cancelado também
+    // dispara afterprint nos navegadores atuais); se não disparar, a janela
+    // fica aberta e a pessoa fecha — nada se perde.
+    janela.onafterprint = () => janela.close()
+    janela.print()
   }
 
   return (
@@ -261,22 +327,47 @@ export function ListaCargos({ itens }: { itens: ItemCargo[] }) {
       ) : null}
 
       <Card padding="none" scrollX>
+        {/* Filtra ao digitar, e por isso não há botão "Pesquisar": a lista já
+            está toda no cliente, e um botão só para aplicar o que já está
+            aplicado seria um clique que não faz nada. As datas são
+            `type="date"` do próprio navegador — ele já valida, já mostra
+            dd/mm/aaaa em pt-BR e já abre calendário, sem máscara escrita à
+            mão. O que sobra é o "Limpar". */}
         <FilterBar>
           <Field label="Nome" className={tableStyles.filterGrow}>
-            {(id) => <Input id={id} placeholder="Buscar por cargo" />}
+            {(id) => (
+              <Input
+                id={id}
+                placeholder="Buscar por cargo"
+                value={busca}
+                onChange={(evento) => setBusca(evento.target.value)}
+              />
+            )}
           </Field>
-          <Field label="Data inicial" className={tableStyles.filterDate}>
-            {(id) => <Input id={id} placeholder="dd/mm/aaaa" inputMode="numeric" />}
+          <Field label="Criado de" className={tableStyles.filterDate}>
+            {(id) => (
+              <Input
+                id={id}
+                type="date"
+                value={de}
+                max={ate || undefined}
+                onChange={(evento) => setDe(evento.target.value)}
+              />
+            )}
           </Field>
-          <Field label="Data final" className={tableStyles.filterDate}>
-            {(id) => <Input id={id} placeholder="dd/mm/aaaa" inputMode="numeric" />}
+          <Field label="Criado até" className={tableStyles.filterDate}>
+            {(id) => (
+              <Input
+                id={id}
+                type="date"
+                value={ate}
+                min={de || undefined}
+                onChange={(evento) => setAte(evento.target.value)}
+              />
+            )}
           </Field>
-          <Button
-            variant="dark"
-            size="lg"
-            onClick={() => toast('Busca por cargo ainda não disponível', 'aviso')}
-          >
-            Pesquisar
+          <Button variant="dark" size="lg" onClick={limparFiltro} disabled={!filtrando}>
+            Limpar
           </Button>
         </FilterBar>
 
@@ -284,6 +375,12 @@ export function ListaCargos({ itens }: { itens: ItemCargo[] }) {
           <EmptyState>
             Nenhum cargo cadastrado ainda. Cadastre o primeiro para comparar candidatos com o
             perfil ideal da posição.
+          </EmptyState>
+        ) : visiveis.length === 0 ? (
+          // Lista cheia e nenhuma linha visível: dizer que é o FILTRO, senão a
+          // tela parece ter perdido os cargos.
+          <EmptyState>
+            Nenhum dos {itens.length} cargos cadastrados corresponde a este filtro.
           </EmptyState>
         ) : (
           <Table>
@@ -297,7 +394,7 @@ export function ListaCargos({ itens }: { itens: ItemCargo[] }) {
               </tr>
             </thead>
             <tbody role="rowgroup">
-              {itens.map((cargo) => (
+              {visiveis.map((cargo) => (
                 <Tr key={cargo.id}>
                   <Td>
                     <span className={tableStyles.primary}>{cargo.nome}</span>
@@ -312,9 +409,9 @@ export function ListaCargos({ itens }: { itens: ItemCargo[] }) {
                   <Td align="right">
                     <RowActions>
                       <IconButton
-                        icon="download"
-                        label="Baixar"
-                        onClick={() => toast('Download do PDF ainda não disponível', 'aviso')}
+                        icon="printer"
+                        label="Imprimir ou salvar em PDF"
+                        onClick={() => imprimir(cargo)}
                       />
                       <IconButton
                         icon="edit"
@@ -362,7 +459,11 @@ export function ListaCargos({ itens }: { itens: ItemCargo[] }) {
           </Table>
         )}
 
-        <TableFooter>Total: {itens.length}</TableFooter>
+        <TableFooter>
+          {filtrando
+            ? `Mostrando ${visiveis.length} de ${itens.length}`
+            : `Total: ${itens.length}`}
+        </TableFooter>
       </Card>
     </>
   )

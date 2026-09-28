@@ -13,5 +13,7 @@ export * from "./turmas";
 export * from "./clientes";
 export * from "./cargos";
 export * from "./devolutivas";
+/** Territorio da Empresa e o vinculo dele com os inventarios. */
+export * from "./territorios";
 /** Tabela comercial da plataforma: preco do relatorio e do pacote. Sem dono. */
 export * from "./precos";

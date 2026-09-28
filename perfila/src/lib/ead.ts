@@ -107,6 +107,22 @@ export async function programaDosCursos(listaDeCursos: Curso[]): Promise<CursoCo
 }
 
 /**
+ * So a FICHA dos cursos publicados: titulo e descricao, sem o programa.
+ *
+ * Existe separado de `trilhaPublicada` porque a vitrine de /certificacoes e o
+ * bloco do Painel de Comando nao desenham aula nenhuma — pedir modulo e aula
+ * para os dois seria duas consultas jogadas fora por render. O recorte de
+ * vitrine e o mesmo, e continua morando aqui e nao na tela.
+ */
+export async function cursosPublicados(): Promise<Curso[]> {
+  return db
+    .select()
+    .from(cursos)
+    .where(and(eq(cursos.is_deleted, false), eq(cursos.publicado, true)))
+    .orderBy(asc(cursos.publicado_em));
+}
+
+/**
  * A TRILHA que o parceiro ve: so curso publicado, com o programa dentro.
  *
  * O recorte e o de sempre — vivo e

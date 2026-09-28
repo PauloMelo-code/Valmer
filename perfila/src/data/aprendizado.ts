@@ -1,8 +1,12 @@
-/** Os cursos das Certificações e os guias de expedição. */
+/** Capas dos cursos e a vitrine de guias de expedicao. */
 
 /**
- * Paleta de capas. São tons do próprio sistema (nunca cores avulsas),
- * aplicados em rodízio para diferenciar os cards sem poluir a tela.
+ * Paleta de capas. Sao tons do proprio sistema (nunca cores avulsas),
+ * aplicados em rodizio para diferenciar os cards sem poluir a tela.
+ *
+ * Fica aqui, e nao no banco: cor de capa e apresentacao, e pedir ao Valmer que
+ * escolha um hexadecimal ao publicar um curso seria transformar decisao de
+ * design em campo de formulario.
  */
 const CAPAS = [
   'var(--color-ink)',
@@ -13,51 +17,27 @@ const CAPAS = [
   'var(--color-info)',
 ]
 
-export type Curso = {
-  title: string
-  desc: string
-  /** Sigla exibida na miniatura do Painel de Comando. */
-  abbr: string
-  capa: string
+/** A capa do enesimo curso da lista, em rodizio. */
+export function capaDoCurso(indice: number): string {
+  return CAPAS[indice % CAPAS.length]!
 }
 
-/**
- * Quatro cursos, e não seis. "Masterclass Anual" e "Curso de Relacionamentos"
- * saíram a pedido do Valmer em 23/09/2026 — o primeiro anunciava Iane Parente,
- * pessoa real que já tinha saído da lista de mentores pelo mesmo motivo, e o
- * segundo veio junto no mesmo pedido. Os outros quatro ficam até o catálogo
- * próprio da Impacto ser entregue. Ninguém volta para esta lista sem o aval dele.
+/*
+ * NAO EXISTE MAIS `cursos` NEM `cursosDestaque` AQUI.
+ *
+ * Eram seis, depois quatro, titulos escritos no codigo: "Curso de Lideranca",
+ * "Manual do Vendedor", "Contratacao Estrategica" e "Coach de Carreira" — todos
+ * herdados da plataforma de referencia, um deles vendendo o livro de terceiro
+ * "Decifre e Influencie Pessoas" na tela do parceiro. A tela de Certificacoes
+ * era 100%% falsa: cada botao "Acessar" so abria um toast dizendo que o acesso
+ * nao estava disponivel, porque curso nenhum daquela lista existia.
+ *
+ * O curso agora e o do Valmer e mora em tabela (`db/schema/cursos.ts`): ele
+ * publica em /admin/cursos e /facilitador/certificacoes le o que foi PUBLICADO,
+ * por `lib/ead.cursosPublicados()`. Mesmo caminho que o EAD ja tinha feito.
+ * Nenhum curso de terceiro volta para este arquivo — saiu a pedido dele em
+ * 23/09/2026.
  */
-const cursosBase: Omit<Curso, 'capa'>[] = [
-  {
-    title: 'Curso de Liderança',
-    desc: 'Treinamento baseado no best-seller Decifre e Influencie Pessoas, para extrair o máximo do seu time.',
-    abbr: 'CL',
-  },
-  {
-    title: 'Manual do Vendedor',
-    desc: 'Método prático para vender mais com base no perfil comportamental do cliente.',
-    abbr: 'MV',
-  },
-  {
-    title: 'Contratação Estratégica',
-    desc: 'Como usar o DISC para contratar as pessoas certas para os cargos certos.',
-    abbr: 'CE',
-  },
-  {
-    title: 'Coach de Carreira',
-    desc: 'Entenda o comportamento do seu coachee e crie novas oportunidades de negócios.',
-    abbr: 'CC',
-  },
-]
-
-export const cursos: Curso[] = cursosBase.map((curso, index) => ({
-  ...curso,
-  capa: CAPAS[index % CAPAS.length]!,
-}))
-
-/** Os três primeiros cursos aparecem resumidos no Painel de Comando. */
-export const cursosDestaque = cursos.slice(0, 3)
 
 export type Mentor = {
   name: string

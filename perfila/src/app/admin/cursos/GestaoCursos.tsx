@@ -91,7 +91,7 @@ export function GestaoCursos({ cursos }: { cursos: CursoComPrograma[] }) {
               {(id) => (
                 <Input
                   id={id}
-                  placeholder="Ex.: Decifre e Influencie Pessoas"
+                  placeholder="Ex.: Formação em Perfil Comportamental"
                   value={titulo}
                   onChange={(evento) => setTitulo(evento.target.value)}
                   required

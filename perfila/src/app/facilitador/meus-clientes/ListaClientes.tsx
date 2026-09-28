@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { Card, CardFooter } from '@/components/ui/Card'
@@ -9,10 +9,20 @@ import { Field, Input } from '@/components/ui/Field'
 import { Icon } from '@/components/ui/Icon'
 import { IconButton } from '@/components/ui/IconButton'
 import { PageHeader } from '@/components/ui/PageHeader'
-import { FilterBar, RowActions, Table, Td, Th, Tr, tableStyles } from '@/components/ui/Table'
+import {
+  FilterBar,
+  RowActions,
+  Table,
+  TableFooter,
+  Td,
+  Th,
+  Tr,
+  tableStyles,
+} from '@/components/ui/Table'
 import { useToast } from '@/components/ui/Toast'
 import { atualizarPelaTela, criarPelaTela, excluirPelaTela } from '@/lib/actions/clientes'
 import ui from '@/styles/common.module.css'
+import { PainelImportarClientes } from './PainelImportarClientes'
 import styles from './page.module.css'
 
 export type ItemCliente = {
@@ -27,9 +37,23 @@ export type ItemCliente = {
 }
 
 /** Qual painel está aberto acima da tabela — nenhum, na maior parte do tempo. */
-type Painel = { modo: 'novo' } | { modo: 'editar' | 'ver'; cliente: ItemCliente }
+type Painel =
+  | { modo: 'novo' }
+  | { modo: 'importar' }
+  | { modo: 'editar' | 'ver'; cliente: ItemCliente }
 
 const FORMULARIO_VAZIO = { nome: '', email: '', celular: '' }
+
+/**
+ * A data que a página formatou em São Paulo (`dd/mm/aaaa`) em `aaaa-mm-dd` — o
+ * formato que `<input type="date">` devolve, para o filtro comparar texto com
+ * texto no MESMO fuso. Remontar `Date` no navegador faria a linha entrar ou
+ * sair do filtro conforme o fuso de quem abre a tela.
+ */
+function paraIso(cadastradoEm: string): string {
+  const [dia, mes, ano] = cadastradoEm.split('/')
+  return ano ? `${ano}-${mes}-${dia}` : ''
+}
 
 /**
  * A lista da carteira. As linhas já vieram do servidor com o recorte por dono
@@ -38,10 +62,11 @@ const FORMULARIO_VAZIO = { nome: '', email: '', celular: '' }
  * Quem decide o que pode ser gravado é a action, não esta tela: ela é a
  * conveniência, e o POST direto na Server Action passa pelas mesmas guardas.
  *
- * Os filtros continuam avisando que ainda não filtram, e Importar também:
- * aviso honesto vale mais que um campo que esconde linha por engano. Exportar
- * baixa de verdade, pela rota /api/exportar/clientes, com a mesma lista que
- * está na tela.
+ * Os filtros filtram no cliente, sobre as linhas que já estão em mãos. Importar
+ * grava de verdade, no painel ao lado, por `actions/importar-clientes.ts` — que
+ * entra pelo mesmo `criar` do formulário. Exportar baixa pela rota
+ * /api/exportar/clientes, com a mesma lista que está na tela, e é o arquivo dela
+ * que a importação aceita de volta.
  * O e-mail não tem como sair daqui — não existe provedor de envio no projeto.
  */
 export function ListaClientes({ itens }: { itens: ItemCliente[] }) {
@@ -51,11 +76,17 @@ export function ListaClientes({ itens }: { itens: ItemCliente[] }) {
   const [erro, setErro] = useState<string | null>(null)
   const [gravando, gravar] = useTransition()
 
+  // Filtros da barra: nome, e-mail e o intervalo de cadastro.
+  const [nome, setNome] = useState('')
+  const [email, setEmail] = useState('')
+  const [de, setDe] = useState('')
+  const [ate, setAte] = useState('')
+
   function abrir(proximo: Painel) {
     setErro(null)
     setPainel(proximo)
     setFormulario(
-      proximo.modo === 'novo'
+      proximo.modo === 'novo' || proximo.modo === 'importar'
         ? FORMULARIO_VAZIO
         : {
             nome: proximo.cliente.nome,
@@ -64,6 +95,34 @@ export function ListaClientes({ itens }: { itens: ItemCliente[] }) {
           },
     )
   }
+
+  function limpar() {
+    setNome('')
+    setEmail('')
+    setDe('')
+    setAte('')
+  }
+
+  const filtrando = nome.trim() !== '' || email.trim() !== '' || de !== '' || ate !== ''
+
+  /**
+   * Filtro no cliente: as linhas já vieram com o recorte por dono no WHERE, e
+   * uma consulta por tecla digitada não melhoraria nada numa carteira deste
+   * tamanho.
+   */
+  const filtrados = useMemo(() => {
+    const porNome = nome.trim().toLowerCase()
+    const porEmail = email.trim().toLowerCase()
+
+    return itens.filter((cliente) => {
+      if (porNome !== '' && !cliente.nome.toLowerCase().includes(porNome)) return false
+      if (porEmail !== '' && !cliente.email.toLowerCase().includes(porEmail)) return false
+      const dia = paraIso(cliente.cadastradoEm)
+      if (de !== '' && dia < de) return false
+      if (ate !== '' && dia > ate) return false
+      return true
+    })
+  }, [itens, nome, email, de, ate])
 
   function salvar(evento: React.FormEvent) {
     evento.preventDefault()
@@ -113,10 +172,7 @@ export function ListaClientes({ itens }: { itens: ItemCliente[] }) {
         subtitle={`${itens.length} ${itens.length === 1 ? 'cliente cadastrado' : 'clientes cadastrados'}`}
         actions={
           <>
-            <Button
-              icon={<Icon name="upload" />}
-              onClick={() => toast('Importação de clientes ainda não disponível', 'aviso')}
-            >
+            <Button icon={<Icon name="upload" />} onClick={() => abrir({ modo: 'importar' })}>
               Importar
             </Button>
             <Button href="/api/exportar/clientes" download icon={<Icon name="download" />}>
@@ -157,7 +213,11 @@ export function ListaClientes({ itens }: { itens: ItemCliente[] }) {
         </Card>
       ) : null}
 
-      {painel && painel.modo !== 'ver' ? (
+      {painel?.modo === 'importar' ? (
+        <PainelImportarClientes fechar={() => setPainel(null)} />
+      ) : null}
+
+      {painel?.modo === 'novo' || painel?.modo === 'editar' ? (
         <Card padding="none">
           <form onSubmit={salvar}>
             <div className={styles.corpo}>
@@ -230,23 +290,58 @@ export function ListaClientes({ itens }: { itens: ItemCliente[] }) {
       <Card padding="none" scrollX>
         <FilterBar>
           <Field label="Nome" className={tableStyles.filterGrow}>
-            {(id) => <Input id={id} placeholder="Nome" />}
+            {(id) => (
+              <Input
+                id={id}
+                placeholder="Nome"
+                value={nome}
+                onChange={(evento) => setNome(evento.target.value)}
+              />
+            )}
           </Field>
           <Field label="E-mail" className={tableStyles.filterGrow}>
-            {(id) => <Input id={id} type="email" placeholder="E-mail" />}
+            {(id) => (
+              // `type="search"`: aqui se digita um PEDAÇO do endereço, e
+              // `type="email"` marcaria "empresa.com" como inválido.
+              <Input
+                id={id}
+                type="search"
+                placeholder="E-mail"
+                value={email}
+                onChange={(evento) => setEmail(evento.target.value)}
+              />
+            )}
           </Field>
+          {/* `type="date"` em vez da máscara `dd/mm/aaaa`: o campo nativo traz
+              calendário e devolve `aaaa-mm-dd`, que é o que o filtro compara. O
+              `min`/`max` cruzado impede o intervalo invertido, que esconderia a
+              carteira inteira sem dizer por quê. */}
           <Field label="Data inicial" className={tableStyles.filterDate}>
-            {(id) => <Input id={id} placeholder="dd/mm/aaaa" inputMode="numeric" />}
+            {(id) => (
+              <Input
+                id={id}
+                type="date"
+                value={de}
+                max={ate || undefined}
+                onChange={(evento) => setDe(evento.target.value)}
+              />
+            )}
           </Field>
           <Field label="Data final" className={tableStyles.filterDate}>
-            {(id) => <Input id={id} placeholder="dd/mm/aaaa" inputMode="numeric" />}
+            {(id) => (
+              <Input
+                id={id}
+                type="date"
+                value={ate}
+                min={de || undefined}
+                onChange={(evento) => setAte(evento.target.value)}
+              />
+            )}
           </Field>
-          <Button
-            variant="dark"
-            size="lg"
-            onClick={() => toast('Busca de clientes ainda não disponível', 'aviso')}
-          >
-            Pesquisar
+          {/* A lista filtra a cada tecla — não sobrou nada para um "Pesquisar"
+              fazer depois disso. Este botão devolve os campos. */}
+          <Button variant="dark" size="lg" onClick={limpar} disabled={!filtrando}>
+            Limpar
           </Button>
         </FilterBar>
 
@@ -264,6 +359,18 @@ export function ListaClientes({ itens }: { itens: ItemCliente[] }) {
               Adicionar cliente
             </Button>
           </EmptyState>
+        ) : filtrados.length === 0 ? (
+          /* Mensagem diferente da carteira vazia de propósito: sem ela, quem
+             chega não sabe se o filtro escondeu tudo ou se perdeu os dados. */
+          <EmptyState>
+            <p>
+              Nenhum cliente corresponde ao filtro.{' '}
+              {itens.length === 1
+                ? 'Seu único cliente continua aqui.'
+                : `Seus ${itens.length} clientes continuam aqui.`}
+            </p>
+            <Button onClick={limpar}>Limpar filtros</Button>
+          </EmptyState>
         ) : (
           <Table>
             <thead>
@@ -277,7 +384,7 @@ export function ListaClientes({ itens }: { itens: ItemCliente[] }) {
               </tr>
             </thead>
             <tbody role="rowgroup">
-              {itens.map((cliente) => (
+              {filtrados.map((cliente) => (
                 <Tr key={cliente.id}>
                   <Td dense>
                     <div className={ui.pessoa}>
@@ -332,6 +439,14 @@ export function ListaClientes({ itens }: { itens: ItemCliente[] }) {
             </tbody>
           </Table>
         )}
+
+        {/* Contagem em região viva: o filtro muda o número de linhas longe do
+            foco, e sem isso um leitor de tela não saberia. */}
+        <TableFooter>
+          {filtrados.length === itens.length
+            ? `Total: ${itens.length}`
+            : `${filtrados.length} de ${itens.length}`}
+        </TableFooter>
       </Card>
     </>
   )

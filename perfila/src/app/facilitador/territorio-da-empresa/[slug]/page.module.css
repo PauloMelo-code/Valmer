@@ -39,6 +39,46 @@
   color: var(--color-text-subtle);
 }
 
+/* Rolagem horizontal só da tabela, e não do card inteiro: o card agora também
+   tem o painel de escolher inventário, e rolar o conjunto levaria o campo de
+   busca para fora da tela junto com as colunas. */
+.rolagem {
+  overflow-x: auto;
+}
+
+/* ---------- Painel de adicionar inventário ---------- */
+.escolha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  padding: var(--space-16) var(--space-24);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-sunken);
+}
+
+.escolhaLista {
+  max-height: 320px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.escolhaLinha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  padding: var(--space-8) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.escolhaLinha:last-child {
+  border-bottom: none;
+}
+
 /* ---------- Chips D · I · S · C ---------- */
 .chips {
   display: flex;

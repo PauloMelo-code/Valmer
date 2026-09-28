@@ -13,7 +13,6 @@
  */
 
 import type { IconName } from '@/components/ui/Icon'
-import { dnas } from '@/data/dna'
 
 export type NavItem = {
   href: string
@@ -199,12 +198,11 @@ export function resolveBreadcrumb(
   const staticSub = STATIC_SUBS[pathname]
   if (staticSub) return { title, sub: staticSub }
 
-  // Território da Empresa aberto: o terceiro nível é o nome da empresa.
-  const prefixoDna = `${BASE_FACILITADOR}/territorio-da-empresa/`
-  if (pathname.startsWith(prefixoDna)) {
-    const dna = dnas.find((item) => item.slug === pathname.slice(prefixoDna.length))
-    if (dna) return { title, sub: dna.name }
-  }
-
+  // O território aberto NÃO tem terceiro nível: o nome da empresa é linha do
+  // banco, de cada parceiro, e `resolveBreadcrumb` é síncrona e roda no
+  // cliente. Aqui ela lia a lista fixa de `data/dna.ts` — quatro empresas de
+  // protótipo — e portanto acertava o nome só para elas; para qualquer
+  // território cadastrado de verdade a trilha já caía neste mesmo `return`.
+  // A própria tela mostra o nome no título, em letra grande.
   return { title }
 }

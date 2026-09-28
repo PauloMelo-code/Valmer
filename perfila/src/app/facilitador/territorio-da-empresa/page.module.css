@@ -17,3 +17,9 @@
 .inventarios {
   font-weight: var(--fw-semibold);
 }
+
+/* Corpo do formulário de edição, que abre em cima da lista. O respiro vem do
+   token, como no card de criação das outras telas, e não de um número solto. */
+.formulario {
+  padding: var(--space-24);
+}

@@ -29,6 +29,15 @@ const permissoes: Record<string, Papel[]> = {
   "cargos:ler": ["admin", "facilitador"],
   "cargos:atualizar": ["admin", "facilitador"],
   "cargos:deletar": ["admin", "facilitador"],
+  // Territorio da Empresa: o perfil coletivo de uma empresa, montado sobre os
+  // mapas do proprio parceiro. Vincular e desvincular inventario entram em
+  // `territorios:atualizar` — o vinculo e o conteudo do territorio, e nao um
+  // recurso a parte; chave propria para ele criaria dois conjuntos que podem
+  // divergir para a mesma pergunta ("quem pode montar este territorio?").
+  "territorios:criar": ["admin", "facilitador"],
+  "territorios:ler": ["admin", "facilitador"],
+  "territorios:atualizar": ["admin", "facilitador"],
+  "territorios:deletar": ["admin", "facilitador"],
   "devolutivas:criar": ["admin", "facilitador"],
   "devolutivas:ler": ["admin", "facilitador"],
   "devolutivas:atualizar": ["admin", "facilitador"],

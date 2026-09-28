@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -13,6 +13,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { Select } from '@/components/ui/Select'
 import { useToast } from '@/components/ui/Toast'
 import { criarLotePelaTela } from '@/lib/actions/envio-lote'
+import { COLUNAS_ESPERADAS, lerDestinatarios } from '@/lib/importar-destinatarios'
 import { opcoes } from '@/data/opcoes'
 import type { CodigoRelatorio } from '@/data/planos'
 import ui from '@/styles/common.module.css'
@@ -31,6 +32,18 @@ export type TurmaDestino = {
 }
 
 type Destinatario = { avaliado_nome: string; avaliado_email: string }
+
+/**
+ * Teto do lote, o MESMO do `envioLoteSchema` (`validators/envio-lote.ts`), que
+ * é quem manda: ele existe porque o lote inteiro nasce num COMMIT só. Repetido
+ * aqui para a planilha de 300 linhas ser cortada na importação, com aviso, em
+ * vez de encher a lista e só ser recusada no clique de gerar — de lá, quem
+ * importou teria de tirar 250 pessoas da tela uma por uma.
+ */
+const LIMITE_DO_LOTE = 50
+
+/** Teto do arquivo. 50 linhas de nome e e-mail não passam de alguns KB. */
+const TAMANHO_MAXIMO = 500_000
 
 /**
  * O formulário do envio expresso.
@@ -63,6 +76,8 @@ export function FormEnvioRapido({
   const [lista, setLista] = useState<Destinatario[]>([])
   const [erro, setErro] = useState<string | null>(null)
   const [enviando, iniciarEnvio] = useTransition()
+  /** O `input type="file"` fica escondido: quem abre o seletor é o botão. */
+  const seletorDeArquivo = useRef<HTMLInputElement>(null)
 
   const custoTotal = (turma?.custo ?? 0) * lista.length
   const cabeNoSaldo = custoTotal <= saldo
@@ -88,6 +103,77 @@ export function FormEnvioRapido({
 
   function remover(indice: number) {
     setLista((atual) => atual.filter((_, posicao) => posicao !== indice))
+  }
+
+  /**
+   * A planilha só PREENCHE a lista — nada é gravado aqui. Quem grava continua
+   * sendo o botão de gerar, com o mesmo tudo-ou-nada, e por isso importar 40
+   * linhas não gasta crédito nenhum.
+   *
+   * O que não serve fica de fora e é DITO, linha por linha: uma importação que
+   * engole o endereço errado calado entrega o passaporte para o vazio e queima
+   * o crédito de quem enviou.
+   */
+  async function importar(evento: React.ChangeEvent<HTMLInputElement>) {
+    const arquivo = evento.target.files?.[0]
+    // Zera o campo antes de qualquer saída: sem isso, escolher o MESMO arquivo
+    // de novo (depois de corrigi-lo no Excel) não dispara `change`.
+    evento.target.value = ''
+    if (!arquivo) return
+
+    setErro(null)
+
+    if (/\.xlsx?$/i.test(arquivo.name)) {
+      setErro(
+        'Arquivo .xls/.xlsx não é lido aqui. No Excel, use Arquivo → Salvar como → CSV UTF-8 e importe o .csv.',
+      )
+      return
+    }
+
+    if (arquivo.size > TAMANHO_MAXIMO) {
+      setErro(`O arquivo passa de ${TAMANHO_MAXIMO / 1000} KB — não parece uma lista de envio.`)
+      return
+    }
+
+    const leitura = lerDestinatarios(await arquivo.text())
+    if (!leitura.ok) {
+      setErro(leitura.erro)
+      return
+    }
+
+    const recusas = [...leitura.recusas]
+
+    // Quem já está na lista não entra duas vezes: o mesmo e-mail repetido na
+    // turma faz a action recusar o lote INTEIRO.
+    const novos = leitura.aceitos.filter((lido) => {
+      if (!lista.some((item) => item.avaliado_email === lido.avaliado_email)) return true
+      recusas.push(`${lido.avaliado_email} já está na lista deste envio.`)
+      return false
+    })
+
+    const espaco = Math.max(LIMITE_DO_LOTE - lista.length, 0)
+    const cabem = novos.slice(0, espaco)
+    if (novos.length > cabem.length) {
+      recusas.push(
+        `${novos.length - cabem.length} linha(s) além do limite de ${LIMITE_DO_LOTE} por lote: gere estes e importe o resto numa segunda leva.`,
+      )
+    }
+
+    if (cabem.length > 0) setLista((atual) => [...atual, ...cabem])
+
+    if (recusas.length > 0) {
+      setErro(
+        `${cabem.length} destinatário(s) importado(s). Ficaram de fora: ${recusas.join(' · ')}`,
+      )
+      return
+    }
+
+    if (cabem.length === 0) {
+      setErro(`Nenhuma linha de destinatário no arquivo. ${COLUNAS_ESPERADAS}`)
+      return
+    }
+
+    toast(`${cabem.length} destinatário(s) importado(s) da planilha.`)
   }
 
   function enviar() {
@@ -182,9 +268,13 @@ export function FormEnvioRapido({
               <span className={ui.calloutIcon}>
                 <Icon name="info" />
               </span>
+              {/* .xlsx saiu da frase: ler xlsx exigiria dependência nova, e a
+                  importação abaixo lê CSV. Prometer os dois formatos fazia a
+                  pessoa escolher a planilha do Excel e não entender a recusa. */}
               <span>
-                Importe um arquivo <b>.csv</b> ou <b>.xlsx</b> com as colunas <b>email</b> e{' '}
-                <b>nome</b>, ou adicione destinatários um a um abaixo.
+                Importe um arquivo <b>.csv</b> com as colunas <b>nome</b> e <b>email</b> na
+                primeira linha (no Excel: Salvar como → CSV UTF-8), ou adicione destinatários um
+                a um abaixo.
               </span>
             </div>
 
@@ -227,10 +317,20 @@ export function FormEnvioRapido({
                 </Button>
                 <Button
                   icon={<Icon name="upload" />}
-                  onClick={() => toast('Importação de planilha ainda não disponível', 'aviso')}
+                  onClick={() => seletorDeArquivo.current?.click()}
                 >
                   Importar planilha
                 </Button>
+                {/* Fora da vista, e não removido: é ele que abre o seletor do
+                    sistema. `hidden` em vez de display:none pelo CSS para não
+                    precisar de classe nova numa folha compartilhada. */}
+                <input
+                  ref={seletorDeArquivo}
+                  type="file"
+                  accept=".csv,text/csv,text/plain"
+                  hidden
+                  onChange={importar}
+                />
               </div>
             </form>
 

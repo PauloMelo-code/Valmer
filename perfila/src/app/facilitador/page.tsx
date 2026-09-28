@@ -6,9 +6,11 @@ import { AutoGrid, Row, Stack } from '@/components/ui/Layout'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Pill } from '@/components/ui/Pill'
 import { Progress } from '@/components/ui/Progress'
-import { cursosDestaque } from '@/data/aprendizado'
+import { capaDoCurso } from '@/data/aprendizado'
 
 import { dataPorExtenso, saudacao } from '@/lib/data-extenso'
+import { cursosPublicados } from '@/lib/ead'
+import { initials } from '@/lib/text'
 import {
   contaAtual,
   degustacaoDaConta,
@@ -35,13 +37,19 @@ import styles from './page.module.css'
  */
 export default async function DashboardPage() {
   const agora = new Date()
-  const [conta, extrato, programa, amostras, resumo] = await Promise.all([
+  const [conta, extrato, programa, amostras, resumo, certificacoes] = await Promise.all([
     contaAtual(),
     transacoesDaConta(),
     progressoDoPrograma(),
     degustacaoDaConta(),
     resumoDaOperacao(),
+    cursosPublicados(),
   ])
+
+  // Tres, e a lista inteira quando ela tem menos: o bloco do painel e resumo, e
+  // quem quer todos tem o 'Ver todos' do lado. Antes eram tres titulos fixos de
+  // cursos de terceiro que nao existiam em lugar nenhum.
+  const destaque = certificacoes.slice(0, 3)
 
   const recebidos = extrato
     .filter((movimento) => movimento.quantidade > 0)
@@ -269,19 +277,33 @@ export default async function DashboardPage() {
               Ver todos
             </Button>
           </div>
-          <Stack gap={10}>
-            {cursosDestaque.map((curso) => (
-              <Link href="/facilitador/certificacoes" key={curso.title} className={styles.cursoItem}>
-                <span className={styles.cursoCapa} style={{ background: curso.capa }}>
-                  {curso.abbr}
-                </span>
-                <span className={styles.cursoTexto}>
-                  <span className={styles.cursoTitulo}>{curso.title}</span>
-                  <span className={styles.cursoDesc}>{curso.desc}</span>
-                </span>
-              </Link>
-            ))}
-          </Stack>
+          {destaque.length === 0 ? (
+            <div className={ui.note}>
+              Nenhuma certificação publicada ainda.
+            </div>
+          ) : (
+            <Stack gap={10}>
+              {destaque.map((curso, indice) => (
+                <Link
+                  href="/facilitador/certificacoes"
+                  key={curso.id}
+                  className={styles.cursoItem}
+                >
+                  {/* A sigla da capa sai do titulo pelo mesmo `initials` do
+                      avatar: pedir uma abreviacao ao Valmer a cada curso
+                      publicado seria um campo de formulario para dois
+                      caracteres. */}
+                  <span className={styles.cursoCapa} style={{ background: capaDoCurso(indice) }}>
+                    {initials(curso.titulo)}
+                  </span>
+                  <span className={styles.cursoTexto}>
+                    <span className={styles.cursoTitulo}>{curso.titulo}</span>
+                    <span className={styles.cursoDesc}>{curso.descricao}</span>
+                  </span>
+                </Link>
+              ))}
+            </Stack>
+          )}
         </Card>
       </AutoGrid>
     </>
