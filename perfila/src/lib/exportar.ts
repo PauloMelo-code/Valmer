@@ -20,7 +20,6 @@ import { ORDEM_FATORES, questoes } from "@/data/assessment";
 import { ROTULO_SITUACAO, ROTULO_TIPO } from "@/data/facilitadores";
 import { listar as listarClientes } from "@/lib/actions/clientes";
 import { listar as listarTurmas } from "@/lib/actions/turmas";
-import { resultadoDeContadores } from "@/lib/disc";
 import {
   assessmentsDaTurma,
   assessmentsVisiveis,
@@ -283,10 +282,11 @@ export const EXPORTACOES: Record<string, Exportacao> = {
           item.avaliadoEmail,
           item.tipoRelatorio,
           ROTULO_SITUACAO[item.situacao],
-          // O perfil e DERIVADO dos contadores, pelo mesmo helper da tela.
-          // Quem ainda nao respondeu nao tem contador, e a celula fica vazia
-          // em vez de exibir um "DI" que nao veio de resposta nenhuma.
-          item.contadores ? resultadoDeContadores(item.contadores).combinado : "",
+          // O perfil sai de `lib/perfil-do-mapa.ts`, pela mesma leitura da
+          // tela, em qualquer versao do inventario. Quem ainda nao respondeu
+          // nao tem perfil, e a celula fica vazia em vez de exibir um "DI"
+          // que nao veio de resposta nenhuma.
+          item.perfil?.sigla ?? "",
           item.creditosUsados,
           item.criadoEm,
           item.expiraEm,

@@ -2,8 +2,10 @@ import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Icon } from '@/components/ui/Icon'
 import { carregarAvaliacao } from '@/lib/actions/avaliacao'
+import { estadoDaAplicacao } from '@/lib/inventario/aplicacao'
 import ui from '@/styles/common.module.css'
 import { Assessment } from './Assessment'
+import { InventarioMC } from './mc/InventarioMC'
 
 const DATA_BR = new Intl.DateTimeFormat('pt-BR', {
   timeZone: 'America/Sao_Paulo',
@@ -50,6 +52,15 @@ export default async function AvaliacaoPage({ params }: { params: Promise<{ toke
         </div>
       </Card>
     )
+  }
+
+  // O corte entre os dois instrumentos (ADR-0007, D3), num lugar so. Um mapa
+  // LEGADO recebe a recusa 'legado' e segue no fluxo de sempre; qualquer
+  // outra resposta e do inventario novo, que sabe mostrar as proprias
+  // recusas. Esta chamada sorteia a semente no primeiro acesso.
+  const inventario = await estadoDaAplicacao(token)
+  if (inventario.ok || inventario.erro !== 'legado') {
+    return <InventarioMC token={token} inicial={inventario} />
   }
 
   return <Assessment token={token} nome={avaliacao.nome} respostasIniciais={avaliacao.respostas} />

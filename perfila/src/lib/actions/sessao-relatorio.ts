@@ -53,8 +53,10 @@ export async function tokenDoRelatorioDaSessao(id: unknown): Promise<string | nu
         eq(devolutivas.id, validado.data),
         eq(devolutivas.is_deleted, false),
         eq(assessments.is_deleted, false),
-        // Sem conclusao nao ha contadores, e `carregarRelatorio` devolveria
-        // null: a aba abriria num 404 em vez de num documento.
+        // Sem conclusao nao ha resultado — contadores no legado, linha de
+        // `assessments_resultados` no MC-INV 2.2 — e a rota do relatorio, que
+        // desvia pela versao do mapa, abriria num 404 em vez de num documento.
+        // O token e o mesmo nas duas versoes, entao nada mais muda aqui.
         eq(assessments.situacao, "concluido"),
         sessao.papel === "admin" ? undefined : eq(devolutivas.facilitador_id, sessao.userId),
       ),

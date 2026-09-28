@@ -7,10 +7,26 @@ import { Pill } from '@/components/ui/Pill'
 import { RowActions, Table, Td, Th, Tr, tableStyles } from '@/components/ui/Table'
 import { useToast } from '@/components/ui/Toast'
 import { gerarPelaTela } from '@/lib/actions/relatorio'
+import { gerarRelatorioMCPelaTela } from '@/lib/actions/relatorio-mc'
 import { copiarTexto } from '@/lib/copiar'
-import { resultadoDeContadores } from '@/lib/disc'
+import type { AssessmentDoPortal } from '@/lib/painel'
 import { ROTULO_SITUACAO, type Assessment, type SituacaoAssessment } from '@/data/facilitadores'
 import styles from './TabelaAssessments.module.css'
+
+/**
+ * O que a tabela le. `versao` e `perfil` vem de `lib/painel.ts`; sao opcionais
+ * porque as listas que embrulham esta tabela tipam os itens como `Assessment`
+ * e so repassam o objeto — os campos chegam aqui do mesmo jeito. Sem `versao`,
+ * o mapa e tratado como LEGADO, que e o que ele era antes da versao existir.
+ */
+type ItemDaTabela = Assessment & Partial<Pick<AssessmentDoPortal, 'versao' | 'perfil'>>
+
+function eLegado(assessment: ItemDaTabela): boolean {
+  return (assessment.versao ?? 'LEGADO') === 'LEGADO'
+}
+
+/** Secao 6 do AGENTE: o facilitador ve "Confiabilidade da aplicacao: alta, media ou baixa". */
+const ROTULO_CONFIABILIDADE = { alta: 'alta', media: 'média', baixa: 'baixa' } as const
 
 const TOM: Record<SituacaoAssessment, 'success' | 'warning' | 'neutral'> = {
   concluido: 'success',
@@ -29,8 +45,12 @@ const TOM: Record<SituacaoAssessment, 'success' | 'warning' | 'neutral'> = {
  *
  * Depois do sucesso a lista e recarregada, e a linha passa a mostrar ver e
  * baixar — os dois botoes que ja funcionavam.
+ *
+ * Cada inventario tem o seu gerador: o legado escreve o texto do relatorio
+ * antigo, o MC-INV 2.2 escreve a narrativa das 42 paginas (ADR-0007, D3). As
+ * duas actions devolvem o mesmo `{ ok, erro }`, entao o botao e um so.
  */
-function BotaoGerarRelatorio({ assessment }: { assessment: Assessment }) {
+function BotaoGerarRelatorio({ assessment }: { assessment: ItemDaTabela }) {
   const { toast } = useToast()
   const router = useRouter()
   const [gerando, setGerando] = useState(false)
@@ -41,7 +61,9 @@ function BotaoGerarRelatorio({ assessment }: { assessment: Assessment }) {
     toast(`Gerando o relatório de ${assessment.avaliadoNome}. Isso leva alguns minutos.`)
 
     try {
-      const resposta = await gerarPelaTela(assessment.token)
+      const resposta = eLegado(assessment)
+        ? await gerarPelaTela(assessment.token)
+        : await gerarRelatorioMCPelaTela(assessment.token)
 
       if (resposta.ok) {
         toast(`Relatório de ${assessment.avaliadoNome} pronto.`)
@@ -85,7 +107,7 @@ export function TabelaAssessments({
   mostrarFacilitador = false,
   empresas = {},
 }: {
-  itens: Assessment[]
+  itens: ItemDaTabela[]
   mostrarFacilitador?: boolean
   /**
    * Nome de exibição por id de facilitador. Vem pronto de quem renderiza:
@@ -103,7 +125,7 @@ export function TabelaAssessments({
    * de `window` no momento do clique, e não de uma variável de ambiente, para
    * o link sair com o domínio pelo qual a pessoa entrou.
    */
-  async function copiarLink(assessment: Assessment) {
+  async function copiarLink(assessment: ItemDaTabela) {
     const url = `${window.location.origin}/avaliacao/${assessment.token}`
 
     // Contexto inseguro, permissão negada e o aviso de "não deu, copie à
@@ -151,13 +173,16 @@ export function TabelaAssessments({
               <Pill tone={TOM[assessment.situacao]} dot>
                 {ROTULO_SITUACAO[assessment.situacao]}
               </Pill>
-              {/* O perfil é DERIVADO dos contadores, e não lido de um
-                  campo guardado. O relatório deriva do mesmo lugar, então
-                  os dois não têm como divergir. Guardar o resultado pronto
-                  aqui criava duas fontes para o mesmo número. */}
-              {assessment.contadores ? (
+              {/* O perfil vem de `lib/perfil-do-mapa.ts`, a mesma leitura do
+                  CSV e do território: contadores no legado, resultado do
+                  motor no MC-INV 2.2. É sempre o DISC natural. */}
+              {assessment.perfil ? (
+                <div className={tableStyles.secondary}>Perfil {assessment.perfil.sigla}</div>
+              ) : null}
+              {assessment.perfil?.confiabilidade ? (
                 <div className={tableStyles.secondary}>
-                  Perfil {resultadoDeContadores(assessment.contadores).combinado}
+                  Confiabilidade da aplicação:{' '}
+                  {ROTULO_CONFIABILIDADE[assessment.perfil.confiabilidade]}
                 </div>
               ) : null}
             </Td>

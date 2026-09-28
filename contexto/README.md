@@ -12,6 +12,16 @@ trabalho não dependa do histórico de uma conversa.
 | `relatorio-atual-cis-assessment.pdf` | O relatório de 56 páginas que a plataforma antiga gera hoje. Serve para saber o que existe e o que foi deliberadamente cortado. |
 | `relatorio-modelo-febracis.pdf` | O relatório da Febracis, usado pelo cliente como referência de layout. |
 
+### `referencias/mc-inv-2.2/` e `referencias/mc-3.1/` (28/09/2026)
+
+O pacote do Valmer que definiu o inventario MC-INV 2.2 e o relatorio MC 3.1 —
+ver `docs/adr/0007-inventario-mc-inv-2-2-e-relatorio-mc-3-1.md`. Em
+`mc-inv-2.2/`, a fonte da verdade das contas e `motor_referencia.py`.
+
+`mc-3.1/` existe so na maquina de quem desenvolve: e o relatorio comportamental
+real do Valmer (dado pessoal sensivel) e fica fora do git de proposito. Quem
+precisar dele pede ao Paulo; nao o recoloque no repositorio.
+
 ## `extraido/`
 
 Os mesmos três documentos em texto puro. Existem porque ferramentas e agentes

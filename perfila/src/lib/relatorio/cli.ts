@@ -12,6 +12,9 @@
  *   --forcar              refaz mesmo que a narrativa e o PDF ja existam
  *   --falhas <caminho>    grava os tokens que falharam, um por linha
  *
+ * Token de mapa MC-INV 2.2 gera a narrativa do relatorio MC 3.1 e o PDF dele
+ * (42 folhas A4 sangradas); o legado segue como antes.
+ *
  * Existe porque a geracao custa dinheiro e ainda nao tem dono na interface:
  * quem dispara e um operador com acesso ao banco e a chave, nao um clique
  * anonimo. Ver o cabecalho de persistir.ts.
@@ -31,7 +34,51 @@ const MOTIVO: Record<string, string> = {
   invalido: "token nao encontrado",
   nao_concluido: "o assessment ainda nao foi concluido",
   sem_contadores: "o assessment esta concluido mas sem os contadores",
+  sem_resultado: "o mapa MC esta concluido mas sem resultado do motor",
+  em_geracao: "outro processo esta escrevendo esta narrativa agora",
 };
+
+/**
+ * Narrativa do relatorio MC 3.1 pelo token, no mesmo formato de desfecho do
+ * legado. Devolve null quando o token nao e de um mapa MC-INV 2.2 vivo.
+ *
+ * O CLI traz a propria autorizacao (quem roda tem o banco e a chave), como
+ * no legado. `gerarNarrativaMC` nao chama a API quando ja ha texto gravado,
+ * entao a retomada do lote vale igual; `--forcar` reescreve, respeitando o
+ * arrendamento. Importado aqui dentro pelo mesmo motivo do `persistir`.
+ */
+async function caminhoMC() {
+  const { db } = await import("@/lib/db");
+  const { assessments } = await import("@/lib/db/schema");
+  const { VERSAO_INSTRUMENTO } = await import("@/data/inventario-mc");
+  const { gerarNarrativaMC } = await import("@/lib/relatorio-mc/narrativa");
+  const { and, eq } = await import("drizzle-orm");
+
+  type Desfecho = { ok: true; reaproveitada: boolean; versao: string } | { ok: false; erro: string };
+
+  async function narrativaMCDoToken(token: string, forcar: boolean): Promise<Desfecho | null> {
+    const [mapa] = await db
+      .select({ id: assessments.id, situacao: assessments.situacao })
+      .from(assessments)
+      .where(
+        and(
+          eq(assessments.token, token),
+          eq(assessments.is_deleted, false),
+          eq(assessments.versao_instrumento, VERSAO_INSTRUMENTO),
+        ),
+      )
+      .limit(1);
+    if (!mapa) return null;
+    if (mapa.situacao !== "concluido") return { ok: false, erro: "nao_concluido" };
+
+    const gravada = await gerarNarrativaMC(mapa.id, { forcar });
+    if (!gravada.ok) return gravada;
+    const avisos = gravada.avisos.length ? `, ${gravada.avisos.length} aviso(s)` : "";
+    return { ok: true, reaproveitada: gravada.reaproveitada, versao: `MC 3.1${avisos}` };
+  }
+
+  return { narrativaMCDoToken };
+}
 
 const USO = `Uso: npm run relatorio:gerar -- <token>... [--arquivo lista.txt] [--pdf pasta]
              [--url http://localhost:3000] [--concorrencia 4] [--forcar] [--falhas falhas.txt]`;
@@ -105,6 +152,7 @@ async function main(): Promise<void> {
   // e avaliado, e um import estatico correria antes do config() acima.
   const { gerarESalvar } = await import("./persistir");
   const { emLote, tokensDoTexto, mensagemDoErro } = await import("./lote");
+  const { narrativaMCDoToken } = await caminhoMC();
 
   const doArquivo = opcoes.arquivo ? tokensDoTexto(readFileSync(opcoes.arquivo, "utf8")) : [];
   const tokens = [...new Set([...opcoes.tokens, ...doArquivo])];
@@ -139,7 +187,10 @@ async function main(): Promise<void> {
   try {
     const resultados = await emLote(tokens, opcoes.concorrencia, async (token) => {
       try {
-        const gravada = await gerarESalvar(token, { forcar: opcoes.forcar });
+        // Mapa MC-INV 2.2 tem outra narrativa, em outra tabela (ADR-0007 D3);
+        // null = mapa legado, que segue exatamente o caminho de antes.
+        const mc = await narrativaMCDoToken(token, opcoes.forcar);
+        const gravada = mc ?? (await gerarESalvar(token, { forcar: opcoes.forcar }));
         if (!gravada.ok) throw new Error(MOTIVO[gravada.erro] ?? gravada.erro);
 
         let notaPdf = "";
@@ -161,7 +212,9 @@ async function main(): Promise<void> {
         }
 
         const nota = gravada.reaproveitada ? "narrativa reaproveitada" : "narrativa gerada";
-        const desfecho = `${nota} (v${gravada.versao})${notaPdf}`;
+        // Legado: numero da versao gravada; MC: a coluna guarda so a atual.
+        const versao = typeof gravada.versao === "number" ? `v${gravada.versao}` : gravada.versao;
+        const desfecho = `${nota} (${versao})${notaPdf}`;
         progresso(token, desfecho);
         return desfecho;
       } catch (erro) {

@@ -31,6 +31,7 @@ import {
   perfilDoTerritorio,
   type PerfilDoTerritorio,
 } from "@/lib/territorios";
+import { perfisDosMapas } from "@/lib/perfil-do-mapa";
 import { paraTela, RecusaDeRegra } from "./recusa";
 
 const TABELA = "territorios";
@@ -125,7 +126,9 @@ export async function obterPorSlug(slug: string) {
  * O territorio pelo slug com as medias e os respondentes — o que a tela de
  * detalhe mostra, numa chamada.
  *
- * As medias saem dos contadores dos mapas vinculados, via `lib/territorios.ts`.
+ * As medias saem do perfil de cada mapa vinculado (`lib/perfil-do-mapa.ts`:
+ * contadores no legado, resultado do motor no MC-INV 2.2), via
+ * `lib/territorios.ts`, que tambem documenta a escala.
  * Nao existe coluna de media, e nao vai existir: ela mudaria a cada mapa
  * respondido e a cada vinculo, e a versao gravada passaria a discordar da lista
  * de respondentes logo embaixo dela, na mesma tela.
@@ -144,6 +147,7 @@ export async function detalhe(slug: string): Promise<
       assessment_id: assessments.id,
       avaliado_nome: assessments.avaliado_nome,
       avaliado_email: assessments.avaliado_email,
+      versao_instrumento: assessments.versao_instrumento,
       contador_d: assessments.contador_d,
       contador_i: assessments.contador_i,
       contador_s: assessments.contador_s,
@@ -161,7 +165,16 @@ export async function detalhe(slug: string): Promise<
     )
     .orderBy(desc(assessments.concluido_em));
 
-  return { territorio, ...perfilDoTerritorio(vinculados) };
+  const perfis = await perfisDosMapas(
+    vinculados.map((mapa) => ({ ...mapa, id: mapa.assessment_id })),
+  );
+
+  return {
+    territorio,
+    ...perfilDoTerritorio(
+      vinculados.map((mapa) => ({ ...mapa, perfil: perfis.get(mapa.assessment_id) ?? null })),
+    ),
+  };
 }
 
 /**

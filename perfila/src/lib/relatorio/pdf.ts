@@ -10,7 +10,7 @@
  * cada chamada sobe um Chrome, e a rota do relatorio e publica.
  */
 import { renameSync, rmSync } from "node:fs";
-import puppeteer, { type Browser } from "puppeteer";
+import puppeteer, { type Browser, type Page } from "puppeteer";
 
 /**
  * Espelha o `@page { size: A4; margin: 20mm }` de page.module.css.
@@ -23,6 +23,44 @@ import puppeteer, { type Browser } from "puppeteer";
 const MARGEM = "20mm";
 
 const MARGENS = { top: MARGEM, right: MARGEM, bottom: MARGEM, left: MARGEM };
+
+/**
+ * Relatorio MC 3.1 (mapa MC-INV 2.2): o molde e sangrado, cada `.page` ja mede
+ * a A4 inteira e declara `@page mc31 { margin: 0 }`. A margem aqui repete o CSS
+ * pelo mesmo motivo de MARGEM acima.
+ */
+const SEM_MARGEM = { top: "0", right: "0", bottom: "0", left: "0" };
+
+/**
+ * Prepara a folha do relatorio MC 3.1 para imprimir. Devolve false quando a
+ * pagina nao e do MC (o legado segue como sempre foi).
+ *
+ * A deteccao e pelo proprio DOM, e nao por consulta ao banco: a rota
+ * `/relatorio/<token>` ja decide a versao (ADR-0007 D3), e o PDF so imprime o
+ * que ela desenhou. Serve igual para o modelo do admin.
+ *
+ * Espera as fontes e o `data-ajuste="pronto"` que `ajustarPaginas` grava ao
+ * terminar: o ajuste mede o texto, e imprimir antes dele (ou com a fonte
+ * reserva) corta paragrafo da IA no `overflow: hidden` da folha.
+ *
+ * Depois deixa so o `.mc31` no body. A barra de acoes, a casca do admin e
+ * qualquer caixa com rolagem em volta nao entram no documento, e o Chrome nao
+ * pagina o conteudo de uma caixa com `overflow` (o modelo do admin mora numa):
+ * sem isto o PDF sairia com uma folha so.
+ */
+async function prepararMC(pagina: Page): Promise<boolean> {
+  if (!(await pagina.$(".mc31"))) return false;
+  await pagina.evaluate(() => document.fonts.ready.then(() => undefined));
+  await pagina.waitForSelector('.mc31[data-ajuste="pronto"]', { timeout: 60_000 });
+  await pagina.evaluate(() => {
+    const raiz = document.querySelector(".mc31")!;
+    document.body.replaceChildren(raiz);
+    for (const el of [document.documentElement, document.body]) {
+      el.style.cssText = "margin:0;padding:0;background:none;height:auto;min-height:0;overflow:visible;display:block";
+    }
+  });
+  return true;
+}
 
 /**
  * Um navegador para o lote inteiro, e nao um por relatorio: subir o Chrome leva
@@ -63,10 +101,12 @@ export async function salvarPdf(navegador: Browser, url: string, destino: string
       throw new Error(`HTTP ${resposta?.status() ?? "sem resposta"} em ${url}`);
     }
 
+    const mc = await prepararMC(pagina);
+
     await pagina.pdf({
       path: parcial,
       format: "A4",
-      margin: MARGENS,
+      margin: mc ? SEM_MARGEM : MARGENS,
       // A capa e os destaques do relatorio sao area preenchida. Sem isto o
       // Chrome descarta todo fundo e o documento sai em branco e preto.
       printBackground: true,

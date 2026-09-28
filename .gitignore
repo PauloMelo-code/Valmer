@@ -1,0 +1,16 @@
+
+# scripts python de contexto/ e scripts/motor
+__pycache__/
+# quarentena do scripts/limpar-lixo-raiz.mjs
+.lixo-quarentena/
+
+# Relatorio comportamental REAL do Valmer, usado como molde visual das 42
+# paginas. Perfil comportamental de pessoa identificada e dado pessoal sensivel
+# (LGPD): fica so na maquina de quem desenvolve, nunca no repositorio. As paginas
+# ja viraram componentes em perfila/src/components/relatorio-mc/; para
+# regenerar as pagNN.html localmente: contexto/extraido/mc-3.1-paginas/extrair.py.
+# Ver ADR-0007.
+contexto/referencias/mc-3.1/Mapa_Comportamental_MC_3_1_v3_Valmer_Albuquerque.pdf
+contexto/referencias/mc-3.1/Mapa_Comportamental_MC_3_1_v3_editavel.html
+contexto/referencias/mc-3.1/Prompt_Redesign_Pagina_07_MC_3_1.md
+contexto/extraido/mc-3.1-paginas/*.html

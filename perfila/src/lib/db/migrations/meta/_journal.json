@@ -134,6 +134,13 @@
       "when": 1790182430016,
       "tag": "0018_safe_james_howlett",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1790621902102,
+      "tag": "0019_inventario_mc_telas_e_resultados",
+      "breakpoints": true
     }
   ]
 }

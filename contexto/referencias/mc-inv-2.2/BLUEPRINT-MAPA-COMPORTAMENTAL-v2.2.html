@@ -1,0 +1,1919 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa Comportamental Blueprint v2.2</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#17324D; --ink-light:#5B6573; --text:#171A1F;
+  --gold:#C39A42; --gold-dark:#9A711E;
+  --cream:#F7F3EC; --white:#FFFFFF; --card:#FFFFFF;
+  --border:#E2DDD5; --border-light:#EDE9E2;
+  --D:#C62828; --D-soft:#FBE9E9; --D-text:#A51F1F;
+  --I:#E6A000; --I-soft:#FFF4D6; --I-text:#9A6500;
+  --S:#267057; --S-soft:#E5F2ED; --S-text:#1F604B;
+  --C:#315F8A; --C-soft:#E8F0F8; --C-text:#284F75;
+  --green:#1F7A6D; --purple:#6B4E8A;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--cream);color:var(--text);font-family:"Open Sans",sans-serif;font-size:14px;line-height:1.65;}
+/* COVER */
+.cover{background:var(--ink);color:#fff;padding:64px;min-height:380px;position:relative;overflow:hidden;}
+.cover::after{content:"";position:absolute;right:-80px;bottom:-80px;width:400px;height:400px;border-radius:50%;background:rgba(195,154,66,.07);pointer-events:none;}
+.cover-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(195,154,66,.15);border:1px solid rgba(195,154,66,.3);border-radius:6px;padding:6px 16px;font-family:"DM Mono",monospace;font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:24px;}
+.cover h1{font-size:clamp(28px,4vw,48px);font-weight:800;line-height:1.08;letter-spacing:-1.5px;margin-bottom:12px;}
+.cover h1 em{font-style:normal;color:var(--gold);}
+.cover-sub{font-size:15px;color:rgba(255,255,255,.6);max-width:600px;margin-bottom:36px;}
+.cover-stats{display:flex;border-top:1px solid rgba(255,255,255,.1);padding-top:28px;gap:0;}
+.cst{padding:0 40px 0 0;border-right:1px solid rgba(255,255,255,.1);margin-right:40px;}
+.cst:last-child{border-right:none;}
+.cst-num{font-size:clamp(24px,3vw,36px);font-weight:800;color:var(--gold);letter-spacing:-1px;}
+.cst-label{font-size:11px;color:rgba(255,255,255,.45);font-family:"DM Mono",monospace;letter-spacing:1px;margin-top:2px;}
+/* AVISO V2.1 */
+.version-bar{background:rgba(195,154,66,.12);border-bottom:2px solid var(--gold);padding:12px 64px;font-family:"DM Mono",monospace;font-size:11px;color:var(--gold-dark);letter-spacing:1px;display:flex;gap:24px;align-items:center;}
+.version-bar strong{color:var(--ink);}
+/* NAV */
+.toc{background:var(--white);border-bottom:1px solid var(--border);padding:28px 64px;}
+.toc h2{font-size:12px;font-family:"DM Mono",monospace;letter-spacing:3px;text-transform:uppercase;color:var(--ink-light);margin-bottom:18px;}
+.toc-g{display:grid;grid-template-columns:repeat(4,1fr);gap:4px 24px;}
+.toc-item{font-size:12px;color:var(--ink-light);padding:4px 0;display:flex;gap:8px;}
+.toc-item span{color:var(--gold);font-family:"DM Mono",monospace;font-size:10px;min-width:22px;}
+/* SECTION */
+section{padding:56px 64px;border-bottom:2px solid var(--border-light);}
+section:last-child{border-bottom:none;}
+.sec-badge{display:inline-flex;align-items:center;gap:8px;font-family:"DM Mono",monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold-dark);background:rgba(195,154,66,.1);border:1px solid rgba(195,154,66,.2);border-radius:4px;padding:4px 12px;margin-bottom:14px;}
+.sec-num{font-family:"DM Mono",monospace;font-size:11px;color:var(--ink-light);letter-spacing:2px;margin-bottom:4px;}
+h2{font-size:clamp(20px,2.5vw,30px);font-weight:800;letter-spacing:-0.5px;color:var(--ink);margin-bottom:8px;line-height:1.15;}
+h3{font-size:16px;font-weight:700;color:var(--ink);margin:24px 0 12px;}
+.lead{font-size:14px;color:var(--ink-light);max-width:700px;margin-bottom:32px;line-height:1.75;}
+/* CARD GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:24px;}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:24px;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:24px;}
+.card-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px;}
+.card-sub{font-size:11px;font-family:"DM Mono",monospace;letter-spacing:1px;color:var(--ink-light);margin-bottom:10px;}
+.card p{font-size:12px;color:var(--ink-light);line-height:1.7;}
+/* NOTA */
+.nota{border-radius:8px;padding:16px 20px;font-size:13px;line-height:1.75;margin-bottom:20px;}
+.nota-ouro{background:rgba(195,154,66,.08);border-left:3px solid var(--gold);color:#5C4A1E;}
+.nota-ink{background:rgba(23,50,77,.06);border-left:3px solid var(--ink);color:var(--ink);}
+.nota-ok{background:rgba(39,112,87,.08);border-left:3px solid var(--S);color:#1A4D39;}
+.nota-red{background:rgba(198,40,40,.07);border-left:3px solid var(--D);color:#7A1010;}
+.nota-new{background:rgba(107,78,138,.08);border-left:3px solid var(--purple);color:#3B2060;}
+/* TAGS */
+.tag{display:inline-block;font-size:10px;font-family:"DM Mono",monospace;padding:3px 10px;border-radius:4px;letter-spacing:1px;text-transform:uppercase;font-weight:500;margin-bottom:6px;}
+.tag-fato{background:rgba(23,50,77,.1);color:var(--ink);}
+.tag-derivado{background:rgba(195,154,66,.15);color:var(--gold-dark);}
+.tag-confirmar{background:rgba(107,78,138,.12);color:var(--purple);}
+.tag-aplicacao{background:rgba(31,122,109,.12);color:var(--green);}
+.tag-novo{background:rgba(198,40,40,.1);color:#A51F1F;}
+/* DISC CARDS */
+.disc4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin-bottom:24px;}
+.dc{border-radius:12px;padding:20px;border:2px solid;}
+.dc-D{border-color:var(--D);background:var(--D-soft);}
+.dc-I{border-color:var(--I);background:var(--I-soft);}
+.dc-S{border-color:var(--S);background:var(--S-soft);}
+.dc-C{border-color:var(--C);background:var(--C-soft);}
+.dc-letter{font-size:28px;font-weight:800;margin-bottom:4px;}
+.dc-D .dc-letter{color:var(--D);}
+.dc-I .dc-letter{color:var(--I-text);}
+.dc-S .dc-letter{color:var(--S-text);}
+.dc-C .dc-letter{color:var(--C-text);}
+.dc-name{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.dc ul{list-style:none;font-size:11px;line-height:1.9;}
+.dc ul li::before{content:"·  ";}
+/* TABELA */
+table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px;}
+th{padding:10px 14px;text-align:left;background:var(--ink);color:#fff;font-family:"DM Mono",monospace;font-size:10px;letter-spacing:1px;}
+th:first-child{border-radius:8px 0 0 0;}
+th:last-child{border-radius:0 8px 0 0;}
+td{padding:11px 14px;border-bottom:1px solid var(--border-light);vertical-align:top;}
+tr:hover td{background:rgba(23,50,77,.02);}
+tr:last-child td{border-bottom:none;}
+/* CÓDIGO */
+.code{background:#0D1117;border:1px solid #1E2530;border-radius:10px;padding:24px;margin-bottom:20px;overflow-x:auto;}
+.code-label{font-family:"DM Mono",monospace;font-size:9px;color:#4A5568;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #1E2530;}
+.code pre{font-family:"DM Mono",monospace;font-size:12px;line-height:1.9;color:#8FA4BF;white-space:pre-wrap;word-break:break-word;}
+.ck{color:#E6A000;}.cv{color:#86EFAC;}.cc{color:#3D4F61;}.cs{color:#7DD3FC;}.cn{color:#FCD34D;}
+/* PAGES SPEC */
+.pg-item{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:10px;display:grid;grid-template-columns:80px 1fr auto;gap:12px;align-items:start;}
+.pg-num{font-family:"DM Mono",monospace;font-size:11px;font-weight:700;color:var(--ink);white-space:nowrap;}
+.pg-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.pg-desc{font-size:11px;color:var(--ink-light);line-height:1.6;}
+/* ZONA TABLE */
+.zona-table{width:100%;border-collapse:collapse;margin-bottom:24px;font-size:12px;}
+.zona-table th{padding:10px 12px;background:var(--ink);color:#fff;font-family:"DM Mono",monospace;font-size:9px;letter-spacing:1px;}
+.zona-table td{padding:10px 12px;border-bottom:1px solid var(--border);}
+.z-ea{background:#FFF0F0;}.z-ma{background:#FFF8EC;}.z-a{background:#F0FFF4;}
+.z-b{background:#EFF6FF;}.z-mb{background:#F5F0FF;}.z-eb{background:#FFF5F5;}
+/* LEITURAS */
+.livro{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:8px;display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:start;}
+.livro-num{font-family:"DM Mono",monospace;font-size:10px;color:var(--ink-light);}
+.livro-title{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:2px;}
+.livro-author{font-size:11px;color:var(--gold-dark);font-style:italic;margin-bottom:4px;}
+.livro-why{font-size:11px;color:var(--ink-light);line-height:1.6;}
+/* PERFIS COMPOSTOS */
+.pc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px;}
+.pc-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.pc-label{font-family:"DM Mono",monospace;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px;}
+.pc-name{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.pc-essence{font-size:11px;color:var(--ink-light);margin-bottom:6px;line-height:1.5;}
+.pc-alert{font-size:10px;background:rgba(195,154,66,.1);border-radius:4px;padding:4px 8px;color:var(--gold-dark);}
+/* JSON SCHEMA */
+.json-key{color:#E6A000;font-weight:700;}
+.json-val{color:#86EFAC;}
+.json-comment{color:#3D4F61;}
+code{font-family:"DM Mono",monospace;font-size:.92em;background:rgba(23,50,77,.06);padding:1px 5px;border-radius:4px;}
+.code pre code{background:none;padding:0;}
+/* FOOTER */
+footer{background:var(--ink);color:rgba(255,255,255,.35);text-align:center;padding:28px;font-family:"DM Mono",monospace;font-size:10px;letter-spacing:1px;}
+footer strong{color:var(--gold);}
+@media(max-width:900px){
+  .cover,section{padding:28px 20px;}
+  .toc{padding:20px;}
+  .version-bar{padding:12px 20px;flex-direction:column;gap:6px;}
+  .g2,.g3,.g4,.disc4,.pc-grid,.toc-g{grid-template-columns:1fr;}
+  .version-bar{flex-wrap:wrap;}
+  .pg-item{grid-template-columns:60px 1fr;}
+  .cover-stats{flex-direction:column;border:none;}
+  .cst{border-right:none;border-bottom:1px solid rgba(255,255,255,.1);padding:0 0 16px;margin:0 0 16px;}
+}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="cover-badge">Blueprint Master · v2.2 · Documento Confidencial · 24.09.2026</div>
+  <h1>Mapa Comportamental<br><em>Blueprint Definitivo</em></h1>
+  <p class="cover-sub">O documento final e completo para construir a plataforma do zero — baseado no relatório real de 42 páginas do MC 3.1. Cada página especificada, cada algoritmo definido, cada prompt pronto, cada cor com código hex. Na versão 2.2, com o inventário MC-INV 2.2 integrado: as 64 palavras oficiais, o motor de cálculo com testes de ouro e o pacote de arquivos do desenvolvedor.</p>
+  <div class="cover-stats">
+    <div class="cst"><div class="cst-num">42</div><div class="cst-label">Páginas do relatório</div></div>
+    <div class="cst"><div class="cst-num">5</div><div class="cst-label">Etapas narrativas</div></div>
+    <div class="cst"><div class="cst-num">3</div><div class="cst-label">Camadas metodológicas</div></div>
+    <div class="cst"><div class="cst-num">69</div><div class="cst-label">Telas do inventário</div></div>
+    <div class="cst"><div class="cst-num">8</div><div class="cst-label">Semanas de dev</div></div>
+  </div>
+</div>
+
+<div class="version-bar" style="flex-wrap:wrap;">
+  <span>v2.2 — <strong>inventário integrado:</strong></span>
+  <span>✓ Inventário MC-INV 2.2 (Sec 15)</span>
+  <span>✓ Motor de cálculo + testes de ouro (Sec 16)</span>
+  <span>✓ Régua única de 6 zonas (Sec 11)</span>
+  <span>✓ Competências medidas por adjetivos (Sec 14)</span>
+  <span>✓ Schema e pipeline revisados (Sec 20 e 23)</span>
+  <span>✓ Pacote do desenvolvedor (Sec 24)</span>
+</div>
+
+<div class="toc">
+  <h2>Conteúdo — 25 seções</h2>
+  <div class="toc-g">
+    <div class="toc-item"><span>00</span> <a href="#s00" style="color:inherit;text-decoration:none">Leia primeiro — o que mudou na v2.2 ★</a></div>
+    <div class="toc-item"><span>01</span> <a href="#s01" style="color:inherit;text-decoration:none">Visão geral e posicionamento</a></div>
+    <div class="toc-item"><span>02</span> <a href="#s02" style="color:inherit;text-decoration:none">Identidade visual — Paleta oficial MC 3.1</a></div>
+    <div class="toc-item"><span>03</span> <a href="#s03" style="color:inherit;text-decoration:none">Tipografia obrigatória</a></div>
+    <div class="toc-item"><span>04</span> <a href="#s04" style="color:inherit;text-decoration:none">Marcações metodológicas</a></div>
+    <div class="toc-item"><span>05</span> <a href="#s05" style="color:inherit;text-decoration:none">Proteção de propriedade intelectual</a></div>
+    <div class="toc-item"><span>06</span> <a href="#s06" style="color:inherit;text-decoration:none">As 5 etapas do relatório</a></div>
+    <div class="toc-item"><span>07</span> <a href="#s07" style="color:inherit;text-decoration:none">Metodologia DISC — base teórica</a></div>
+    <div class="toc-item"><span>08</span> <a href="#s08" style="color:inherit;text-decoration:none">Os 4 fatores DISC — base completa</a></div>
+    <div class="toc-item"><span>09</span> <a href="#s09" style="color:inherit;text-decoration:none">Tabela descritores 6 zonas</a></div>
+    <div class="toc-item"><span>10</span> <a href="#s10" style="color:inherit;text-decoration:none">12 Perfis compostos</a></div>
+    <div class="toc-item"><span>11</span> <a href="#s11" style="color:inherit;text-decoration:none">Régua oficial de 6 zonas ★ v2.2</a></div>
+    <div class="toc-item"><span>12</span> <a href="#s12" style="color:inherit;text-decoration:none">Tipos Psicológicos de Jung ★ v2.2</a></div>
+    <div class="toc-item"><span>13</span> <a href="#s13" style="color:inherit;text-decoration:none">Teoria de Valores — Spranger ★ v2.2</a></div>
+    <div class="toc-item"><span>14</span> <a href="#s14" style="color:inherit;text-decoration:none">16 Competências ★ v2.2</a></div>
+    <div class="toc-item"><span>15</span> <a href="#s15" style="color:inherit;text-decoration:none">Inventário MC-INV 2.2 ★ v2.2</a></div>
+    <div class="toc-item"><span>16</span> <a href="#s16" style="color:inherit;text-decoration:none">Algoritmos, validade e testes ★ v2.2</a></div>
+    <div class="toc-item"><span>17</span> <a href="#s17" style="color:inherit;text-decoration:none">As 42 páginas — especificação</a></div>
+    <div class="toc-item"><span>18</span> <a href="#s18" style="color:inherit;text-decoration:none">Prompt completo da IA ★ v2.2</a></div>
+    <div class="toc-item"><span>19</span> <a href="#s19" style="color:inherit;text-decoration:none">Banco de leituras por perfil</a></div>
+    <div class="toc-item"><span>20</span> <a href="#s20" style="color:inherit;text-decoration:none">Schema Prisma ★ v2.2</a></div>
+    <div class="toc-item"><span>21</span> <a href="#s21" style="color:inherit;text-decoration:none">Stack técnica + Cronograma + Negócio</a></div>
+    <div class="toc-item"><span>22</span> <a href="#s22" style="color:inherit;text-decoration:none">Checklist de lançamento ★ v2.2</a></div>
+    <div class="toc-item"><span>23</span> <a href="#s23" style="color:inherit;text-decoration:none">Pipeline de geração ★ v2.2</a></div>
+    <div class="toc-item"><span>24</span> <a href="#s24" style="color:inherit;text-decoration:none">Pacote do desenvolvedor ★ v2.2</a></div>
+  </div>
+</div>
+
+<!-- ========= SEC 00 ========= -->
+<section id="s00">
+<div class="sec-num">00 · Leia Primeiro</div>
+<div class="sec-badge">★ v2.2 — 24.09.2026</div>
+<h2>O que mudou na versão 2.2</h2>
+<p class="lead">A v2.1 descrevia o relatório. A v2.2 acrescenta o instrumento que gera os números: o inventário MC-INV 2.2, aprovado por Valmer Albuquerque, com as contas implementadas e testadas. Onde este documento e o arquivo <code>motor_referencia.py</code> divergirem sobre uma conta, vale o arquivo.</p>
+<div class="nota nota-red"><strong>Substituído nesta versão — não implementar a v2.1 nestes pontos:</strong> questionário de 52 questões (agora 69 telas por ordenação); DISC por contagem de escolhas com soma livre (agora ordenação completa, soma 200); régua de 5 zonas (agora régua única de 6 zonas); Jung com 4 questões binárias por eixo (agora 9 pares com escala de 4 pontos); Spranger com 2 questões binárias por valor (agora 10 grupos de ordenação, soma 300); competências por "fator ± constante" (agora medidas por 4 adjetivos cada); polarização a partir de 69 (agora 70).</div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Seção</th><th>O que mudou</th></tr></thead>
+<tbody>
+<tr><td>11</td><td>A régua de 5 zonas foi substituída pela régua oficial de 6 zonas, a mesma da Sec 09. Uma régua só em todo o sistema.</td></tr>
+<tr><td>12</td><td>Jung passa a ter etapa própria: 27 pares de palavras opostas, 9 por eixo, escala de 4 pontos. Nova regra da hierarquia funcional.</td></tr>
+<tr><td>13</td><td>Valores medidos por ordenação de 10 grupos de 6 palavras. Soma fixa 300. Sexto valor com código PRI; nome exibido pendente.</td></tr>
+<tr><td>14</td><td>As 16 competências são medidas por 4 adjetivos cada. Novos nomes em S (Constância, Cooperação) e C (Análise, Investigação).</td></tr>
+<tr><td>15</td><td>Inventário completo: arquitetura, telas, instruções, banco oficial de adjetivos, lista oficial das 64 palavras, grupos, pares e valores.</td></tr>
+<tr><td>16</td><td>Todos os algoritmos reescritos, regra de arredondamento, indicadores de validade e testes de ouro.</td></tr>
+<tr><td>18</td><td>Prompt da IA recebe as competências medidas e a confiabilidade; modelo atualizado.</td></tr>
+<tr><td>20</td><td>Tabelas Answer e Result redesenhadas para ordenação, versão do instrumento e validade.</td></tr>
+<tr><td>21 e 22</td><td>Cronograma e checklist ajustados ao inventário novo.</td></tr>
+<tr><td>23</td><td>Pipeline: salvamento por tela e cálculo pelo motor oficial.</td></tr>
+<tr><td>24</td><td>Pacote do desenvolvedor: arquivos, desempenho para aplicação em massa, versionamento e plano de validação.</td></tr>
+</tbody>
+</table></div>
+<div class="nota nota-ink"><strong>Por onde o desenvolvedor começa:</strong> ler as Sec 15 e 16, baixar o pacote da Sec 24, rodar <code>python3 motor_referencia.py</code> (deve imprimir TODOS OS TESTES PASSARAM), portar o motor para TypeScript e só considerar o porte pronto quando reproduzir os testes de ouro T1 a T8.</div>
+</section>
+
+<!-- ========= SEC 01 ========= -->
+<section id="s01">
+<div class="sec-num">01 · Visão Geral e Posicionamento</div>
+<h2>O que é o Mapa Comportamental</h2>
+<p class="lead">Plataforma SaaS brasileira de assessment comportamental com 3 camadas metodológicas — DISC (comportamento), Tipos Psicológicos de Jung (processamento) e Teoria de Valores de Spranger (motivação) — integradas com IA que gera relatórios de 42 páginas completamente personalizados.</p>
+
+<div class="nota nota-ink"><strong>Posicionamento único:</strong> Para coaches, consultores de RH, líderes e educadores que precisam de assessment profundo sem exigir certificação, o Mapa Comportamental é a única plataforma brasileira que combina as 3 ciências comportamentais com IA gerando narrativa única para cada avaliado. Relatório de 42 páginas estruturado em 5 etapas sequenciais: Compreender, Interpretar, Integrar, Aplicar e Continuar.</div>
+
+<div class="g3">
+  <div class="card"><div class="card-title">🗺️ Produto</div><div class="card-sub">Mapa Comportamental MC 3.1</div><p>Relatório de 42 páginas + dashboard online + PDF A4. Gerado automaticamente por IA após o avaliado responder o inventário. Sistema de créditos para facilitadores B2B.</p></div>
+  <div class="card"><div class="card-title">🎯 Público primário</div><div class="card-sub">Facilitadores B2B</div><p>Coaches e mentores · Consultores de RH · Treinadores corporativos · Líderes de times · Psicólogos organizacionais</p></div>
+  <div class="card"><div class="card-title">⚡ Diferencial absoluto</div><div class="card-sub">3 Camadas + IA Narrativa</div><p>A única plataforma BR que cruza DISC + Jung + Spranger em um relatório coeso, onde cada camada responde uma pergunta diferente: como age, como processa, por que se mobiliza.</p></div>
+</div>
+
+<table>
+<thead><tr><th>Plataforma</th><th>Metodologia</th><th>IA Narrativa</th><th>Sem Certificação</th><th>Relatório</th><th>Preço BR</th></tr></thead>
+<tbody>
+<tr><td><strong>Mapa Comportamental</strong></td><td>DISC + Jung + Spranger</td><td>✓ Claude API</td><td>✓</td><td>42 páginas densas</td><td>R$ 20–40/crédito</td></tr>
+<tr><td>CIS FEBRACIS</td><td>DISC + Jung + Spranger</td><td>✗ Texto fixo</td><td>✗ Exige cert.</td><td>54 pg (espaços)</td><td>R$ 150–300</td></tr>
+<tr><td>Sólides Profiler</td><td>DISC</td><td>✗</td><td>✗</td><td>~20 páginas</td><td>R$ 30–80</td></tr>
+<tr><td>TTI Success Insights</td><td>DISC + Driving Forces</td><td>✗</td><td>✗</td><td>30–50 páginas</td><td>US$ 100–400</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ========= SEC 02 ========= -->
+<section id="s02">
+<div class="sec-num">02 · Identidade Visual — Paleta Oficial MC 3.1</div>
+<h2>Cores oficiais e regras de uso</h2>
+<p class="lead">Paleta extraída do documento real do MC 3.1. Todas as cores com código hex exato. Regras de uso são obrigatórias — sem exceção.</p>
+
+<div class="g4">
+  <div class="card"><div style="background:#17324D;height:40px;border-radius:6px;margin-bottom:12px;"></div><div class="card-title">Azul-Petróleo #17324D</div><p>Cor institucional. Cabeçalhos, rodapé, painel de síntese, fundo de tabelas. Texto branco sobre ele.</p></div>
+  <div class="card"><div style="background:#F7F3EC;height:40px;border-radius:6px;border:1px solid #E2DDD5;margin-bottom:12px;"></div><div class="card-title">Marfim Quente #F7F3EC</div><p>Fundo geral de todas as páginas do relatório e da plataforma.</p></div>
+  <div class="card"><div style="background:#C39A42;height:40px;border-radius:6px;margin-bottom:12px;"></div><div class="card-title">Dourado Sóbrio #C39A42</div><p>Destaques, bordas douradas, chamadas de atenção. NUNCA texto dourado sobre branco — usar #9A711E.</p></div>
+  <div class="card"><div style="background:#FFFFFF;height:40px;border-radius:6px;border:1px solid #E2DDD5;margin-bottom:12px;"></div><div class="card-title">Branco Cartão #FFFFFF</div><p>Fundo de cartões, caixas de conteúdo, blocos de texto sobre o marfim.</p></div>
+</div>
+
+<h3>Cores dos 4 Fatores DISC — Fixas e Imutáveis</h3>
+<div class="g4">
+  <div class="card" style="border-left:4px solid #C62828;"><div class="card-title" style="color:#C62828;">D — Dominância</div><p style="font-family:'DM Mono',monospace;font-size:11px;">Principal: #C62828<br>Fundo suave: #FBE9E9<br>Texto sobre fundo claro: #A51F1F</p><div class="nota nota-red" style="margin-top:10px;margin-bottom:0;padding:8px 12px;font-size:11px;">Vermelho e âmbar PRECISAM ser visualmente distintos</div></div>
+  <div class="card" style="border-left:4px solid #E6A000;"><div class="card-title" style="color:#9A6500;">I — Influência</div><p style="font-family:'DM Mono',monospace;font-size:11px;">Principal: #E6A000<br>Fundo suave: #FFF4D6<br>Texto sobre fundo claro: #9A6500</p><div class="nota nota-ouro" style="margin-top:10px;margin-bottom:0;padding:8px 12px;font-size:11px;">NUNCA texto branco sobre âmbar</div></div>
+  <div class="card" style="border-left:4px solid #267057;"><div class="card-title" style="color:#267057;">S — Estabilidade</div><p style="font-family:'DM Mono',monospace;font-size:11px;">Principal: #267057<br>Fundo suave: #E5F2ED<br>Texto sobre fundo claro: #1F604B</p></div>
+  <div class="card" style="border-left:4px solid #315F8A;"><div class="card-title" style="color:#315F8A;">C — Conformidade</div><p style="font-family:'DM Mono',monospace;font-size:11px;">Principal: #315F8A<br>Fundo suave: #E8F0F8<br>Texto sobre fundo claro: #284F75</p></div>
+</div>
+
+<div class="nota nota-ink"><strong>Regras críticas:</strong> (1) Barra Natural = preenchimento sólido na cor do fator. Barra Adaptado = MESMA cor com textura diagonal sutil (stripe pattern). NÃO usar cor diferente, NÃO usar opacidade reduzida. (2) As 4 cores dos fatores são fixas — nunca trocar, nunca usar gradiente que altere a identidade. (3) Diferença entre Natural e Adaptado deve ser legível também em impressão monocromática.</div>
+</section>
+
+<!-- ========= SEC 03 ========= -->
+<section id="s03">
+<div class="sec-num">03 · Tipografia Obrigatória</div>
+<h2>Fontes do relatório e da plataforma</h2>
+<p class="lead">O relatório MC 3.1 usa Open Sans como fonte principal. No PDF gerado pelo Puppeteer, todas as fontes devem ser embutidas.</p>
+
+<table>
+<thead><tr><th>Elemento</th><th>Fonte</th><th>Peso</th><th>Tamanho (A4)</th><th>Cor</th></tr></thead>
+<tbody>
+<tr><td>Nome do avaliado (capa)</td><td>Open Sans ou Playfair Display</td><td>700–900</td><td>28–36pt</td><td>#17324D ou branco</td></tr>
+<tr><td>Título de seção principal</td><td>Open Sans</td><td>700</td><td>16–20pt</td><td>#17324D</td></tr>
+<tr><td>Subtítulo de bloco</td><td>Open Sans</td><td>600</td><td>12–14pt</td><td>#17324D</td></tr>
+<tr><td>Corpo de texto narrativo (IA)</td><td>Open Sans</td><td>400</td><td>9–10pt</td><td>#171A1F</td></tr>
+<tr><td>Texto secundário / legenda</td><td>Open Sans</td><td>400</td><td>8–9pt</td><td>#5B6573</td></tr>
+<tr><td>Scores e percentuais</td><td>Open Sans</td><td>700</td><td>14–20pt</td><td>Cor do fator DISC</td></tr>
+<tr><td>Rodapé (MC 3.1 · REL 1.0)</td><td>Open Sans</td><td>400</td><td>7pt</td><td>#5B6573</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ========= SEC 04 ========= -->
+<section id="s04">
+<div class="sec-num">04 · Marcações Metodológicas</div>
+<h2>As 3 marcações que guiam a leitura</h2>
+<p class="lead">Uma das grandes inovações do MC 3.1 é o sistema de 3 marcações que aparecem na Pg 02 e acompanham o leitor por todo o relatório. O avaliado sempre sabe se está lendo teoria, resultado pessoal ou hipótese a confirmar.</p>
+
+<div class="g4">
+  <div class="card"><span class="tag tag-fato">Fato do Modelo</span><div class="card-title" style="margin-top:8px;">Cor: #17324D</div><p>Base teórica, definição ou regra de cálculo. Vale para qualquer pessoa avaliada. Não muda de pessoa para pessoa.</p></div>
+  <div class="card"><span class="tag tag-derivado">Derivado do Escore</span><div class="card-title" style="margin-top:8px;">Cor: #9A711E</div><p>Leitura produzida a partir dos números do avaliado, segundo as regras do instrumento. Muda para cada pessoa.</p></div>
+  <div class="card"><span class="tag tag-confirmar">A Confirmar na Devolutiva</span><div class="card-title" style="margin-top:8px;">Cor: #6B4E8A</div><p>Hipótese ainda não verificada por observação externa. O facilitador usa como pergunta na sessão de devolutiva.</p></div>
+  <div class="card"><span class="tag tag-aplicacao">Aplicação Prática</span><div class="card-title" style="margin-top:8px;">Cor: #1F7A6D</div><p>Orientação de uso direta, ação concreta que o avaliado pode executar com base no resultado.</p></div>
+</div>
+</section>
+
+<!-- ========= SEC 05 ========= -->
+<section id="s05">
+<div class="sec-num">05 · Proteção de Propriedade Intelectual</div>
+<h2>O que proteger antes de lançar</h2>
+
+<table>
+<thead><tr><th>#</th><th>Ação</th><th>Prazo</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>P01</td><td>Registrar "Mapa Comportamental" no INPI — Classes 41 (educação) e 42 (software). Custo: ~R$710. Proteção começa na data do protocolo.</td><td>Esta semana</td><td style="color:#C62828;font-weight:700;">URGENTE</td></tr>
+<tr><td>P02</td><td>LGPD — dados comportamentais são dados sensíveis. Consentimento explícito obrigatório antes do questionário. Política de privacidade, termos de uso e DPO. Multa: até R$50 milhões.</td><td>Antes do MVP</td><td style="color:#C62828;font-weight:700;">OBRIGATÓRIO</td></tr>
+<tr><td>P03</td><td>A metodologia é domínio público — pode usar livremente. DISC (Marston 1928), Jung (1921) e Spranger (1914). O que está protegido é "DiSC®" com i minúsculo (Wiley). Usar "DISC" sem símbolo é legal.</td><td>—</td><td style="color:#267057;font-weight:700;">SEGURO</td></tr>
+<tr><td>P04</td><td>Todos os textos do sistema devem ser originais. Definições, descrições dos perfis, textos das competências, conteúdo do questionário — sem copiar de CIS, Sólides ou TTI.</td><td>Sempre</td><td style="color:#C62828;font-weight:700;">OBRIGATÓRIO</td></tr>
+<tr><td>P05</td><td>Usar ™ na metodologia — "Metodologia MC4™". O ™ pode ser usado antes da aprovação do INPI para indicar reivindicação de marca. O ® só após aprovação formal.</td><td>Imediato</td><td style="color:#C39A42;font-weight:700;">RECOMENDADO</td></tr>
+</tbody>
+</table>
+</section>
+
+
+<!-- ========= SEC 06 ========= -->
+<section id="s06">
+<div class="sec-num">06 · As 5 Etapas do Relatório</div>
+<h2>A estrutura narrativa das 42 páginas</h2>
+<p class="lead">O MC 3.1 não é um relatório de dados. É uma jornada em 5 etapas sequenciais com objetivo claro em cada fase. Esta estrutura deve ser preservada exatamente.</p>
+<div class="g2">
+  <div class="card"><div class="card-sub">Etapa 01 · Pg 03–16</div><div class="card-title">Compreender — Como você age</div><p>Camada DISC. Do perfil geral aos detalhes de cada fator. Natural vs Adaptado. Forças de maior impacto.</p></div>
+  <div class="card"><div class="card-sub">Etapa 02 · Pg 17–22</div><div class="card-title">Interpretar — Como você processa</div><p>Camada Jung. Os 3 eixos. A hierarquia funcional. A função inferior sob pressão.</p></div>
+  <div class="card"><div class="card-sub">Etapa 03 · Pg 23–28</div><div class="card-title">Integrar — O que move você</div><p>Camada Spranger. Os valores. A leitura integrada das 3 camadas. O painel consolidado.</p></div>
+  <div class="card"><div class="card-sub">Etapa 04 · Pg 29–40</div><div class="card-title">Aplicar — Como usar na prática</div><p>Liderança, competências, PDI, comunicação e como liderar cada perfil. Ação real.</p></div>
+  <div class="card"><div class="card-sub">Etapa 05 · Pg 41–42</div><div class="card-title">Continuar — O próximo passo</div><p>Mensagem final e página institucional Impacto Academy. Convite à devolutiva e aos próximos passos.</p></div>
+</div>
+</section>
+
+<!-- ========= SEC 07 ========= -->
+<section id="s07">
+<div class="sec-num">07 · Metodologia DISC — Base Teórica</div>
+<h2>A ciência por trás da Camada 1</h2>
+<p class="lead">Texto que vai nas páginas 03–04 do relatório. É o ponto de partida para qualquer avaliado — a teoria antes dos resultados.</p>
+<div class="nota nota-ink"><strong>Texto para Pg 04 do relatório (Metodologia DISC):</strong> A busca por compreender por que as pessoas pensam, sentem e agem de maneiras diferentes acompanha os estudos sobre o comportamento humano há séculos. Foi nesse contexto que William Moulton Marston, psicólogo formado em Harvard, apresentou importantes contribuições para o estudo do comportamento humano. Em 1928, publicou a obra "Emotions of Normal People", na qual apresentou uma teoria para compreender como as pessoas respondem emocionalmente às situações e às influências do ambiente. Os estudos de Marston se tornaram a principal base conceitual do que posteriormente ficou conhecido como DISC — um modelo amplamente utilizado para compreender tendências comportamentais e diferentes formas de agir, comunicar, decidir e interagir. A teoria considera quatro grandes dimensões comportamentais: Dominância, Influência, Estabilidade e Conformidade. Cada pessoa apresenta essas quatro dimensões em diferentes níveis de intensidade. Por isso, o DISC não deve ser utilizado para colocar pessoas em caixas, mas como ferramenta para identificar tendências, preferências e padrões de comportamento.</div>
+<table>
+<thead><tr><th>Fator</th><th>Nome</th><th>O que mede</th><th>Pergunta central</th><th>Emoção (Marston)</th><th>Motivador</th></tr></thead>
+<tbody>
+<tr><td style="color:#C62828;font-weight:800;">D</td><td>Dominante</td><td>Como lida com adversidades</td><td>O QUÊ?</td><td>Raiva</td><td>Desafio e poder</td></tr>
+<tr><td style="color:#9A6500;font-weight:800;">I</td><td>Influente</td><td>Como lida com pessoas</td><td>QUEM?</td><td>Otimismo</td><td>Reconhecimento social</td></tr>
+<tr><td style="color:#267057;font-weight:800;">S</td><td>Estável</td><td>Como lida com mudanças</td><td>COMO?</td><td>Serenidade</td><td>Segurança</td></tr>
+<tr><td style="color:#315F8A;font-weight:800;">C</td><td>Conforme</td><td>Como lida com regras</td><td>POR QUÊ?</td><td>Medo</td><td>Informação e alto padrão</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ========= SEC 08 ========= -->
+<section id="s08">
+<div class="sec-num">08 · Os 4 Fatores DISC — Base Completa</div>
+<div class="sec-badge">★ Integrado do v1.0 com detalhamento completo</div>
+<h2>A base que alimenta os prompts da IA</h2>
+<p class="lead">Esta base alimenta os prompts da IA e é usada para gerar os textos estáticos do relatório. Cada perfil tem sua descrição completa, pontos fortes, desafios, motivadores e medos.</p>
+
+<div class="disc4">
+  <div class="dc dc-D">
+    <div class="dc-letter">D</div>
+    <div class="dc-name" style="color:#A51F1F;">Dominância</div>
+    <div style="font-size:11px;color:#7A1010;margin-bottom:8px;font-style:italic;">Rápido · Ousado · Orientado a resultados</div>
+    <p style="font-size:11px;color:#5A0A0A;margin-bottom:10px;line-height:1.7;">O Dominante vive para desafios. Para ele, inércia é desperdício. Age primeiro, analisa depois. Tem energia natural de comando que emerge mesmo sem cargo de liderança.</p>
+    <ul style="font-size:11px;color:#5A0A0A;list-style:none;line-height:1.9;">
+      <li><strong>Forças:</strong></li>
+      <li>· Decisão rápida mesmo sob pressão</li>
+      <li>· Mobiliza pessoas e recursos com velocidade</li>
+      <li>· Coragem para decisões impopulares</li>
+      <li>· Resiliência diante de obstáculos</li>
+      <li>· Foco absoluto no resultado</li>
+    </ul>
+    <ul style="font-size:11px;color:#5A0A0A;list-style:none;line-height:1.9;margin-top:8px;">
+      <li><strong>Medos:</strong></li>
+      <li>· Falhar e perder autoridade pública</li>
+      <li>· Perder autonomia e liberdade</li>
+      <li>· Ser microgerenciado</li>
+      <li>· Ambientes sem metas ou urgência</li>
+    </ul>
+    <ul style="font-size:11px;color:#5A0A0A;list-style:none;line-height:1.9;margin-top:8px;">
+      <li><strong>Motiva:</strong></li>
+      <li>· Poder, autonomia, desafios novos</li>
+      <li>· Reconhecimento por resultados concretos</li>
+      <li>· Competição e oportunidade de superar limites</li>
+    </ul>
+  </div>
+  <div class="dc dc-I">
+    <div class="dc-letter">I</div>
+    <div class="dc-name" style="color:#9A6500;">Influência</div>
+    <div style="font-size:11px;color:#7A4A00;margin-bottom:8px;font-style:italic;">Comunicativo · Amigável · Orientado para pessoas</div>
+    <p style="font-size:11px;color:#5C3800;margin-bottom:10px;line-height:1.7;">O Influente transforma o ambiente que entra. Não é só extroversão — é a capacidade genuína de fazer as pessoas se sentirem vistas e valorizadas. Cria conexões com facilidade.</p>
+    <ul style="font-size:11px;color:#5C3800;list-style:none;line-height:1.9;">
+      <li><strong>Forças:</strong></li>
+      <li>· Comunicação poderosa e inspiradora</li>
+      <li>· Facilidade de criar conexões humanas</li>
+      <li>· Energia e clima positivo no ambiente</li>
+      <li>· Criatividade e geração de ideias</li>
+      <li>· Adaptabilidade social</li>
+    </ul>
+    <ul style="font-size:11px;color:#5C3800;list-style:none;line-height:1.9;margin-top:8px;">
+      <li><strong>Medos:</strong></li>
+      <li>· Rejeição social e perda de aprovação</li>
+      <li>· Ambientes frios e sem interação</li>
+      <li>· Ser ignorado ou não reconhecido</li>
+      <li>· Conflitos que possam romper relações</li>
+    </ul>
+    <ul style="font-size:11px;color:#5C3800;list-style:none;line-height:1.9;margin-top:8px;">
+      <li><strong>Motiva:</strong></li>
+      <li>· Reconhecimento público e aprovação</li>
+      <li>· Projetos criativos com muita interação</li>
+      <li>· Ambientes dinâmicos com novidade</li>
+    </ul>
+  </div>
+  <div class="dc dc-S">
+    <div class="dc-letter">S</div>
+    <div class="dc-name" style="color:#1F604B;">Estabilidade</div>
+    <div style="font-size:11px;color:#1A4D3C;margin-bottom:8px;font-style:italic;">Paciente · Conciliador · Orientado ao equilíbrio</div>
+    <p style="font-size:11px;color:#133D2F;margin-bottom:10px;line-height:1.7;">O Estável é o que mantém tudo em pé enquanto os outros correm. Paciência que parece infinita, lealdade que raramente falha. Não é o mais rápido nem o mais barulhento, mas é o mais confiável.</p>
+    <ul style="font-size:11px;color:#133D2F;list-style:none;line-height:1.9;">
+      <li><strong>Forças:</strong></li>
+      <li>· Confiabilidade absoluta</li>
+      <li>· Paciência e escuta ativa genuína</li>
+      <li>· Relacionamentos duradouros</li>
+      <li>· Suporte emocional autêntico</li>
+      <li>· Consistência sob alta pressão</li>
+    </ul>
+    <ul style="font-size:11px;color:#133D2F;list-style:none;line-height:1.9;margin-top:8px;">
+      <li><strong>Medos:</strong></li>
+      <li>· Perda de estabilidade e segurança</li>
+      <li>· Conflitos abertos e tensão constante</li>
+      <li>· Mudanças bruscas sem explicação</li>
+      <li>· Romper relacionamentos importantes</li>
+    </ul>
+    <ul style="font-size:11px;color:#133D2F;list-style:none;line-height:1.9;margin-top:8px;">
+      <li><strong>Motiva:</strong></li>
+      <li>· Segurança, estabilidade e harmonia</li>
+      <li>· Saber que seu trabalho importa</li>
+      <li>· Equipes coesas e de alta confiança</li>
+    </ul>
+  </div>
+  <div class="dc dc-C">
+    <div class="dc-letter">C</div>
+    <div class="dc-name" style="color:#284F75;">Conformidade</div>
+    <div style="font-size:11px;color:#1E3D5C;margin-bottom:8px;font-style:italic;">Cauteloso · Detalhista · Orientado à precisão</div>
+    <p style="font-size:11px;color:#152E47;margin-bottom:10px;line-height:1.7;">O Conforme não age sem entender. Para ele, decisão sem dados suficientes é risco desnecessário. Mente analítica que vê o que os outros não veem. Introvertido não por timidez, mas por preferência de profundidade.</p>
+    <ul style="font-size:11px;color:#152E47;list-style:none;line-height:1.9;">
+      <li><strong>Forças:</strong></li>
+      <li>· Análise profunda e prevenção de problemas</li>
+      <li>· Precisão e excelência técnica</li>
+      <li>· Planejamento estratégico</li>
+      <li>· Alta capacidade de aprendizado</li>
+      <li>· Pensamento crítico e baseado em dados</li>
+    </ul>
+    <ul style="font-size:11px;color:#152E47;list-style:none;line-height:1.9;margin-top:8px;">
+      <li><strong>Medos:</strong></li>
+      <li>· Cometer erros e ser criticado publicamente</li>
+      <li>· Sair das normas estabelecidas</li>
+      <li>· Ambiguidade e falta de clareza</li>
+      <li>· Decidir sem dados suficientes</li>
+    </ul>
+    <ul style="font-size:11px;color:#152E47;list-style:none;line-height:1.9;margin-top:8px;">
+      <li><strong>Motiva:</strong></li>
+      <li>· Clareza nas expectativas e critérios</li>
+      <li>· Projetos com alta complexidade técnica</li>
+      <li>· Ser reconhecido pela qualidade</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ========= SEC 09 ========= -->
+<section id="s09">
+<div class="sec-num">09 · Tabela de Descritores de Intensidade — 6 Zonas</div>
+<div class="sec-badge">★ NOVO — Integrado do v1.0 — Crítico para o sistema</div>
+<h2>Os adjetivos de cada fator por zona de score</h2>
+<p class="lead">Esta tabela é usada pelo SISTEMA — não pela IA — para preencher o gráfico de intensidade das páginas 09–13. Quando o score de D = 61%, o sistema busca a zona A (51–69) e exibe "Competitivo, Autoconfiante, Decidido, Independente" para o fator D.</p>
+
+<div class="nota nota-red"><strong>Regra de uso:</strong> O score de cada fator entra na função getZona() e retorna a zona. O sistema exibe os 4 adjetivos correspondentes ao fator naquela zona. Zonas EA e EB representam excesso — exibir com aviso visual diferenciado (cinza ou borda pontilhada) indicando que é zona de atenção, não de celebração.</div>
+
+<table class="zona-table">
+<thead>
+<tr>
+  <th>Zona</th>
+  <th>Score</th>
+  <th style="color:#FCA5A5;">D — Dominância</th>
+  <th style="color:#FCD34D;">I — Influência</th>
+  <th style="color:#86EFAC;">S — Estabilidade</th>
+  <th style="color:#93C5FD;">C — Conformidade</th>
+</tr>
+</thead>
+<tbody>
+<tr class="z-ea">
+  <td><strong style="color:#C62828;">EA</strong><br><small>Extremo Alto</small></td>
+  <td><strong>88–100</strong></td>
+  <td>Arrogante · Opressor<br>Agressivo · Individualista</td>
+  <td>Superficial · Impaciente<br>Inconveniente · Vaidoso</td>
+  <td>Devagar · Indiferente<br>Passivo · Sarcástico</td>
+  <td>Pessimista · Perfeccionista<br>Legalista · Resistente</td>
+</tr>
+<tr class="z-ma">
+  <td><strong style="color:#E6A000;">MA</strong><br><small>Muito Alto</small></td>
+  <td><strong>70–87,9</strong></td>
+  <td>Audacioso · Autoritário<br>Generalista · Enérgico</td>
+  <td>Extrovertido · Idealista<br>Flexível · Inspirador</td>
+  <td>Cooperativo · Metódico<br>Consistente · Cordial</td>
+  <td>Meticuloso · Organizado<br>Cauteloso · Lógico</td>
+</tr>
+<tr class="z-a">
+  <td><strong style="color:#267057;">A</strong><br><small>Alto</small></td>
+  <td><strong>51–69,9</strong></td>
+  <td>Competitivo · Autoconfiante<br>Decidido · Independente</td>
+  <td>Persuasivo · Entusiasmado<br>Otimista · Comunicativo</td>
+  <td>Resolvido · Paciente<br>Calmo · Sensato</td>
+  <td>Preciso · Detalhista<br>Autodisciplinado · Consciente</td>
+</tr>
+<tr class="z-b">
+  <td><strong style="color:#315F8A;">B</strong><br><small>Baixo</small></td>
+  <td><strong>33–50,9</strong></td>
+  <td>Harmonioso · Agradável<br>Calmo · Avesso a risco</td>
+  <td>Analítico · Reflexivo<br>Reservado · Consistente</td>
+  <td>Versátil · Incansável<br>Intenso · Fazedor</td>
+  <td>Flexível · Desinibido<br>Casual · Impulsivo</td>
+</tr>
+<tr class="z-mb">
+  <td><strong style="color:#7C3AED;">MB</strong><br><small>Muito Baixo</small></td>
+  <td><strong>16–32,9</strong></td>
+  <td>Modesto · Tímido<br>Hesitante · Baixa confiança</td>
+  <td>Formal · Cauteloso<br>Sensível · Lógico</td>
+  <td>Nervoso · Rápido<br>Impaciente · Tenso</td>
+  <td>Teimoso · Informal<br>Aventureiro · Obstinado</td>
+</tr>
+<tr class="z-eb">
+  <td><strong style="color:#DB2777;">EB</strong><br><small>Extremo Baixo</small></td>
+  <td><strong>0–15,9</strong></td>
+  <td>Complacente · Acomodado<br>Submisso · Medroso</td>
+  <td>Retraído · Introspectivo<br>Cético · Antissocial</td>
+  <td>Agressivo · Impetuoso<br>Explosivo · Ríspido</td>
+  <td>Hostil · Indisciplinado<br>Desorganizado · Desrespeitoso</td>
+</tr>
+</tbody>
+</table>
+
+<div class="nota nota-new"><strong>v2.2:</strong> escores têm uma casa decimal, por isso as faixas terminam em ,9. Estes adjetivos são descritores do relatório, não itens do inventário: os itens estão na Sec 15.</div>
+
+<div class="nota nota-ouro"><strong>Importante:</strong> Os adjetivos de EA e EB representam o excesso do fator. Na Zona EA, o comportamento aparece de forma compulsiva, mesmo quando não é o mais adequado. Na Zona EB, o fator está tão suprimido que o comportamento oposto aflora. Exibir essas zonas com marcação visual distinta (ícone de atenção ou borda pontilhada).</div>
+</section>
+
+<!-- ========= SEC 10 ========= -->
+<section id="s10">
+<div class="sec-num">10 · 12 Perfis Compostos</div>
+<div class="sec-badge">★ NOVO — Integrado do v1.0 — Conteúdo Estático da Pg 23</div>
+<h2>Os arquétipos dos perfis combinados</h2>
+<p class="lead">Conteúdo ESTÁTICO da Pg 23 do relatório. Não é gerado pela IA — o sistema identifica o perfil composto (fator primário + secundário acima de 50) e exibe o cartão correspondente.</p>
+
+<div class="nota nota-ink"><strong>Lógica de identificação:</strong> perfil_composto = fator_primario + fator_secundario (ambos com score acima de 50). Exibir na Pg 23 o cartão do arquétipo correspondente. Se apenas um fator estiver acima de 50, exibir o perfil puro sem combinação.</div>
+
+<div class="pc-grid">
+  <div class="pc-card" style="border-top:3px solid #C62828;">
+    <div class="pc-label" style="color:#C62828;">D + I</div>
+    <div class="pc-name">O Protagonista</div>
+    <div class="pc-essence">Une resultado e influência. Age rápido e arrasta pessoas junto. Entra em qualquer sala sabendo que vai sair com o que precisa.</div>
+    <div class="pc-alert">Ponto de atenção: velocidade que atropela o processo de construção coletiva.</div>
+  </div>
+  <div class="pc-card" style="border-top:3px solid #C62828;">
+    <div class="pc-label" style="color:#C62828;">D + C</div>
+    <div class="pc-name">O Estrategista</div>
+    <div class="pc-essence">Une resultado e precisão. Quer vencer, mas quer vencer com inteligência. Estuda antes de atacar — e ataca com método.</div>
+    <div class="pc-alert">Ponto de atenção: exigência de si mesmo e dos outros pode criar ambiente de alta pressão crônica.</div>
+  </div>
+  <div class="pc-card" style="border-top:3px solid #C62828;">
+    <div class="pc-label" style="color:#C62828;">D + S</div>
+    <div class="pc-name">O Guardião Executor</div>
+    <div class="pc-essence">Une resultado e consistência. Entrega o que promete sem precisar de barulho. Confiança construída por ação repetida.</div>
+    <div class="pc-alert">Ponto de atenção: tensão interna entre urgência do D e paciência do S — pode gerar oscilação de ritmo.</div>
+  </div>
+  <div class="pc-card" style="border-top:3px solid #9A6500;">
+    <div class="pc-label" style="color:#9A6500;">I + D</div>
+    <div class="pc-name">O Inspirador de Resultados</div>
+    <div class="pc-essence">Une influência e resultado. Convence com entusiasmo mas cobra entrega. Cria times que querem ir junto e cobram o destino.</div>
+    <div class="pc-alert">Ponto de atenção: pode prometer mais do que o sistema consegue entregar para todos.</div>
+  </div>
+  <div class="pc-card" style="border-top:3px solid #9A6500;">
+    <div class="pc-label" style="color:#9A6500;">I + S</div>
+    <div class="pc-name">O Catalisador Social</div>
+    <div class="pc-essence">Une influência e conexão humana genuína. Não só encanta — cuida. Cria ambientes onde as pessoas querem ficar e performar.</div>
+    <div class="pc-alert">Ponto de atenção: dificuldade de entregar feedback duro por medo de romper o vínculo.</div>
+  </div>
+  <div class="pc-card" style="border-top:3px solid #9A6500;">
+    <div class="pc-label" style="color:#9A6500;">I + C</div>
+    <div class="pc-name">O Comunicador Preciso</div>
+    <div class="pc-essence">Une influência e precisão. Consegue encantar e embasar ao mesmo tempo. Vende bem e entrega com qualidade.</div>
+    <div class="pc-alert">Ponto de atenção: pode travar entre o impulso criativo e a necessidade de validação técnica.</div>
+  </div>
+  <div class="pc-card" style="border-top:3px solid #267057;">
+    <div class="pc-label" style="color:#267057;">S + I</div>
+    <div class="pc-name">O Servidor Empático</div>
+    <div class="pc-essence">Une cuidado com pessoas e expressão. Serve com presença. Faz o ambiente respirar sem precisar ser o centro.</div>
+    <div class="pc-alert">Ponto de atenção: pode se silenciar em conflito justamente quando o grupo mais precisa que ele fale.</div>
+  </div>
+  <div class="pc-card" style="border-top:3px solid #267057;">
+    <div class="pc-label" style="color:#267057;">S + D</div>
+    <div class="pc-name">O Construtor Paciente</div>
+    <div class="pc-essence">Une consistência e resultado. Não é o mais rápido, mas é o que chegou. Constrói com solidez o que outros constroem com pressa.</div>
+    <div class="pc-alert">Ponto de atenção: resistência a mudar de rota mesmo quando os sinais já mostram que é necessário.</div>
+  </div>
+  <div class="pc-card" style="border-top:3px solid #267057;">
+    <div class="pc-label" style="color:#267057;">S + C</div>
+    <div class="pc-name">O Analítico Confiável</div>
+    <div class="pc-essence">Une consistência e precisão. Faz do jeito certo, no ritmo certo. Referência técnica que o grupo procura quando a situação exige qualidade.</div>
+    <div class="pc-alert">Ponto de atenção: pode ser percebido como lento por quem precisa de agilidade e resultado imediato.</div>
+  </div>
+  <div class="pc-card" style="border-top:3px solid #315F8A;">
+    <div class="pc-label" style="color:#315F8A;">C + D</div>
+    <div class="pc-name">O Arquiteto Decisivo</div>
+    <div class="pc-essence">Une precisão e resultado. Planeja com profundidade e age com firmeza. Não toma decisão que não sustenta — mas quando toma, vai até o fim.</div>
+    <div class="pc-alert">Ponto de atenção: pode se tornar inflexível após decidir — dificuldade de rever posição mesmo com dados novos.</div>
+  </div>
+  <div class="pc-card" style="border-top:3px solid #315F8A;">
+    <div class="pc-label" style="color:#315F8A;">C + S</div>
+    <div class="pc-name">O Guardião da Qualidade</div>
+    <div class="pc-essence">Une precisão e constância. Entrega com excelência repetidamente. O mais difícil de substituir porque o padrão está incorporado, não executado.</div>
+    <div class="pc-alert">Ponto de atenção: dificuldade de aceitar entregas que "estão boas o suficiente" — perfeccionismo como freio.</div>
+  </div>
+  <div class="pc-card" style="border-top:3px solid #315F8A;">
+    <div class="pc-label" style="color:#315F8A;">C + I</div>
+    <div class="pc-name">O Analista Persuasivo</div>
+    <div class="pc-essence">Une precisão e comunicação. Convence com dados e apresenta com clareza. Faz o técnico ser compreendido por qualquer audiência.</div>
+    <div class="pc-alert">Ponto de atenção: pode ser percebido como excessivamente crítico ao tentar elevar o padrão do grupo.</div>
+  </div>
+</div>
+</section>
+
+
+<!-- ========= SEC 11 ========= -->
+<section id="s11">
+<div class="sec-num">11 · Régua Oficial de Intensidade — 6 Zonas</div>
+<div class="sec-badge">★ v2.2 — substitui a régua de 5 zonas</div>
+<h2>Uma régua só para todo o sistema</h2>
+<p class="lead">A v2.1 tinha duas réguas (6 zonas na Sec 09 e 5 zonas aqui). A v2.2 adota a de 6 zonas em todo lugar: gráficos, descritores, prompt da IA e perfil. Ela é centrada em 50, que é a média obrigatória de um instrumento cujos quatro fatores somam 200.</p>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Zona</th><th>Faixa</th><th>Como aparece no relatório</th></tr></thead>
+<tbody>
+<tr><td><strong>EA</strong> · Extremo alto</td><td><strong>88–100</strong></td><td>Comportamento aparece de forma quase involuntária, inclusive quando não é o mais adequado. Zona de atenção.</td></tr>
+<tr><td><strong>MA</strong> · Muito alto</td><td><strong>70–87,9</strong></td><td>Alta influência no comportamento. Facilmente reconhecível por quem convive.</td></tr>
+<tr><td><strong>A</strong> · Alto</td><td><strong>51–69,9</strong></td><td>Fator predominante. Aparece com regularidade e ajuda a definir o perfil.</td></tr>
+<tr><td><strong>B</strong> · Baixo</td><td><strong>33–50,9</strong></td><td>Presente em situações específicas. Acionado por contexto, não por padrão.</td></tr>
+<tr><td><strong>MB</strong> · Muito baixo</td><td><strong>16–32,9</strong></td><td>Raramente visível. O comportamento oposto tende a aparecer no lugar.</td></tr>
+<tr><td><strong>EB</strong> · Extremo baixo</td><td><strong>0–15,9</strong></td><td>Fator suprimido. O comportamento oposto aflora com força. Zona de atenção.</td></tr>
+</tbody>
+</table></div>
+<div class="code">
+<div class="code-label">// getZona — implementação oficial</div>
+<pre>function zona(score) {            // score com 1 casa decimal, 0 a 100
+  if (score &gt;= 88) return &quot;EA&quot;    // Extremo alto
+  if (score &gt;= 70) return &quot;MA&quot;    // Muito alto
+  if (score &gt;= 51) return &quot;A&quot;     // Alto  (limiar de predominância)
+  if (score &gt;= 33) return &quot;B&quot;     // Baixo
+  if (score &gt;= 16) return &quot;MB&quot;    // Muito baixo
+  return &quot;EB&quot;                     // Extremo baixo
+}</pre>
+</div>
+<div class="nota nota-ink"><strong>Regra das barras no PDF (crítico):</strong> Barra Natural = preenchimento sólido na cor do fator. Barra Adaptado = MESMA cor do fator com textura diagonal sutil (stripe pattern em CSS/SVG). NÃO usar cor diferente. O comprimento da barra é proporcional ao escore (62,5 ocupa 62,5% da régua). Escala sempre 0 a 100 com marcações nos limites das zonas: 0, 16, 33, 51, 70, 88, 100.</div>
+</section>
+
+<!-- ========= SEC 12 ========= -->
+<section id="s12">
+<div class="sec-num">12 · Tipos Psicológicos de Jung — Camada 2</div>
+<h2>O caminho mental que acontece antes do comportamento</h2>
+<p class="lead">Os tipos psicológicos não descrevem o que se vê (isso é o DISC). Descrevem o processo que acontece antes — por qual caminho mental a pessoa chega ao comportamento. Dois perfis DISC idênticos podem ter processos mentais opostos.</p>
+
+<table>
+<thead><tr><th>Eixo</th><th>Polo A</th><th>Polo B</th><th>O que mede</th><th>Como calcular</th><th>Pg no relatório</th></tr></thead>
+<tbody>
+<tr><td><strong>1 · Atitude</strong></td><td>E — Extroversão<br><small>Energia vem do contato externo. Pensa enquanto fala.</small></td><td>I — Introversão<br><small>Energia vem da elaboração interna. Pensa antes de falar.</small></td><td>De onde vem a energia</td><td>9 pares, escala de 4 pontos → % E e % I (soma 100)</td><td>Pg 18</td></tr>
+<tr><td><strong>2 · Percepção</strong></td><td>N — Intuição<br><small>Capta padrões e possibilidades. Foca no futuro.</small></td><td>S — Sensação<br><small>Capta fatos concretos. Foca no presente e no verificável.</small></td><td>Como a informação é captada</td><td>9 pares, escala de 4 pontos → % N e % S (soma 100)</td><td>Pg 19</td></tr>
+<tr><td><strong>3 · Julgamento</strong></td><td>T — Pensamento<br><small>Decide por critério lógico e causa-efeito. Analítico.</small></td><td>F — Sentimento<br><small>Decide por valores e impacto humano. Empático.</small></td><td>Como a decisão é tomada</td><td>9 pares, escala de 4 pontos → % T e % F (soma 100)</td><td>Pg 20</td></tr>
+</tbody>
+</table>
+
+<div class="nota nota-ouro"><strong>Hierarquia Funcional (Pg 21) — regra v2.2:</strong> não se comparam escores de eixos diferentes diretamente. Compara-se a <em>clareza</em> de cada eixo, isto é, a distância do meio: clareza da percepção = |%N − 50|; clareza do julgamento = |%T − 50|. A função dominante é a do eixo mais claro (empate: percepção) e recebe a atitude do tipo (E ou I). A auxiliar é a do outro eixo, com a atitude oposta. A terciária é a oposta da auxiliar, com a atitude da dominante. A inferior é a oposta da dominante, com a atitude oposta. <strong>Exemplo (teste T6):</strong> E 74,1 · N 63,0 · T 74,1 → tipo ENT; clareza N = 13,0 e T = 24,1, então a dominante é Pensamento Extrovertido, a auxiliar Intuição Introvertida, a terciária Sensação Extrovertida e a inferior Sentimento Introvertido. A hierarquia aparece no relatório com a marcação A CONFIRMAR NA DEVOLUTIVA.</div>
+<div class="nota nota-new"><strong>Instrumento:</strong> os itens de Jung (27 pares) estão na Sec 15.3. Como 27 é ímpar, um empate exato em 50% é impossível: todo eixo tem polo definido.</div>
+</section>
+
+<!-- ========= SEC 13 ========= -->
+<section id="s13">
+<div class="sec-num">13 · Teoria de Valores — Spranger</div>
+<h2>Os 6 motivadores de Eduard Spranger (1914)</h2>
+<p class="lead">Valores respondem a uma terceira pergunta que as duas primeiras deixam em aberto: por que aquilo vale o esforço. As 3 faixas de intensidade: Significativo (≥ 66) / Circunstancial (31 a 65,9) / Indiferente (≤ 30,9). Os seis escores somam sempre 300: a comparação válida é entre os valores da mesma pessoa.</p>
+
+<div class="g3">
+  <div class="card"><div class="card-title">Teórico</div><p>Motivado por descoberta, aprendizado e verdade. Prazer intelectual e busca por conhecimento.</p></div>
+  <div class="card"><div class="card-title">Econômico</div><p>Motivado por resultado prático, eficiência e retorno. Avalia custo-benefício de cada ação.</p></div>
+  <div class="card"><div class="card-title">Estético</div><p>Motivado por harmonia, beleza e equilíbrio. Sensível à forma, ao ambiente e à estética.</p></div>
+  <div class="card"><div class="card-title">Social</div><p>Motivado por contribuição, altruísmo e cuidado com o outro. Realizado quando serve.</p></div>
+  <div class="card"><div class="card-title">Político</div><p>Motivado por influência, poder e liderança. Quer impactar decisões e mover grupos.</p></div>
+  <div class="card" style="border:2px solid #C39A42;"><div class="card-title" style="color:#9A711E;">Princípios · código PRI ★</div><p>Motivado por ordem, regras, princípios, fé e propósito. Respeita e defende normas e sistemas de crença.<br><small style="color:#9A711E;">"Religioso" em Spranger; "Regulatório" na v2.1. Nome exibido pendente de decisão de Valmer (Princípios, Regulatório ou Propósito e sentido). No código, sempre <code>PRI</code>.</small></p></div>
+</div>
+<div class="nota nota-new"><strong>Instrumento:</strong> os 10 grupos de 6 palavras que medem os valores estão na Sec 15.4.</div>
+</section>
+
+<!-- ========= SEC 14 ========= -->
+<section id="s14">
+<div class="sec-num">14 · 16 Competências</div>
+<div class="sec-badge">★ v2.2 — medidas pelo inventário, não mais derivadas por constante</div>
+<h2>Cada competência é medida por 4 adjetivos</h2>
+<p class="lead">Na v2.1, cada competência era o escore do fator somado a uma constante (ex.: Ousadia = D + 4). Isso não media nada novo. Na v2.2, cada uma das 16 competências é medida por 4 dos 64 adjetivos do inventário, nas duas condições (natural e adaptado). Apresentação em 3 níveis: Potencializar (&gt; 70) / Consolidar (40 a 70) / Desenvolver (&lt; 40).</p>
+<div class="g2">
+  <div class="card" style="border-left:4px solid #C62828;">
+    <div class="card-sub" style="color:#C62828;">D · Dominância</div>
+    <ul style="font-size:12px;list-style:none;line-height:1.9;"><li><strong>Ousadia:</strong> Ousado, Audacioso, Desafiador, Competitivo</li><li><strong>Comando:</strong> Firme, Independente, Autoconfiante, Enérgico</li><li><strong>Objetividade:</strong> Objetivo, Pragmático, Proativo, Resoluto</li><li><strong>Assertividade:</strong> Determinado, Decidido, Direto, Assertivo</li></ul>
+  </div>
+  <div class="card" style="border-left:4px solid #9A6500;">
+    <div class="card-sub" style="color:#9A6500;">I · Influência</div>
+    <ul style="font-size:12px;list-style:none;line-height:1.9;"><li><strong>Persuasão:</strong> Persuasivo, Carismático, Articulado, Motivador</li><li><strong>Extroversão:</strong> Comunicativo, Expressivo, Expansivo, Espontâneo</li><li><strong>Entusiasmo:</strong> Entusiasmado, Otimista, Contagiante, Inspirador</li><li><strong>Sociabilidade:</strong> Sociável, Receptivo, Envolvente, Criativo</li></ul>
+  </div>
+  <div class="card" style="border-left:4px solid #267057;">
+    <div class="card-sub" style="color:#267057;">S · Estabilidade</div>
+    <ul style="font-size:12px;list-style:none;line-height:1.9;"><li><strong>Empatia:</strong> Acolhedor, Atencioso, Compreensivo, Tolerante</li><li><strong>Paciência:</strong> Paciente, Tranquilo, Sereno, Calmo</li><li><strong>Constância:</strong> Constante, Estável, Ponderado, Moderado</li><li><strong>Cooperação:</strong> Cooperativo, Prestativo, Conciliador, Colaborativo</li></ul>
+  </div>
+  <div class="card" style="border-left:4px solid #315F8A;">
+    <div class="card-sub" style="color:#315F8A;">C · Conformidade</div>
+    <ul style="font-size:12px;list-style:none;line-height:1.9;"><li><strong>Organização:</strong> Organizado, Sistemático, Estruturado, Metódico</li><li><strong>Detalhismo:</strong> Detalhista, Minucioso, Meticuloso, Preciso</li><li><strong>Análise:</strong> Analítico, Lógico, Racional, Técnico</li><li><strong>Investigação:</strong> Criterioso, Observador, Investigativo, Estratégico</li></ul>
+  </div>
+</div>
+<div class="code">
+<div class="code-label">// Cálculo de cada competência (natural e adaptado)</div>
+<pre>pontos(adjetivo)   = 5 − posição no grupo          // 1º = 4 ... 4º = 1
+bruto(competência) = soma dos pontos dos seus 4 adjetivos       // 4 a 16
+escore             = (bruto − 4) ÷ 12 × 100                     // 0 a 100, 1 casa decimal
+// Conferência: a média das 4 competências de um fator é igual ao escore do fator.</pre>
+</div>
+<div class="nota nota-red"><strong>Nomes que mudaram (pendência T4, aguardando aprovação de Valmer):</strong> as 64 palavras oficiais não medem Persistência, Concentração, Planejamento e Prudência. Em S entram <strong>Constância</strong> e <strong>Cooperação</strong>; em C entram <strong>Análise</strong> e <strong>Investigação</strong>. Chaves no código: <code>constancia</code>, <code>cooperacao</code>, <code>analise</code>, <code>investigacao</code>.</div>
+<div class="nota nota-ink">No gráfico radar da Pg 31, exibir 12 competências (excluir Assertividade, Sociabilidade, Constância e Detalhismo, mesma lógica da v2.1 com Constância no lugar de Concentração). As 16 aparecem com barras individuais na Pg 32.</div>
+</section>
+
+<!-- ========= SEC 15 ========= -->
+<section id="s15">
+<div class="sec-num">15 · Inventário MC-INV 2.2</div>
+<div class="sec-badge">★ v2.2 — substitui o banco de 52 questões</div>
+<h2>O instrumento que o avaliado responde</h2>
+<p class="lead">Quatro etapas curtas, só com palavras simples. A pessoa ordena palavras ou escolhe um lado entre duas. As palavras DISC foram definidas por Valmer Albuquerque a partir do seu banco oficial de adjetivos. Os dados completos estão em <code>inventario.json</code> (Sec 24).</p>
+
+<h3>15.0 Arquitetura</h3>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Etapa</th><th>Mede</th><th>Formato</th><th>Telas</th><th>Tempo</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>DISC natural + 16 competências</td><td>16 grupos × 4 adjetivos, ordenar de 1 a 4</td><td>16</td><td>5 a 6 min</td></tr>
+<tr><td>2</td><td>DISC adaptado + 16 competências</td><td>os mesmos 16 grupos, nova ordem, ordenar de 1 a 4</td><td>16</td><td>4 a 5 min</td></tr>
+<tr><td>3</td><td>Tipos psicológicos (Jung)</td><td>27 pares de palavras opostas, escala de 4 pontos</td><td>27</td><td>2 a 3 min</td></tr>
+<tr><td>4</td><td>Valores (Spranger)</td><td>10 grupos × 6 palavras, ordenar de 1 a 6</td><td>10</td><td>4 a 5 min</td></tr>
+<tr><td>Total</td><td></td><td>69 telas</td><td>69</td><td>16 a 20 min</td></tr>
+</tbody>
+</table></div>
+
+<div class="g2">
+  <div class="card"><div class="card-title">Regras de tela</div><ul style="font-size:12px;list-style:none;line-height:1.9;">
+    <li>· Uma tela por grupo ou par. Ordem obrigatória: 1, 2, 3, 4.</li>
+    <li>· A etapa 1 fica travada quando a etapa 2 começa.</li>
+    <li>· Ordem inicial das palavras aleatória por avaliado, com a semente gravada.</li>
+    <li>· Na etapa 3, o lado (esquerda/direita) do polo A é sorteado por par e gravado; os 27 pares aparecem intercalados entre os eixos.</li>
+    <li>· Ordenar tocando: a 1ª palavra tocada é a que mais combina; a última entra sozinha. Tocar de novo desfaz a partir dela.</li>
+    <li>· "Avançar" só ativa com a ordenação completa. Salvamento automático a cada tela.</li>
+    <li>· Botão "?" com definição curta de cada palavra (pendência T1).</li>
+    <li>· Adjetivos com gênero exibidos como "Ousado(a)".</li>
+  </ul></div>
+  <div class="card"><div class="card-title">Gravar por tela</div><ul style="font-size:12px;list-style:none;line-height:1.9;">
+    <li>· Identificador da tela (G07, NS04, V03)</li>
+    <li>· Ordem final dos itens (etapas 1, 2 e 4)</li>
+    <li>· Lado do polo A, botão clicado e resposta convertida ao polo A (etapa 3)</li>
+    <li>· Se algum item foi movido da ordem inicial</li>
+    <li>· Horário de entrada e de saída da tela</li>
+    <li>· Versão do instrumento (MC-INV 2.2)</li>
+  </ul></div>
+</div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Etapa</th><th>Texto da tela de abertura</th></tr></thead>
+<tbody>
+<tr><td>1 · Como você é</td><td>Em cada tela você verá quatro palavras. Toque primeiro na que mais combina com você, depois na segunda, e assim por diante. A última é a que menos combina. Pense em como você é de verdade, num dia comum, sem ninguém cobrando nada. Não existe palavra certa nem errada, e as quatro são qualidades. Responda rápido: a primeira impressão costuma ser a mais honesta.</td></tr>
+<tr><td>2 · Como a rotina te pede</td><td>Agora as mesmas palavras voltam, em outra ordem. Desta vez, ordene pensando em como a sua rotina atual pede que você seja: trabalho, família, responsabilidades. Não como você é, e sim como você sente que precisa ser para dar conta do que esperam de você.</td></tr>
+<tr><td>3 · Como você pensa e decide</td><td>Em cada tela há duas palavras opostas. Marque para qual lado você pende naturalmente e com que força. Não há meio-termo de propósito: mesmo que as duas pareçam suas, uma costuma vir primeiro.</td></tr>
+<tr><td>4 · O que te move</td><td>Em cada tela há seis palavras. Toque primeiro na que mais importa para você e siga até a que menos importa. Pense no que de fato orienta as suas decisões, não no que seria bonito responder.</td></tr>
+</tbody>
+</table></div>
+
+<h3>15.1 Banco oficial de adjetivos DISC (fonte: Valmer Albuquerque)</h3>
+<p style="font-size:13px;color:var(--ink-light);margin-bottom:16px;">Fonte única dos itens DISC. As palavras que não viraram item formam a reserva oficial para substituições futuras.</p>
+<div class="g2">
+  <div class="card" style="border-left:4px solid #C62828;"><div class="card-sub" style="color:#C62828;">D · DOMINÂNCIA</div><p><strong>Núcleo:</strong> desafio, decisão, velocidade, autonomia e resultados.</p><p style="margin-top:8px;">Determinado, decidido, direto, assertivo, competitivo, objetivo, resoluto, ousado, firme, corajoso, independente, autônomo, intenso, exigente, pragmático, rápido, enérgico, empreendedor, desafiador, realizador, executor, incisivo, destemido, persistente, proativo, dominante, acelerado, categórico, autoconfiante, questionador, franco, audacioso, solucionador, orientado a metas, orientado a resultados, determinado a vencer, resistente à pressão, independente nas decisões, orientado à ação.<br><small style="color:#A51F1F;"><strong>Retirados (nunca usar):</strong> combativo, impaciente, controlador, autoritário, confrontador, agressivo, ríspido, inflexível, obstinado, individualista, arriscado, impetuoso.</small></p></div>
+  <div class="card" style="border-left:4px solid #9A6500;"><div class="card-sub" style="color:#9A6500;">I · INFLUÊNCIA</div><p><strong>Núcleo:</strong> pessoas, comunicação, entusiasmo, persuasão, reconhecimento e interação.</p><p style="margin-top:8px;">Comunicativo, sociável, entusiasmado, persuasivo, otimista, expressivo, carismático, espontâneo, inspirador, envolvente, amigável, expansivo, convincente, influente, motivador, falante, acessível, caloroso, emocional, criativo, animado, divertido, descontraído, agregador, relacional, articulado, positivo, receptivo, energético, empolgante, popular, demonstrativo, improvisador, visionário, informal, contagiante, estimulante, aberto, gregário, acolhedor, mobilizador, inspirador de pessoas, orientado a relacionamentos.<br><small style="color:#A51F1F;"><strong>Retirados (nunca usar):</strong> impulsivo, disperso, desorganizado, exagerado, inquieto, precipitado, crédulo, superficial, inconsistente, desatento aos detalhes.</small></p></div>
+  <div class="card" style="border-left:4px solid #267057;"><div class="card-sub" style="color:#267057;">S · ESTABILIDADE</div><p><strong>Núcleo:</strong> constância, cooperação, paciência, segurança, apoio e harmonia.</p><p style="margin-top:8px;">Paciente, constante, estável, tranquilo, cooperativo, leal, confiável, acolhedor, atencioso, gentil, compreensivo, prestativo, cuidadoso, sereno, equilibrado, previsível, consistente, persistente, conciliador, diplomático, tolerante, respeitoso, discreto, solidário, dedicado, disponível, harmonioso, moderado, amável, empático, ouvinte, colaborativo, metódico, ponderado, prudente, fiel, perseverante, resistente, calmo, cauteloso, reservado, paciente com processos, mantenedor, estabilizador, protetor, orientado à equipe, orientado à harmonia.<br><small style="color:#A51F1F;"><strong>Retirados (nunca usar):</strong> rotineiro, conservador, acomodado, passivo, indeciso, resistente a mudanças, dependente de segurança, avesso a conflitos, lento para decidir.</small></p></div>
+  <div class="card" style="border-left:4px solid #315F8A;"><div class="card-sub" style="color:#315F8A;">C · CONFORMIDADE</div><p><strong>Núcleo:</strong> qualidade, precisão, lógica, critérios, padrões e excelência.</p><p style="margin-top:8px;">Analítico, criterioso, preciso, detalhista, organizado, sistemático, lógico, racional, disciplinado, cuidadoso, meticuloso, técnico, prudente, rigoroso, exato, estruturado, planejador, metódico, observador, investigativo, reservado, formal, responsável, consistente, minucioso, questionador, objetivo, fundamentado, controlado, diplomático, cauteloso, estratégico, estudioso, concentrado, atento, reflexivo, correto, exigente com qualidade, orientado a padrões, orientado a regras, orientado a processos, orientado a evidências, orientado a dados, protocolar, preciso na execução.</p></div>
+</div>
+<div class="nota nota-ouro"><strong>Palavras ambíguas</strong> (aparecem em dois fatores e por isso discriminam mal; ficam fora dos itens, exceto as três atribuídas por Valmer): acolhedor (I/S) · cauteloso (C/S) · consistente (C/S) · cuidadoso (C/S) · diplomático (C/S) · metódico (C/S) · objetivo (C/D) · persistente (D/S) · prudente (C/S) · questionador (C/D) · reservado (C/S). <strong>Atribuídas por Valmer:</strong> Objetivo → D, Acolhedor → S, Metódico → C.</div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Regra</th><th>Descrição</th></tr></thead>
+<tbody>
+<tr><td>B1 · Fonte única</td><td>Os itens DISC são exatamente a lista oficial (15.2), e toda palavra dela pertence ao banco do seu fator.</td></tr>
+<tr><td>B2 · Ambiguidade</td><td>Palavra presente em dois fatores não vira item, exceto quando Valmer a atribui a um fator.</td></tr>
+<tr><td>B3 · Retirados</td><td>Palavras retiradas não aparecem em nenhuma etapa: descrevem excesso e fazem a pessoa fugir da resposta.</td></tr>
+<tr><td>B4 · Uma palavra</td><td>Na tela de ordenação, só adjetivos de uma palavra. Expressões servem ao relatório e ao botão &quot;?&quot;.</td></tr>
+<tr><td>B5 · Núcleo</td><td>Cada competência recebe quatro palavras ligadas ao núcleo do fator e ao sentido da competência.</td></tr>
+<tr><td>B6 · Reserva</td><td>Item que falhar no piloto é trocado por palavra da reserva do mesmo fator, com decisão de Valmer.</td></tr>
+<tr><td>B7 · Etapas separadas</td><td>Nenhuma palavra da lista oficial aparece nos pares de Jung.</td></tr>
+<tr><td>Originalidade</td><td>Palavras avulsas podem coincidir com as de qualquer instrumento. Não pode haver grupo com mais de 1 palavra em comum com um mesmo grupo do CIS; frases, instruções e textos são sempre originais.</td></tr>
+</tbody>
+</table></div>
+
+<h3>15.2 Lista oficial das 64 palavras e competências (etapas 1 e 2)</h3>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Fator</th><th>Competência</th><th>Adjetivos</th></tr></thead>
+<tbody>
+<tr><td><span style="color:#C62828;font-weight:700">D · Dominância</span></td><td>Ousadia</td><td>Ousado, Audacioso, Desafiador, Competitivo</td></tr>
+<tr><td><span style="color:#C62828;font-weight:700"></span></td><td>Comando</td><td>Firme, Independente, Autoconfiante, Enérgico</td></tr>
+<tr><td><span style="color:#C62828;font-weight:700"></span></td><td>Objetividade</td><td>Objetivo, Pragmático, Proativo, Resoluto</td></tr>
+<tr><td><span style="color:#C62828;font-weight:700"></span></td><td>Assertividade</td><td>Determinado, Decidido, Direto, Assertivo</td></tr>
+<tr><td><span style="color:#9A6500;font-weight:700">I · Influência</span></td><td>Persuasão</td><td>Persuasivo, Carismático, Articulado, Motivador</td></tr>
+<tr><td><span style="color:#9A6500;font-weight:700"></span></td><td>Extroversão</td><td>Comunicativo, Expressivo, Expansivo, Espontâneo</td></tr>
+<tr><td><span style="color:#9A6500;font-weight:700"></span></td><td>Entusiasmo</td><td>Entusiasmado, Otimista, Contagiante, Inspirador</td></tr>
+<tr><td><span style="color:#9A6500;font-weight:700"></span></td><td>Sociabilidade</td><td>Sociável, Receptivo, Envolvente, Criativo</td></tr>
+<tr><td><span style="color:#267057;font-weight:700">S · Estabilidade</span></td><td>Empatia</td><td>Acolhedor, Atencioso, Compreensivo, Tolerante</td></tr>
+<tr><td><span style="color:#267057;font-weight:700"></span></td><td>Paciência</td><td>Paciente, Tranquilo, Sereno, Calmo</td></tr>
+<tr><td><span style="color:#267057;font-weight:700"></span></td><td>Constância</td><td>Constante, Estável, Ponderado, Moderado</td></tr>
+<tr><td><span style="color:#267057;font-weight:700"></span></td><td>Cooperação</td><td>Cooperativo, Prestativo, Conciliador, Colaborativo</td></tr>
+<tr><td><span style="color:#315F8A;font-weight:700">C · Conformidade</span></td><td>Organização</td><td>Organizado, Sistemático, Estruturado, Metódico</td></tr>
+<tr><td><span style="color:#315F8A;font-weight:700"></span></td><td>Detalhismo</td><td>Detalhista, Minucioso, Meticuloso, Preciso</td></tr>
+<tr><td><span style="color:#315F8A;font-weight:700"></span></td><td>Análise</td><td>Analítico, Lógico, Racional, Técnico</td></tr>
+<tr><td><span style="color:#315F8A;font-weight:700"></span></td><td>Investigação</td><td>Criterioso, Observador, Investigativo, Estratégico</td></tr>
+</tbody>
+</table></div>
+
+<p style="font-size:13px;color:var(--ink-light);margin:8px 0 16px;">Os 16 grupos são montados em quadrado latino: cada grupo tem uma palavra de cada fator, e as quatro competências de um fator ficam em grupos diferentes. A ordem abaixo é a de cadastro; a de exibição é sempre aleatória. Identificador do item: <code>G07-D</code>.</p>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Grupo</th><th>D</th><th>I</th><th>S</th><th>C</th></tr></thead>
+<tbody>
+<tr><td>01</td><td>Ousado</td><td>Comunicativo</td><td>Constante</td><td>Criterioso</td></tr>
+<tr><td>02</td><td>Firme</td><td>Entusiasmado</td><td>Cooperativo</td><td>Organizado</td></tr>
+<tr><td>03</td><td>Objetivo</td><td>Sociável</td><td>Acolhedor</td><td>Detalhista</td></tr>
+<tr><td>04</td><td>Determinado</td><td>Persuasivo</td><td>Paciente</td><td>Analítico</td></tr>
+<tr><td>05</td><td>Audacioso</td><td>Expressivo</td><td>Estável</td><td>Observador</td></tr>
+<tr><td>06</td><td>Independente</td><td>Otimista</td><td>Prestativo</td><td>Sistemático</td></tr>
+<tr><td>07</td><td>Pragmático</td><td>Receptivo</td><td>Atencioso</td><td>Minucioso</td></tr>
+<tr><td>08</td><td>Decidido</td><td>Carismático</td><td>Tranquilo</td><td>Lógico</td></tr>
+<tr><td>09</td><td>Desafiador</td><td>Expansivo</td><td>Ponderado</td><td>Investigativo</td></tr>
+<tr><td>10</td><td>Autoconfiante</td><td>Contagiante</td><td>Conciliador</td><td>Estruturado</td></tr>
+<tr><td>11</td><td>Proativo</td><td>Envolvente</td><td>Compreensivo</td><td>Meticuloso</td></tr>
+<tr><td>12</td><td>Direto</td><td>Articulado</td><td>Sereno</td><td>Racional</td></tr>
+<tr><td>13</td><td>Competitivo</td><td>Espontâneo</td><td>Moderado</td><td>Estratégico</td></tr>
+<tr><td>14</td><td>Enérgico</td><td>Inspirador</td><td>Colaborativo</td><td>Metódico</td></tr>
+<tr><td>15</td><td>Resoluto</td><td>Criativo</td><td>Tolerante</td><td>Preciso</td></tr>
+<tr><td>16</td><td>Assertivo</td><td>Motivador</td><td>Calmo</td><td>Técnico</td></tr>
+</tbody>
+</table></div>
+
+<h3>15.3 Pares de Jung (etapa 3)</h3>
+<p style="font-size:13px;color:var(--ink-light);margin-bottom:12px;">Botões: <code>Muito [A]</code> · <code>Mais [A]</code> · <code>Mais [B]</code> · <code>Muito [B]</code>, sem meio-termo. Polo A = E, N, T. Identificador: <code>EI01</code> a <code>TF09</code>, na ordem abaixo.</p>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Eixo</th><th>Polo A × Polo B</th><th>9 pares (A × B)</th></tr></thead>
+<tbody>
+<tr><td>Atitude</td><td>E Extroversão × I Introversão</td><td>Agitado × Quieto · Falante × Calado · Desinibido × Contido · Enturmado × Solitário · Impulsivo × Pensativo · Solto × Discreto · Conversador × Silencioso · Aberto × Recolhido · Festeiro × Caseiro</td></tr>
+<tr><td>Percepção</td><td>N Intuição × S Sensação</td><td>Imaginativo × Realista · Inventivo × Prático · Sonhador × Pé no chão · Inovador × Tradicional · Intuitivo × Concreto · Original × Convencional · Das ideias × Dos fatos · Do futuro × Do presente · Visionário × Experiente</td></tr>
+<tr><td>Julgamento</td><td>T Pensamento × F Sentimento</td><td>Pela razão × Pela emoção · Imparcial × Sentimental · Crítico × Gentil · Justo × Bondoso · Impessoal × Pessoal · Cabeça × Coração · Exigente × Compassivo · Argumentativo × Afetuoso · Pela lógica × Pelo sentimento</td></tr>
+</tbody>
+</table></div>
+
+<h3>15.4 Valores (etapa 4)</h3>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Código</th><th>Valor</th><th>10 palavras</th></tr></thead>
+<tbody>
+<tr><td>TEO</td><td>Teórico · Conhecimento</td><td>Aprender, Conhecimento, Estudo, Curiosidade, Leitura, Pesquisa, Descobrir, Sabedoria, Cultura, Ciência</td></tr>
+<tr><td>ECO</td><td>Econômico · Utilidade</td><td>Dinheiro, Lucro, Retorno, Riqueza, Investir, Negócios, Economizar, Patrimônio, Ganhar bem, Eficiência</td></tr>
+<tr><td>EST</td><td>Estético · Harmonia</td><td>Beleza, Arte, Harmonia, Natureza, Bom gosto, Música, Estilo, Conforto, Viver bem, Bem-estar</td></tr>
+<tr><td>SOC</td><td>Social · Altruísmo</td><td>Ajudar, Servir, Caridade, Voluntariado, Cuidar, Generosidade, Solidariedade, Doar, Acolher, Fazer o bem</td></tr>
+<tr><td>POL</td><td>Político · Poder</td><td>Poder, Liderar, Status, Influência, Reconhecimento, Vencer, Comandar, Destaque, Prestígio, Autoridade</td></tr>
+<tr><td>PRI</td><td>Princípios (nome exibido pendente)</td><td>Princípios, Fé, Ética, Tradição, Valores, Honestidade, Crenças, Regras, Integridade, Propósito</td></tr>
+</tbody>
+</table></div>
+
+<p style="font-size:13px;color:var(--ink-light);margin:8px 0 12px;">O grupo <em>k</em> reúne a palavra <em>k</em> de cada valor. Identificador do item: <code>V03-ECO</code>.</p>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Grupo</th><th>TEO</th><th>ECO</th><th>EST</th><th>SOC</th><th>POL</th><th>PRI</th></tr></thead>
+<tbody>
+<tr><td>01</td><td>Aprender</td><td>Dinheiro</td><td>Beleza</td><td>Ajudar</td><td>Poder</td><td>Princípios</td></tr>
+<tr><td>02</td><td>Conhecimento</td><td>Lucro</td><td>Arte</td><td>Servir</td><td>Liderar</td><td>Fé</td></tr>
+<tr><td>03</td><td>Estudo</td><td>Retorno</td><td>Harmonia</td><td>Caridade</td><td>Status</td><td>Ética</td></tr>
+<tr><td>04</td><td>Curiosidade</td><td>Riqueza</td><td>Natureza</td><td>Voluntariado</td><td>Influência</td><td>Tradição</td></tr>
+<tr><td>05</td><td>Leitura</td><td>Investir</td><td>Bom gosto</td><td>Cuidar</td><td>Reconhecimento</td><td>Valores</td></tr>
+<tr><td>06</td><td>Pesquisa</td><td>Negócios</td><td>Música</td><td>Generosidade</td><td>Vencer</td><td>Honestidade</td></tr>
+<tr><td>07</td><td>Descobrir</td><td>Economizar</td><td>Estilo</td><td>Solidariedade</td><td>Comandar</td><td>Crenças</td></tr>
+<tr><td>08</td><td>Sabedoria</td><td>Patrimônio</td><td>Conforto</td><td>Doar</td><td>Destaque</td><td>Regras</td></tr>
+<tr><td>09</td><td>Cultura</td><td>Ganhar bem</td><td>Viver bem</td><td>Acolher</td><td>Prestígio</td><td>Integridade</td></tr>
+<tr><td>10</td><td>Ciência</td><td>Eficiência</td><td>Bem-estar</td><td>Fazer o bem</td><td>Autoridade</td><td>Propósito</td></tr>
+</tbody>
+</table></div>
+
+</section>
+
+<!-- ========= SEC 16 ========= -->
+<section id="s16">
+<div class="sec-num">16 · Algoritmos, Validade e Testes</div>
+<div class="sec-badge">★ v2.2 — implementação oficial em motor_referencia.py</div>
+<h2>Todos os cálculos especificados</h2>
+<p class="lead">Estas regras são a tradução exata de <code>motor_referencia.py</code>. O cálculo é determinístico: a mesma resposta produz o mesmo resultado, até a primeira casa decimal, em qualquer servidor. Não há IA no cálculo.</p>
+<div class="code">
+<div class="code-label">// ARREDONDAMENTO — regra única</div>
+<pre>// 1 casa decimal, meio para longe do zero: 66,65 → 66,7 e −66,65 → −66,7
+// PROIBIDO: Math.round puro do JavaScript e round() bancário do Python.
+function r1(x) {
+  const s = Math.sign(x), a = Math.abs(x)
+  return s * Math.round(parseFloat((a * 10).toPrecision(12))) / 10 || 0
+}
+// Arredondar só no fim de cada fórmula. A variação natural→adaptado usa os escores já arredondados.</pre>
+</div>
+<div class="code">
+<div class="code-label">// DISC — natural e adaptado, cada um separadamente</div>
+<pre>// Cada tela: 4 adjetivos, um de cada fator, ordenados de 1 (mais combina) a 4 (menos combina)
+pontos(item)  = 5 − posição                       // 1º = 4, 2º = 3, 3º = 2, 4º = 1
+bruto(fator)  = soma dos pontos dos 16 adjetivos do fator      // 16 a 64
+escore(fator) = r1((bruto − 16) ÷ 48 × 100)                    // 0 a 100
+
+// PROPRIEDADE OBRIGATÓRIA: D + I + S + C = 200 (±0,2 pelo arredondamento)
+// Se não somar 200, a resposta está corrompida: rejeitar o envio.
+// O instrumento é ipsativo: compara fatores dentro da mesma pessoa, não entre pessoas.
+
+// Perfil
+ordenar fatores por escore (desempate: mais vezes em 1º lugar; depois D, I, S, C)
+predominantes = fatores com escore ≥ 51
+perfil = dois primeiros predominantes (&quot;DI&quot;) | um só = puro (&quot;D&quot;) | nenhum = &quot;EQUILIBRADO&quot;
+arquétipo (Sec 10) buscado pela sigla</pre>
+</div>
+<div class="code">
+<div class="code-label">// ÍNDICES DE ADAPTAÇÃO (Pg 08)</div>
+<pre>variacao(f)       = r1(adaptado(f) − natural(f))          // negativo = caiu
+indice_adaptacao  = r1(média de |variação| dos 4 fatores)
+classe            = ≤10 baixa | ≤20 moderada | ≤25 alta | ≤35 muito alta | &gt;35 extremamente alta
+polarizado(f)     = (natural ≤ 32 e adaptado ≥ 70) ou (natural ≥ 70 e adaptado ≤ 32)
+amplitude_natural = maior escore natural − menor escore natural</pre>
+</div>
+<div class="code">
+<div class="code-label">// COMPETÊNCIAS — 16, natural e adaptado</div>
+<pre>bruto(competência) = soma dos pontos dos seus 4 adjetivos       // 4 a 16
+escore             = r1((bruto − 4) ÷ 12 × 100)                 // 0 a 100
+// Mapeamento adjetivo → competência: Sec 15.2 e inventario.json</pre>
+</div>
+<div class="code">
+<div class="code-label">// JUNG — tipos psicológicos</div>
+<pre>// Cada par: resposta convertida ao polo A → 3 muito A | 2 mais A | 1 mais B | 0 muito B
+bruto(polo A) = soma das 9 respostas do eixo              // 0 a 27
+%A = r1(bruto ÷ 27 × 100)      %B = r1(100 − %A)
+polo = A se %A &gt; 50, senão B   // 27 é ímpar: empate impossível
+tipo = polo(EI) + polo(NS) + polo(TF)                      // ex.: &quot;ENT&quot;
+
+// Hierarquia funcional (Sec 12)
+dominante = eixo de maior clareza: |%N − 50| vs |%T − 50| (empate: percepção), com a atitude do tipo
+auxiliar  = o outro eixo, atitude oposta
+terciária = oposta da auxiliar, atitude da dominante
+inferior  = oposta da dominante, atitude oposta
+// Gênero: Intuição/Sensação femininas (&quot;Intuição Extrovertida&quot;); Pensamento/Sentimento masculinos</pre>
+</div>
+<div class="code">
+<div class="code-label">// VALORES — Spranger</div>
+<pre>// Cada tela: 6 palavras, uma de cada valor, ordenadas de 1 (mais importa) a 6
+pontos(item)  = 7 − posição                      // 1º = 6 ... 6º = 1
+bruto(valor)  = soma nos 10 grupos               // 10 a 60
+escore(valor) = r1((bruto − 10) ÷ 50 × 100)      // 0 a 100
+// PROPRIEDADE OBRIGATÓRIA: soma dos 6 escores = 300
+nivel   = ≥66 Significativo | 31 a 65,9 Circunstancial | ≤30,9 Indiferente
+ranking = ordem decrescente (desempate: TEO, ECO, EST, SOC, POL, PRI)</pre>
+</div>
+<div class="code">
+<div class="code-label">// ESTILOS DE LIDERANÇA — Pg 29 (sobre o perfil natural)</div>
+<pre>executivo   = D×0,6 + C×0,4          metódico    = S×0,6 + C×0,4
+motivador   = I×0,6 + S×0,4          sistemático = C×0,6 + D×0,4
+percentual  = r1(estilo ÷ soma dos quatro × 100)
+// Exibido como 4 barras de intensidade (não como pizza)
+// Exemplo (teste T5): D 100 · I 66,7 · S 33,3 · C 0 → Executivo 34,6 | Motivador 30,8 | Sistemático 23,1 | Metódico 11,5</pre>
+</div>
+
+<h3>Indicadores de validade da resposta</h3>
+<p style="font-size:13px;color:var(--ink-light);margin-bottom:12px;">Nenhum indicador bloqueia o relatório. O facilitador vê "Confiabilidade da aplicação: alta, média ou baixa".</p>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Código</th><th>Regra</th><th>Peso</th></tr></thead>
+<tbody>
+<tr><td>V1 · Tempo total</td><td>abaixo de 7 min ou acima de 60 min (descontadas pausas acima de 10 min)</td><td>médio</td></tr>
+<tr><td>V2 · Pressa</td><td>mais de 30% das telas DISC respondidas em menos de 2,5 s</td><td>alto</td></tr>
+<tr><td>V3 · Sem interação</td><td>mais de 25% dos grupos enviados na ordem inicial aleatória, sem mover nada</td><td>alto</td></tr>
+<tr><td>V4 · Sem diferenciação</td><td>natural e adaptado com ordenação idêntica em 14 ou mais dos 16 grupos</td><td>informativo</td></tr>
+<tr><td>V5 · Resposta em linha</td><td>na etapa 3, o mesmo botão em 24 ou mais dos 27 pares</td><td>alto</td></tr>
+<tr><td>V6 · Extremos</td><td>na etapa 3, só respostas &quot;Muito&quot; em 26 ou mais pares</td><td>baixo</td></tr>
+</tbody>
+</table></div>
+
+<div class="nota nota-ink"><strong>Confiabilidade:</strong> nenhum alerta ou só alertas baixos/informativos = alta; um alerta médio = média; qualquer alerta alto ou dois médios = baixa.</div>
+<h3>Testes de ouro — o porte só vai ao ar se reproduzir exatamente</h3>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Teste</th><th>Entrada</th><th>Saída esperada</th></tr></thead>
+<tbody>
+<tr><td>T1</td><td>DISC com D sempre em 1º, I em 2º, S em 3º, C em 4º, nos 16 grupos</td><td>D 100,0 · I 66,7 · S 33,3 · C 0,0 · Ousadia 100,0 · Análise 0,0</td></tr>
+<tr><td>T2</td><td>2.000 ordenações aleatórias (semente 7)</td><td>soma dos 4 fatores = 200 (±0,2) em todas</td></tr>
+<tr><td>T3</td><td>natural D100/I66,7/S33,3/C0 e adaptado D33,3/I0/S100/C66,7</td><td>variações −66,7/−66,7/+66,7/+66,7 · índice 66,7 · extremamente alta · polarizados: nenhum</td></tr>
+<tr><td>T3b</td><td>natural D20/I80/S50/C50, adaptado D75/I25/S50/C50</td><td>polarizados: D, I</td></tr>
+<tr><td>T4</td><td>zona de 100, 88, 87,9, 70, 69,9, 51, 50,9, 33, 32,9, 16, 15,9, 0</td><td>EA, EA, MA, MA, A, A, B, B, MB, MB, EB, EB</td></tr>
+<tr><td>T5</td><td>liderança sobre D100/I66,7/S33,3/C0</td><td>executivo 34,6 · metódico 11,5 · motivador 30,8 · sistemático 23,1</td></tr>
+<tr><td>T6</td><td>Jung EI [3,3,2,2,2,1,2,3,2] · NS [2,2,1,2,3,2,2,1,2] · TF [3,2,2,3,2,2,3,2,1]</td><td>E 74,1 · N 63,0 · T 74,1 · ENT · Pensamento Extrovertido, Intuição Introvertida, Sensação Extrovertida, Sentimento Introvertido</td></tr>
+<tr><td>T7</td><td>valores ordenados sempre PRI, ECO, SOC, POL, TEO, EST</td><td>PRI 100 · ECO 80 · SOC 60 · POL 40 · TEO 20 · EST 0 · soma 300</td></tr>
+<tr><td>T8</td><td>integridade do inventário</td><td>64 palavras = lista oficial, todas do banco do seu fator, nenhuma retirada · cada competência em 4 grupos · nenhum grupo com mais de 1 palavra de um mesmo grupo do CIS · 54 palavras de Jung únicas e sem repetir o DISC · 60 palavras de valor únicas</td></tr>
+</tbody>
+</table></div>
+
+</section>
+
+<!-- ========= SEC 17 ========= -->
+<section id="s17">
+<div class="sec-num">17 · As 42 Páginas — Especificação Completa</div>
+<h2>Cada página definida para o desenvolvedor</h2>
+<p class="lead">Especificação técnica de todas as 42 páginas. A coluna "Fonte" indica se o conteúdo vem do banco de dados, da IA (Claude API) ou é texto fixo do sistema.</p>
+
+<div class="pg-item"><div class="pg-num">Pg 01</div><div><div class="pg-title">🎯 Capa</div><div class="pg-desc">Nome do avaliado, facilitador, data de emissão, código MC-AAAA-MMDD-XX, logotipo. Fundo #17324D, nome em fonte grande.</div></div><span style="font-size:11px;background:#E8F0F8;color:#284F75;padding:3px 8px;border-radius:4px;white-space:nowrap;">Banco de dados</span></div>
+<div class="pg-item"><div class="pg-num">Pg 02</div><div><div class="pg-title">📋 Índice com 5 Etapas e 3 Marcações</div><div class="pg-desc">Sumário completo. As 3 marcações metodológicas com cores. Dados de identificação do instrumento.</div></div><span style="font-size:11px;background:#E5F2ED;color:#1F604B;padding:3px 8px;border-radius:4px;white-space:nowrap;">Auto-gerado</span></div>
+<div class="pg-item"><div class="pg-num">Pg 03</div><div><div class="pg-title">📖 Sobre o Seu Mapa Comportamental</div><div class="pg-desc">Carta de abertura. O que é o mapa, as 3 camadas, como usar, o que NÃO faz. Tom acolhedor. Texto original fixo com nome do avaliado.</div></div><span style="font-size:11px;background:#FBE9E9;color:#A51F1F;padding:3px 8px;border-radius:4px;white-space:nowrap;">Texto fixo</span></div>
+<div class="pg-item"><div class="pg-num">Pg 04</div><div><div class="pg-title">🧠 Metodologia DISC — William Moulton Marston</div><div class="pg-desc">Quem foi Marston, "Emotions of Normal People" 1928, os 4 fatores DISC. Texto educativo original. Badge: FATO DO MODELO.</div></div><span style="font-size:11px;background:#FBE9E9;color:#A51F1F;padding:3px 8px;border-radius:4px;white-space:nowrap;">Texto educativo</span></div>
+<div class="pg-item"><div class="pg-num">Pg 05</div><div><div class="pg-title">🗺️ Teoria DISC — Os 4 Fatores (cards visuais)</div><div class="pg-desc">4 cards: D (O QUÊ?), I (QUEM?), S (COMO?), C (POR QUÊ?). Característica, forma de agir, pergunta central. Cores oficiais. Visual tipo matriz 2x2.</div></div><span style="font-size:11px;background:#FBE9E9;color:#A51F1F;padding:3px 8px;border-radius:4px;white-space:nowrap;">Tabela estática</span></div>
+<div class="pg-item"><div class="pg-num">Pg 06</div><div><div class="pg-title">📊 Mapa de Intensidade Comportamental</div><div class="pg-desc">Dois cartões Natural vs Adaptado. 8 barras horizontais (4 Natural sólidas + 4 Adaptado hachuradas). Escala 0–100. Score exato + classificação. SEGUIR SPEC DO REDESIGN PG 07.</div></div><span style="font-size:11px;background:#E8F0F8;color:#284F75;padding:3px 8px;border-radius:4px;white-space:nowrap;">Algoritmo DISC</span></div>
+<div class="pg-item"><div class="pg-num">Pg 07</div><div><div class="pg-title">✨ A Sua Combinação Natural — Perfil duplo + 4 cruzamentos</div><div class="pg-desc">Análise do perfil combinado. 4 blocos de cruzamento: fator_alto × fator_baixo com efeito comportamental. IA: chave sintese_combinacao_natural + quatro_cruzamentos.</div></div><span style="font-size:11px;background:#FFF4D6;color:#9A6500;padding:3px 8px;border-radius:4px;white-space:nowrap;">IA + tabelas</span></div>
+<div class="pg-item"><div class="pg-num">Pg 08</div><div><div class="pg-title">⚖️ O Custo da Adaptação — Índices e polarização</div><div class="pg-desc">Índice de adaptação + Amplitude + Fatores polarizados. Tabela D/I/S/C: Natural / Adaptado / Variação / Classificação. IA: chave custo_adaptacao_narrativa.</div></div><span style="font-size:11px;background:#FFF4D6;color:#9A6500;padding:3px 8px;border-radius:4px;white-space:nowrap;">Algoritmo índices</span></div>
+<div class="pg-item"><div class="pg-num">Pg 09-12</div><div><div class="pg-title">🔴🟡🟢🔵 Fator D / I / S / C — Análise individual</div><div class="pg-desc">Uma página por fator. Barra Natural + Adaptado. Score + zona. Descritores da tabela de 6 zonas (Sec 09). IA: chaves fator_d/i/s/c_narrativa. "No natural" e "No adaptado" com adjetivos.</div></div><span style="font-size:11px;background:#FFF4D6;color:#9A6500;padding:3px 8px;border-radius:4px;white-space:nowrap;">Dados + IA</span></div>
+<div class="pg-item"><div class="pg-num">Pg 13</div><div><div class="pg-title">⚡ Forças de Maior Impacto — 6 forças personalizadas</div><div class="pg-desc">Os 6 pontos fortes que o perfil produz com naturalidade. Fator de origem + intensidade + onde converte em resultado. IA: chave seis_forcas. Instrução de uso ao final.</div></div><span style="font-size:11px;background:#FFF4D6;color:#9A6500;padding:3px 8px;border-radius:4px;white-space:nowrap;">Tabela por score</span></div>
+<div class="pg-item"><div class="pg-num">Pg 14-15</div><div><div class="pg-title">🔄😰 Relacionamento + Pontos de Tensão e Insegurança</div><div class="pg-desc">Espectro comportamental. Pares polares com polo predominante. Pontos de tensão ligados ao fator mais alto. Badge: A CONFIRMAR NA DEVOLUTIVA.</div></div><span style="font-size:11px;background:#FBE9E9;color:#A51F1F;padding:3px 8px;border-radius:4px;white-space:nowrap;">Tabela por perfil</span></div>
+<div class="pg-item"><div class="pg-num">Pg 16</div><div><div class="pg-title">🔥 Gatilhos Comportamentais de Mobilização</div><div class="pg-desc">Gatilho principal (fator mais alto) + complementar. Cruzamento com valores Spranger. O que acontece quando falta cada gatilho.</div></div><span style="font-size:11px;background:#FFF4D6;color:#9A6500;padding:3px 8px;border-radius:4px;white-space:nowrap;">DISC + Spranger</span></div>
+<div class="pg-item"><div class="pg-num">Pg 17-20</div><div><div class="pg-title">🧩🌊💡⚖️ Jung — Introdução + 3 Eixos</div><div class="pg-desc">Transição de camada + 3 páginas dos eixos E/I, N/S, T/F. Polo predominante com % exato. IA: jung_e_i/n_s/t_f_narrativa. Badge: DERIVADO DO SEU ESCORE.</div></div><span style="font-size:11px;background:#FFF4D6;color:#9A6500;padding:3px 8px;border-radius:4px;white-space:nowrap;">Algoritmo Jung</span></div>
+<div class="pg-item"><div class="pg-num">Pg 21-22</div><div><div class="pg-title">🌀🌑 Hierarquia Funcional + Função Inferior sob Pressão</div><div class="pg-desc">Tipo Jung + 4 funções em ordem. IA: hierarquia_funcional_narrativa + funcao_inferior_sinais. Badge: A CONFIRMAR NA DEVOLUTIVA na hierarquia.</div></div><span style="font-size:11px;background:#FFF4D6;color:#9A6500;padding:3px 8px;border-radius:4px;white-space:nowrap;">Jung + confirmar</span></div>
+<div class="pg-item"><div class="pg-num">Pg 23-24</div><div><div class="pg-title">💎📊 Spranger — Teoria + Gráfico dos 6 Valores</div><div class="pg-desc">Transição Camada 3 + 6 valores ranqueados em barras verticais. Faixas Significativo/Circunstancial/Indiferente. FATO DO MODELO + DERIVADO DO SEU ESCORE.</div></div><span style="font-size:11px;background:#E8F0F8;color:#284F75;padding:3px 8px;border-radius:4px;white-space:nowrap;">Algoritmo Spranger</span></div>
+<div class="pg-item"><div class="pg-num">Pg 25</div><div><div class="pg-title">🏆 Os Dois Valores Predominantes — Análise aprofundada</div><div class="pg-desc">Top 2 valores com análise. "Como estes dois conversam". IA: chave dois_valores_narrativa.</div></div><span style="font-size:11px;background:#FFF4D6;color:#9A6500;padding:3px 8px;border-radius:4px;white-space:nowrap;">IA + dados</span></div>
+<div class="pg-item"><div class="pg-num">Pg 26</div><div><div class="pg-title">🔗 Leitura Integrada das Três Camadas — Etapa 03</div><div class="pg-desc">Tabela de 3 linhas: DISC/Jung/Spranger. Síntese integrada. Onde confirmam, complementam e geram tensão. IA: chave leitura_integrada.</div></div><span style="font-size:11px;background:#FFF4D6;color:#9A6500;padding:3px 8px;border-radius:4px;white-space:nowrap;">3 camadas</span></div>
+<div class="pg-item"><div class="pg-num">Pg 27-28</div><div><div class="pg-title">📐👤 Painel Consolidado + Resumo do Perfil (8 blocos)</div><div class="pg-desc">Tudo em uma página: barras + Jung + Spranger + Estilos. 8 blocos de síntese. IA: resumo_perfil_8_blocos.</div></div><span style="font-size:11px;background:#FFF4D6;color:#9A6500;padding:3px 8px;border-radius:4px;white-space:nowrap;">IA + consolidação</span></div>
+<div class="pg-item"><div class="pg-num">Pg 29</div><div><div class="pg-title">👑 O Seu Estilo de Liderança — Etapa 04</div><div class="pg-desc">4 estilos com ponderação DISC (algoritmo Sec 16). Executivo / Metódico / Motivador / Sistemático com percentuais. Badge: DERIVADO DO SEU ESCORE.</div></div><span style="font-size:11px;background:#E8F0F8;color:#284F75;padding:3px 8px;border-radius:4px;white-space:nowrap;">Algoritmo liderança</span></div>
+<div class="pg-item"><div class="pg-num">Pg 30-32</div><div><div class="pg-title">🌟🎯📐 Mapa de Competências — Fundamento + Radar + Detalhe</div><div class="pg-desc">Introdução. Gráfico radar 12 competências (Natural contínua + Adaptado tracejada). Todas as 16 com barras individuais agrupadas por fator.</div></div><span style="font-size:11px;background:#E8F0F8;color:#284F75;padding:3px 8px;border-radius:4px;white-space:nowrap;">16 competências</span></div>
+<div class="pg-item"><div class="pg-num">Pg 33-34</div><div><div class="pg-title">⚠️ Pontos a Desenvolver — 6 pontos (dupla página)</div><div class="pg-desc">"Desenvolver não significa corrigir quem você é." 6 pontos estruturados: nome + como aparece + impacto + prática. Ponto 01 = alavanca principal. IA: seis_pontos_desenvolver.</div></div><span style="font-size:11px;background:#FFF4D6;color:#9A6500;padding:3px 8px;border-radius:4px;white-space:nowrap;">IA + análise</span></div>
+<div class="pg-item"><div class="pg-num">Pg 35-40</div><div><div class="pg-title">🗣️ Comunicação e Liderança de Perfis (6 páginas)</div><div class="pg-desc">Como se comunicar com D/I/S/C. Como liderar D/I/S/C. Tabelas estáticas com notas personalizadas para os perfis próximos/distantes do avaliado. Badge: APLICAÇÃO PRÁTICA.</div></div><span style="font-size:11px;background:#FBE9E9;color:#A51F1F;padding:3px 8px;border-radius:4px;white-space:nowrap;">Tabelas estáticas</span></div>
+<div class="pg-item"><div class="pg-num">Pg 41</div><div><div class="pg-title">🚀 O Desenvolvimento Continua — Etapa 05</div><div class="pg-desc">Mensagem final. "Conhecer a si mesmo é uma decisão, não um acontecimento." IA: mensagem_final (100–130 palavras, tom pessoal e humano).</div></div><span style="font-size:11px;background:#FFF4D6;color:#9A6500;padding:3px 8px;border-radius:4px;white-space:nowrap;">IA + texto fixo</span></div>
+<div class="pg-item"><div class="pg-num">Pg 42</div><div><div class="pg-title">🏛️ Impacto Academy — Página Institucional</div><div class="pg-desc">Quem somos / Missão / Visão. "Seu Mapa não termina nesta página." Próximos passos. Canais oficiais. Logo Impacto Academy. Dados personalizáveis por facilitador.</div></div><span style="font-size:11px;background:#E8F0F8;color:#284F75;padding:3px 8px;border-radius:4px;white-space:nowrap;">Dados facilitador</span></div>
+</section>
+
+
+<!-- ========= SEC 18 ========= -->
+<section id="s18">
+<div class="sec-num">18 · Prompt Completo da IA — Claude API</div>
+<div class="sec-badge">★ Integrado: chaves pdi e leituras_recomendadas restauradas</div>
+<h2>Como o Claude gera o relatório</h2>
+<p class="lead">Modelo: <code>claude-sonnet-5</code> via Anthropic API (a v2.1 citava claude-sonnet-4-20250514, já desatualizado; confirmar o modelo vigente na data da implementação). Max tokens: 8.000 por chamada (o JSON completo passa de 4.000 com folga). A maioria das páginas usa texto estático — a IA gera as seções de síntese e análise integrada.</p>
+
+<div class="code">
+<div class="code-label">// SYSTEM PROMPT — enviado em toda chamada</div>
+<pre><span class="cc">// Você é o especialista em comportamento humano da plataforma Mapa Comportamental.</span>
+<span class="cc">// Sua função é gerar análises precisas baseadas nos scores do inventário comportamental.</span>
+
+<span class="cc">// METODOLOGIA</span>
+<span class="cc">// 3 camadas: DISC (Marston 1928) + Tipos Psicológicos (Jung 1921) + Valores (Spranger 1914).</span>
+<span class="cc">// NUNCA mencione: CIS, FEBRACIS, Sólides, TTI, Wiley, DiSC® ou qualquer concorrente.</span>
+<span class="cc">// Use "DISC" sem símbolo. Nunca "DiSC®".</span>
+<span class="cc">// Os escores DISC são ipsativos (somam 200): compare fatores dentro da pessoa, nunca com outras pessoas.</span>
+<span class="cc">// Se a confiabilidade da aplicação for baixa, use linguagem mais cautelosa e sugira confirmar na devolutiva.</span>
+
+<span class="cc">// LINGUAGEM E TOM</span>
+<span class="cc">// - Escreva SEMPRE em segunda pessoa: "você", "seu", "sua"</span>
+<span class="cc">// - Tom: direto, claro, humano — como especialista falando com precisão</span>
+<span class="cc">// - Nunca julgamento de valor (bom/ruim/melhor/pior/certo/errado)</span>
+<span class="cc">// - Nunca linguagem clínica ou diagnóstica</span>
+<span class="cc">// - Sempre começa pelos pontos fortes antes dos desafios</span>
+<span class="cc">// - Desafios = "potencial a ampliar" ou "padrão a desenvolver", nunca "fraqueza"</span>
+<span class="cc">// - Use os scores exatos para calibrar a profundidade. D=89 é radicalmente diferente de D=52.</span>
+<span class="cc">// - A pessoa DEVE se reconhecer com precisão — textos genéricos são o pior erro.</span>
+<span class="cc">// - Cada output deve ser único para este avaliado, não poderia ser dito de outra pessoa.</span>
+
+<span class="cc">// FORMATO DA RESPOSTA</span>
+<span class="cc">// Responda SEMPRE com JSON válido e completo.</span>
+<span class="cc">// NUNCA texto fora do JSON. NUNCA markdown. NUNCA aspas duplas dentro de strings.</span></pre>
+</div>
+
+<div class="code">
+<div class="code-label">// USER PROMPT — montado dinamicamente com os dados do avaliado</div>
+<pre><span class="cc">// IDENTIFICAÇÃO</span>
+<span class="cs">Nome: ${avaliado.nome}</span>
+<span class="cs">Pronome: ${avaliado.pronome || 'neutro'}</span>
+<span class="cs">Data de emissão: ${data_emissao}</span>
+<span class="cs">Código: ${assessment.codigo}</span>
+
+<span class="cc">// DISC — PERFIL NATURAL</span>
+<span class="cs">D (Dominante): ${n_d}% — Zona: ${zona_nd}</span>
+<span class="cs">I (Influente): ${n_i}% — Zona: ${zona_ni}</span>
+<span class="cs">S (Estável): ${n_s}% — Zona: ${zona_ns}</span>
+<span class="cs">C (Conforme): ${n_c}% — Zona: ${zona_nc}</span>
+<span class="cs">Perfil natural: ${perfil_natural}</span>
+
+<span class="cc">// DISC — PERFIL ADAPTADO</span>
+<span class="cs">D adaptado: ${a_d}% — Zona: ${zona_ad}</span>
+<span class="cs">I adaptado: ${a_i}% — Zona: ${zona_ai}</span>
+<span class="cs">S adaptado: ${a_s}% — Zona: ${zona_as}</span>
+<span class="cs">C adaptado: ${a_c}% — Zona: ${zona_ac}</span>
+
+<span class="cc">// ÍNDICES</span>
+<span class="cs">Índice de adaptação: ${indice_adaptacao} (${class_adaptacao})</span>
+<span class="cs">Amplitude natural: ${amplitude_natural}</span>
+<span class="cs">Fatores polarizados: ${fatores_polarizados.join(', ') || 'nenhum'}</span>
+<span class="cs">Variações D/I/S/C: ${var_d} / ${var_i} / ${var_s} / ${var_c}</span>
+
+<span class="cc">// JUNG</span>
+<span class="cs">E: ${j_e}% | I: ${j_i}% → polo: ${polo_ei}</span>
+<span class="cs">N: ${j_n}% | S: ${j_s}% → polo: ${polo_ns}</span>
+<span class="cs">T: ${j_t}% | F: ${j_f}% → polo: ${polo_tf}</span>
+<span class="cs">Tipo: ${tipo_jung} | Tipo completo: ${tipo_completo}</span>
+<span class="cs">Hierarquia: 1ª ${func_dominante} | 2ª ${func_auxiliar} | 3ª ${func_terciaria} | 4ª ${func_inferior}</span>
+
+<span class="cc">// VALORES SPRANGER</span>
+<span class="cs">Político: ${v_pol} (${nivel_pol}) | Econômico: ${v_eco} (${nivel_eco})</span>
+<span class="cs">Social: ${v_soc} (${nivel_soc}) | Princípios: ${v_pri} (${nivel_pri})</span>
+<span class="cs">Teórico: ${v_teo} (${nivel_teo}) | Estético: ${v_est} (${nivel_est})</span>
+<span class="cs">Hierarquia Spranger: ${hierarquia_valores.join(' > ')}</span>
+
+<span class="cc">// COMPETÊNCIAS (medidas, natural → adaptado)</span>
+<span class="cs">${competencias.map(c => `${c.nome}: ${c.nat} → ${c.ada}`).join(' | ')}</span>
+
+<span class="cc">// VALIDADE</span>
+<span class="cs">Confiabilidade da aplicação: ${confiabilidade} | Alertas: ${alertas.join('; ') || 'nenhum'}</span></pre>
+</div>
+
+<div class="code">
+<div class="code-label">// JSON DE RESPOSTA — Todas as chaves que o Claude deve gerar</div>
+<pre>{
+  <span class="json-key">"sintese_combinacao_natural"</span>: <span class="json-val">"300–400 palavras sobre o perfil combinado natural. Começar com os dois fatores predominantes e o que a combinação produz. Específico para estes scores exatos."</span>,
+
+  <span class="json-key">"quatro_cruzamentos"</span>: {
+    <span class="json-key">"alto_d_baixo_s"</span>: <span class="json-val">"3–4 frases sobre o efeito deste cruzamento específico"</span>,
+    <span class="json-key">"alto_d_baixo_c"</span>: <span class="json-val">"3–4 frases"</span>,
+    <span class="json-key">"alto_i_baixo_s"</span>: <span class="json-val">"3–4 frases"</span>,
+    <span class="json-key">"alto_i_baixo_c"</span>: <span class="json-val">"3–4 frases"</span>
+  },
+
+  <span class="json-key">"custo_adaptacao_narrativa"</span>: <span class="json-val">"150–200 palavras sobre o que o nível de adaptação atual significa para este avaliado."</span>,
+
+  <span class="json-key">"fator_d_narrativa"</span>: <span class="json-val">"200 palavras. Como o fator D se manifesta nesta intensidade e o que a queda no adaptado significa."</span>,
+  <span class="json-key">"fator_i_narrativa"</span>: <span class="json-val">"200 palavras. Idem para I."</span>,
+  <span class="json-key">"fator_s_narrativa"</span>: <span class="json-val">"200 palavras. Se polarizado, detalhar o que polarização significa no dia a dia."</span>,
+  <span class="json-key">"fator_c_narrativa"</span>: <span class="json-val">"200 palavras. Se maior variação, enfatizar o custo."</span>,
+
+  <span class="json-key">"seis_forcas"</span>: [
+    { <span class="json-key">"fator"</span>: <span class="json-val">"D 89"</span>, <span class="json-key">"nome"</span>: <span class="json-val">"Decidir quando o grupo trava"</span>, <span class="json-key">"descricao"</span>: <span class="json-val">"1–2 frases onde converte em resultado."</span> }
+    <span class="json-comment">// 6 forças totais</span>
+  ],
+
+  <span class="json-key">"jung_e_i_narrativa"</span>: <span class="json-val">"120 palavras. Como o score exato do polo predominante aparece. Aplicação prática."</span>,
+  <span class="json-key">"jung_n_s_narrativa"</span>: <span class="json-val">"120 palavras. Idem para N/S."</span>,
+  <span class="json-key">"jung_t_f_narrativa"</span>: <span class="json-val">"120 palavras. Idem para T/F. Incluir diferença de pontos entre os polos."</span>,
+  <span class="json-key">"hierarquia_funcional_narrativa"</span>: <span class="json-val">"150 palavras sobre dominante+auxiliar. O que a inferior gera sob pressão."</span>,
+  <span class="json-key">"funcao_inferior_sinais"</span>: [<span class="json-val">"Sinal 1"</span>, <span class="json-val">"Sinal 2"</span>, <span class="json-val">"Sinal 3"</span>],
+
+  <span class="json-key">"dois_valores_narrativa"</span>: <span class="json-val">"200 palavras. Os dois valores mais altos: o que representam, onde aparecem, risco. Como conversam e quando divergem."</span>,
+  <span class="json-key">"leitura_integrada"</span>: <span class="json-val">"250 palavras. Onde as 3 camadas se confirmam, complementam, geram tensão."</span>,
+
+  <span class="json-key">"resumo_perfil_8_blocos"</span>: {
+    <span class="json-key">"essencia"</span>: <span class="json-val">"2 frases diretas"</span>,
+    <span class="json-key">"contribuicao_maior_valor"</span>: <span class="json-val">"2 frases"</span>,
+    <span class="json-key">"ambiente_melhor_performance"</span>: <span class="json-val">"2 frases"</span>,
+    <span class="json-key">"estilo_comunicacao"</span>: <span class="json-val">"2 frases"</span>,
+    <span class="json-key">"motivadores"</span>: <span class="json-val">"2 frases"</span>,
+    <span class="json-key">"riscos_excesso"</span>: <span class="json-val">"2 frases"</span>,
+    <span class="json-key">"prioridades_desenvolvimento"</span>: <span class="json-val">"2 frases"</span>,
+    <span class="json-key">"direcao_recomendada"</span>: <span class="json-val">"2 frases"</span>
+  },
+
+  <span class="json-key">"seis_pontos_desenvolver"</span>: [
+    {
+      <span class="json-key">"num"</span>: 1,
+      <span class="json-key">"titulo"</span>: <span class="json-val">"Nome do ponto (4–6 palavras)"</span>,
+      <span class="json-key">"como_aparece"</span>: <span class="json-val">"Derivado do escore — 1 frase"</span>,
+      <span class="json-key">"impacto_possivel"</span>: <span class="json-val">"1–2 frases sobre o custo de não desenvolver"</span>,
+      <span class="json-key">"pratica_recomendada"</span>: <span class="json-val">"Ação específica e imediata — 1 frase"</span>
+    }
+    <span class="json-comment">// 6 pontos. Ponto 1 = alavanca principal (causa). Pontos 2–6 = condutas e consequências.</span>
+  ],
+
+  <span class="json-key">"leituras_recomendadas"</span>: [
+    <span class="json-comment">// ★ RESTAURADO DO v1.0 — Pg 36 do relatório</span>
+    <span class="json-comment">// Selecionar 5 livros do banco de referência (Sec 19) adaptados ao perfil combinado.</span>
+    <span class="json-comment">// Pode incluir outros livros além da lista quando pertinente ao perfil específico.</span>
+    {
+      <span class="json-key">"titulo"</span>: <span class="json-val">"Título do livro"</span>,
+      <span class="json-key">"autor"</span>: <span class="json-val">"Nome do autor"</span>,
+      <span class="json-key">"por_que_para_voce"</span>: <span class="json-val">"1–2 frases específicas para o perfil deste avaliado, não para o perfil em geral"</span>
+    }
+    <span class="json-comment">// 5 livros totais</span>
+  ],
+
+  <span class="json-key">"pdi"</span>: {
+    <span class="json-comment">// ★ RESTAURADO DO v1.0 — Pg 37 do relatório</span>
+    <span class="json-key">"prioridade_principal"</span>: <span class="json-val">"1 frase: qual o ponto de desenvolvimento mais impactante para este perfil agora"</span>,
+    <span class="json-key">"acoes_semanais"</span>: [
+      <span class="json-val">"Ação 1 — prática, imediata, observável"</span>,
+      <span class="json-val">"Ação 2 — diferente da ação 1"</span>,
+      <span class="json-val">"Ação 3"</span>
+    ],
+    <span class="json-key">"desafio_30_dias"</span>: <span class="json-val">"1–2 frases: um desafio concreto para os próximos 30 dias. Deve ser específico o suficiente para ter evidência observável de cumprimento."</span>,
+    <span class="json-key">"como_medir"</span>: <span class="json-val">"1 frase: como o avaliado sabe que está avançando"</span>
+  },
+
+  <span class="json-key">"mensagem_final"</span>: <span class="json-val">"100–130 palavras. Tom pessoal, humano e direto. Sem clichê motivacional. Deve soar como algo que este avaliado específico precisa ouvir neste momento — não como mensagem genérica de encerramento."</span>
+}</pre>
+</div>
+</section>
+
+<!-- ========= SEC 19 ========= -->
+<section id="s19">
+<div class="sec-num">19 · Banco de Leituras por Perfil</div>
+<div class="sec-badge">★ NOVO — Integrado do v1.0 — Referência para a IA gerar a Pg 36</div>
+<h2>5 livros curados para cada perfil DISC</h2>
+<p class="lead">Este banco é a referência que a IA usa para recomendar livros na Pg 36. A IA seleciona desta lista e adapta o motivo para o perfil combinado específico do avaliado — ou pode incluir outros livros além desta lista quando pertinente ao perfil único.</p>
+
+<h3 style="color:#C62828;">D — Dominância</h3>
+<div class="livro"><div class="livro-num">01</div><div><div class="livro-title">Pense e Enriqueça</div><div class="livro-author">Napoleon Hill</div><div class="livro-why">Combustível para canalizar a ambição de forma estruturada. Trabalha a persistência que o D tende a negligenciar — energia sem sistema não sustenta resultado no longo prazo.</div></div></div>
+<div class="livro"><div class="livro-num">02</div><div><div class="livro-title">As 21 Irrefutáveis Leis da Liderança</div><div class="livro-author">John C. Maxwell</div><div class="livro-why">Transforma o impulso de liderança natural em método. Ensina que liderar não é só dominar — é desenvolver. O D aprende que autoridade que dura é construída, não imposta.</div></div></div>
+<div class="livro"><div class="livro-num">03</div><div><div class="livro-title">Crucial Conversations</div><div class="livro-author">Patterson et al.</div><div class="livro-why">Antídoto para a comunicação agressiva — como ter conversas difíceis sem atropelar as pessoas. O D aprende que velocidade e clareza não precisam custar o relacionamento.</div></div></div>
+<div class="livro"><div class="livro-num">04</div><div><div class="livro-title">Inteligência Emocional</div><div class="livro-author">Daniel Goleman</div><div class="livro-why">Abre os olhos para a dimensão emocional que é o maior ponto cego do D. Mostra que o mais eficaz não é o mais intenso — é o que sabe quando e como usar a intensidade.</div></div></div>
+<div class="livro"><div class="livro-num">05</div><div><div class="livro-title">O Poder do Hábito</div><div class="livro-author">Charles Duhigg</div><div class="livro-why">Cria sistemas que sustentam resultado no longo prazo. O D tem energia mas pode ser inconsistente quando o desafio passa. Hábitos transformam intensidade em constância.</div></div></div>
+
+<h3 style="color:#9A6500;">I — Influência</h3>
+<div class="livro"><div class="livro-num">01</div><div><div class="livro-title">Como Fazer Amigos e Influenciar Pessoas</div><div class="livro-author">Dale Carnegie</div><div class="livro-why">Valida e estrutura o que o I já faz intuitivamente, adicionando profundidade consciente. O I aprende que influência intencional multiplica o que até então era instintivo.</div></div></div>
+<div class="livro"><div class="livro-num">02</div><div><div class="livro-title">Essencialismo</div><div class="livro-author">Greg McKeown</div><div class="livro-why">O I começa muitos projetos e termina poucos. Ensina a arte do menos e melhor — que a força do sim depende da clareza do não. Transformador para quem dispersa energia com facilidade.</div></div></div>
+<div class="livro"><div class="livro-num">03</div><div><div class="livro-title">A Arte de Fazer Acontecer (GTD)</div><div class="livro-author">David Allen</div><div class="livro-why">Sistema de organização perfeito para quem tem muitas ideias e pouca estrutura. O I aprende a converter entusiasmo em entrega — sem sacrificar a criatividade que é o seu ativo maior.</div></div></div>
+<div class="livro"><div class="livro-num">04</div><div><div class="livro-title">Presença</div><div class="livro-author">Amy Cuddy</div><div class="livro-why">Usa a presença natural do I com mais consciência e propósito. Mostra como alinhar o que sente por dentro com o que projeta por fora — presença autentica vs performance social.</div></div></div>
+<div class="livro"><div class="livro-num">05</div><div><div class="livro-title">A Coragem de Ser Imperfeito</div><div class="livro-author">Brené Brown</div><div class="livro-why">O I precisa aprender que vulnerabilidade não destrói relacionamentos — os fortalece. Leitura essencial para quem constrói imagem mas tem medo de ser visto de perto.</div></div></div>
+
+<h3 style="color:#267057;">S — Estabilidade</h3>
+<div class="livro"><div class="livro-num">01</div><div><div class="livro-title">A Coragem de Ser Imperfeito</div><div class="livro-author">Brené Brown</div><div class="livro-why">Ensina que expressar sentimentos não destrói relacionamentos — os fortalece. Transformador para o S que guarda tudo e acumula ressentimentos que nunca foram ditos.</div></div></div>
+<div class="livro"><div class="livro-num">02</div><div><div class="livro-title">Limites</div><div class="livro-author">Cloud e Townsend</div><div class="livro-why">O livro mais direto para o problema central do S: aprender a dizer não sem culpa. Mostra que limites não destroem relacionamentos — os protegem.</div></div></div>
+<div class="livro"><div class="livro-num">03</div><div><div class="livro-title">Comunicação Não-Violenta</div><div class="livro-author">Marshall Rosenberg</div><div class="livro-why">O S precisa expressar o que sente sem medo de conflito. CNV é o método ideal — comunicação direta que não agride e não evita o que precisa ser dito.</div></div></div>
+<div class="livro"><div class="livro-num">04</div><div><div class="livro-title">Os 7 Hábitos das Pessoas Altamente Eficazes</div><div class="livro-author">Stephen Covey</div><div class="livro-why">Ajuda a desenvolver os hábitos de iniciativa e liderança pessoal que o S tende a negligenciar. Mostra que ser reativo não é uma virtude — é um custo.</div></div></div>
+<div class="livro"><div class="livro-num">05</div><div><div class="livro-title">Quem Mexeu no Meu Queijo?</div><div class="livro-author">Spencer Johnson</div><div class="livro-why">Para o S que resiste à mudança. Leitura acessível e poderosa sobre adaptabilidade — que a segurança não está em manter o que era, mas em encontrar o próximo passo com rapidez.</div></div></div>
+
+<h3 style="color:#315F8A;">C — Conformidade</h3>
+<div class="livro"><div class="livro-num">01</div><div><div class="livro-title">Rápido e Devagar</div><div class="livro-author">Daniel Kahneman</div><div class="livro-why">Valida o jeito de pensar do C mas revela quando a análise excessiva vira armadilha decisória. O C aprende a identificar quando seu Sistema 2 está bloqueando em vez de protegendo.</div></div></div>
+<div class="livro"><div class="livro-num">02</div><div><div class="livro-title">A Arte de Fazer Acontecer (GTD)</div><div class="livro-author">David Allen</div><div class="livro-why">O C planeja muito e às vezes não executa. GTD transforma análise em ação — um sistema que captura a complexidade sem travar na perfeição do plano.</div></div></div>
+<div class="livro"><div class="livro-num">03</div><div><div class="livro-title">Mindset — A Nova Psicologia do Sucesso</div><div class="livro-author">Carol Dweck</div><div class="livro-why">Transforma a relação do C com o fracasso — antídoto para o perfeccionismo paralisante. Mostra que errar faz parte de crescer, não é evidência de incapacidade.</div></div></div>
+<div class="livro"><div class="livro-num">04</div><div><div class="livro-title">Inteligência Emocional</div><div class="livro-author">Daniel Goleman</div><div class="livro-why">O C subestima a dimensão emocional. Mostra que IE é tão importante quanto o QI para resultado real — e que precisão técnica sem conexão humana tem alcance limitado.</div></div></div>
+<div class="livro"><div class="livro-num">05</div><div><div class="livro-title">Comunicação Não-Violenta</div><div class="livro-author">Marshall Rosenberg</div><div class="livro-why">O C formal aprende a se conectar de forma mais humana sem perder a precisão. CNV mostra que clareza e empatia não são opostos — são complementares.</div></div></div>
+</section>
+
+<!-- ========= SEC 20 ========= -->
+<section id="s20">
+<div class="sec-num">20 · Schema Banco de Dados — PostgreSQL + Prisma</div>
+<div class="sec-badge">★ v2.2 — Answer e Result redesenhados para o inventário</div>
+<h2>Todas as tabelas necessárias</h2>
+
+<div class="code">
+<div class="code-label">// Schema Prisma — v2.2 (Answer por tela, Result com versão do instrumento, competências medidas e validade)</div>
+<pre><span class="cc">// users — Facilitadores e administradores</span>
+<span class="ck">model</span> <span class="cn">User</span> {
+  id              <span class="cs">String</span>    @id @default(cuid())
+  email           <span class="cs">String</span>    @unique
+  name            <span class="cs">String</span>
+  company_name    <span class="cs">String?</span>
+  phone           <span class="cs">String?</span>
+  role            <span class="cs">Role</span>      <span class="cc">// ADMIN | FACILITADOR</span>
+  password_hash   <span class="cs">String</span>
+  credits_balance <span class="cs">Int</span>       @default(0)
+  active          <span class="cs">Boolean</span>   @default(true)
+  created_at      <span class="cs">DateTime</span>  @default(now())
+  updated_at      <span class="cs">DateTime</span>  @updatedAt
+  assessments     <span class="cs">Assessment[]</span>
+  transactions    <span class="cs">CreditTransaction[]</span>
+}
+
+<span class="cc">// assessments — Cada assessment criado pelo facilitador</span>
+<span class="ck">model</span> <span class="cn">Assessment</span> {
+  id              <span class="cs">String</span>          @id @default(cuid())
+  token           <span class="cs">String</span>          @unique
+  codigo          <span class="cs">String</span>          @unique  <span class="cc">// ex: "MC-2026-0823-VA"</span>
+  facilitador_id  <span class="cs">String</span>
+  avaliado_nome   <span class="cs">String</span>
+  avaliado_email  <span class="cs">String?</span>
+  instrutor_nome  <span class="cs">String?</span>         <span class="cc">// aparece na capa</span>
+  tipo_relatorio  <span class="cs">TipoRelatorio</span>   <span class="cc">// S1 | S2 | S3 | S4</span>
+  status          <span class="cs">Status</span>          <span class="cc">// PENDENTE | EM_PROGRESSO | CONCLUIDO | EXPIRADO</span>
+  credits_used    <span class="cs">Int</span>
+  started_at      <span class="cs">DateTime?</span>
+  completed_at    <span class="cs">DateTime?</span>
+  expires_at      <span class="cs">DateTime</span>        <span class="cc">// default: 30 dias após criação</span>
+  versao_instrumento <span class="cs">String</span>     @default("MC-INV 2.2")
+  semente_ordem   <span class="cs">Int</span>             <span class="cc">// sorteio da ordem das telas e itens</span>
+  consentimento_em <span class="cs">DateTime?</span>      <span class="cc">// LGPD: gravado antes da 1ª tela</span>
+  created_at      <span class="cs">DateTime</span>        @default(now())
+  facilitador     <span class="cs">User</span>            @relation(fields:[facilitador_id], references:[id])
+  answers         <span class="cs">Answer[]</span>
+  result          <span class="cs">Result?</span>
+}
+
+// answers — uma linha por TELA (69 por aplicação). Reenvio da mesma tela sobrescreve.
+model Answer {
+  id               String    @id @default(cuid())
+  assessment_id    String
+  etapa            Int       // 1 natural | 2 adaptado | 3 Jung | 4 valores
+  tela             String    // &quot;G07&quot; (etapas 1 e 2) | &quot;EI04&quot; (etapa 3) | &quot;V03&quot; (etapa 4)
+  ordem_final      Json?     // etapas 1, 2, 4: [&quot;G07-S&quot;,&quot;G07-D&quot;,&quot;G07-C&quot;,&quot;G07-I&quot;] (1º = mais)
+  lado_polo_a      String?   // etapa 3: &quot;esquerda&quot; | &quot;direita&quot;
+  resposta_exibida Int?      // etapa 3: botão clicado 0..3 (0 = muito esquerda)
+  resposta_polo_a  Int?      // etapa 3: convertida ao polo A (3 = muito A ... 0 = muito B)
+  moveu_item       Boolean   // falso se enviou na ordem inicial sorteada
+  entrou_em        DateTime
+  saiu_em          DateTime
+  assessment       Assessment @relation(fields:[assessment_id], references:[id])
+  @@unique([assessment_id, etapa, tela])
+}
+
+// results — resultado calculado pelo motor + narrativa da IA
+model Result {
+  id                  String    @id @default(cuid())
+  assessment_id       String    @unique
+  versao_instrumento  String    // &quot;MC-INV 2.2&quot;
+  versao_motor        String    // &quot;2.2.0&quot;
+  // DISC (0–100, 1 casa; cada condição soma 200)
+  nat_d               Float
+  nat_i               Float
+  nat_s               Float
+  nat_c               Float
+  ada_d               Float
+  ada_i               Float
+  ada_s               Float
+  ada_c               Float
+  zonas_nat           Json      // {&quot;D&quot;:&quot;A&quot;,&quot;I&quot;:&quot;B&quot;,...}  régua de 6 zonas
+  zonas_ada           Json
+  perfil_natural      String    // &quot;DI&quot; | &quot;D&quot; | &quot;EQUILIBRADO&quot;
+  perfil_adaptado     String
+  // Índices
+  variacoes           Json      // {&quot;D&quot;:-12.5,...}
+  indice_adaptacao    Float
+  classe_adaptacao    String
+  amplitude_natural   Float
+  fatores_polarizados String[]
+  // Competências (16 chaves: ousadia, comando, objetividade, assertividade, persuasao,
+  // extroversao, entusiasmo, sociabilidade, empatia, paciencia, constancia, cooperacao,
+  // organizacao, detalhismo, analise, investigacao)
+  competencias_nat    Json
+  competencias_ada    Json
+  lideranca           Json      // {&quot;executivo&quot;:34.6,&quot;metodico&quot;:11.5,&quot;motivador&quot;:30.8,&quot;sistematico&quot;:23.1}
+  // Jung
+  jung_e              Float     // I = 100 − E
+  jung_n              Float     // S = 100 − N
+  jung_t              Float     // F = 100 − T
+  tipo_jung           String    // &quot;ENT&quot;
+  func_dominante      String    // &quot;Pensamento Extrovertido&quot;
+  func_auxiliar       String
+  func_terciaria      String
+  func_inferior       String
+  // Valores (0–100; soma 300)
+  val_teorico         Float
+  val_economico       Float
+  val_estetico        Float
+  val_social          Float
+  val_politico        Float
+  val_principios      Float     // código PRI (&quot;regulatório&quot; na v2.1)
+  ranking_valores     String[]  // [&quot;PRI&quot;,&quot;ECO&quot;,...]
+  // Validade
+  confiabilidade      String    // &quot;alta&quot; | &quot;media&quot; | &quot;baixa&quot;
+  alertas             Json      // [{&quot;codigo&quot;:&quot;V2&quot;,&quot;peso&quot;:&quot;alto&quot;}]
+  tempo_total_s       Int
+  // IA e PDF
+  narrativa_ia        Json
+  pdf_url             String?
+  pdf_expires_at      DateTime?
+  generated_at        DateTime  @default(now())
+  assessment          Assessment @relation(fields:[assessment_id], references:[id])
+}
+
+<span class="cc">// credit_transactions — Histórico de créditos</span>
+<span class="ck">model</span> <span class="cn">CreditTransaction</span> {
+  id              <span class="cs">String</span>    @id @default(cuid())
+  user_id         <span class="cs">String</span>
+  tipo            <span class="cs">TipoTx</span>   <span class="cc">// COMPRA | USO | ESTORNO | BONUS | MANUAL</span>
+  quantidade      <span class="cs">Int</span>      <span class="cc">// positivo=entrada, negativo=saída</span>
+  descricao       <span class="cs">String</span>
+  assessment_id   <span class="cs">String?</span>
+  stripe_id       <span class="cs">String?</span>
+  created_at      <span class="cs">DateTime</span> @default(now())
+}</pre>
+</div>
+</section>
+
+<!-- ========= SEC 21 ========= -->
+<section id="s21">
+<div class="sec-num">21 · Stack Técnica + Modelo de Negócio + Cronograma</div>
+<h2>Do zero ao lançamento</h2>
+
+<div class="g4">
+  <div class="card"><div class="card-title">⚙️ Frontend + Backend</div><p style="font-size:11px;font-family:'DM Mono',monospace;line-height:1.9;">Next.js 14+ (App Router)<br>TypeScript obrigatório<br>Tailwind CSS<br>API Routes<br>Server Components</p></div>
+  <div class="card"><div class="card-title">🗄️ Banco de dados</div><p style="font-size:11px;font-family:'DM Mono',monospace;line-height:1.9;">PostgreSQL 15+<br>Neon ou Supabase<br>Prisma ORM<br>Backups diários</p></div>
+  <div class="card"><div class="card-title">🤖 IA</div><p style="font-size:11px;font-family:'DM Mono',monospace;line-height:1.9;">Claude API Anthropic<br>claude-sonnet-5 (confirmar vigente)<br>Max tokens: 8.000<br>Retry em JSON inválido</p></div>
+  <div class="card"><div class="card-title">📄 PDF</div><p style="font-size:11px;font-family:'DM Mono',monospace;line-height:1.9;">Puppeteer + HTML<br>42 páginas renderizadas<br>Fontes embutidas<br>Target: < 20 segundos</p></div>
+  <div class="card"><div class="card-title">💳 Pagamentos</div><p style="font-size:11px;font-family:'DM Mono',monospace;line-height:1.9;">Stripe (cartão intl.)<br>PagSeguro/MP (PIX/boleto)<br>Webhook automático</p></div>
+  <div class="card"><div class="card-title">📧 Email</div><p style="font-size:11px;font-family:'DM Mono',monospace;line-height:1.9;">Resend<br>Link assessment<br>Notificação conclusão<br>Confirmação compra</p></div>
+  <div class="card"><div class="card-title">☁️ Storage</div><p style="font-size:11px;font-family:'DM Mono',monospace;line-height:1.9;">AWS S3 ou Supabase<br>URLs com expiração 7 dias<br>< R$50/mês até 10k PDFs</p></div>
+  <div class="card"><div class="card-title">🚀 Deploy</div><p style="font-size:11px;font-family:'DM Mono',monospace;line-height:1.9;">Vercel Pro ou VPS Linux<br>mapacomportamental.com.br<br>SSL automático<br>PM2 + Nginx se VPS</p></div>
+</div>
+
+<h3>Modelo de Negócio — Sistema de Créditos</h3>
+<table>
+<thead><tr><th>Tipo</th><th>Créditos</th><th>Conteúdo</th><th>Páginas</th></tr></thead>
+<tbody>
+<tr><td>S1 — Essencial</td><td>1 crédito</td><td>DISC completo + narrativa IA básica</td><td>Pg 01–16</td></tr>
+<tr><td>S2 — Completo</td><td>2 créditos</td><td>S1 + Jung + Espectro + Tensões + Gatilhos</td><td>Pg 01–28</td></tr>
+<tr><td>S3 — Executivo</td><td>3 créditos</td><td>S2 + Spranger + Integração + Liderança + Competências</td><td>Pg 01–36</td></tr>
+<tr><td>S4 — Estratégico</td><td>4 créditos</td><td>Relatório completo de 42 páginas + dashboard online</td><td>Pg 01–42</td></tr>
+</tbody>
+</table>
+
+<table>
+<thead><tr><th>Pacote</th><th>Créditos</th><th>Preço ao Facilitador</th><th>Custo/crédito</th><th>Margem estimada</th></tr></thead>
+<tbody>
+<tr><td>Starter</td><td>10</td><td>R$ 290</td><td>R$ 29</td><td>~85%</td></tr>
+<tr><td>Pro</td><td>50</td><td>R$ 990</td><td>R$ 19,80</td><td>~87%</td></tr>
+<tr><td>Business</td><td>100</td><td>R$ 1.790</td><td>R$ 17,90</td><td>~88%</td></tr>
+<tr><td>Enterprise</td><td>500</td><td>R$ 6.990</td><td>R$ 13,98</td><td>~90%</td></tr>
+</tbody>
+</table>
+
+<h3>Cronograma de Desenvolvimento — 8 Semanas</h3>
+<table>
+<thead><tr><th>Fase</th><th>Semanas</th><th>Entregável</th></tr></thead>
+<tbody>
+<tr><td>S1</td><td>1–2</td><td>Infraestrutura e Autenticação — Login funcionando com roles ADMIN e FACILITADOR. Setup Next.js, PostgreSQL + Prisma, NextAuth.js. 3 telas básicas. Deploy staging.</td></tr>
+<tr><td>S2</td><td>2–3</td><td>Motor do Questionário — Avaliado responde as 69 telas do inventário MC-INV 2.2 pelo link único. Itens carregados de inventario.json (Sec 15). Ordenação por toque, lado e ordem sorteados com semente gravada. Tela mobile-first, acesso por token sem login. Salvar cada resposta em tempo real.</td></tr>
+<tr><td>S3</td><td>3–4</td><td>Algoritmos de Cálculo — Porte de motor_referencia.py para TypeScript, com os testes de ouro T1–T8 portados e passando. Sistema calcula e salva todos os scores ao concluir. DISC Natural + Adaptado, índices, Jung, Spranger, 16 competências, estilos de liderança. Salvar tudo na tabela results.</td></tr>
+<tr><td>S4</td><td>4–5</td><td>Integração Claude API + Dashboard Online — IA gera narrativa e avaliado vê resultado online. Parse do JSON. Retry automático. Dashboard com gráficos (Chart.js ou Recharts) e as 3 marcações.</td></tr>
+<tr><td>S5</td><td>5–7</td><td>Geração do PDF — Template HTML das 42 páginas com identidade visual MC 3.1 exata. Puppeteer. Todas as páginas com conteúdo correto. Armazenar PDF no S3.</td></tr>
+<tr><td>S6</td><td>7</td><td>Dashboard do Facilitador — Criar assessments, ver histórico, gerenciar créditos. Comprar créditos via Stripe/PagSeguro.</td></tr>
+<tr><td>S7</td><td>7–8</td><td>Dashboard Admin — Visão geral, gestão de usuários, operações de crédito, relatórios de uso. Painel financeiro básico.</td></tr>
+<tr><td>S8</td><td>8</td><td>Lançamento — Testes E2E, ajustes de performance, deploy produção, DNS, monitoramento. Checklist de lançamento completo.</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ========= SEC 22 ========= -->
+<section id="s22">
+<div class="sec-num">22 · Checklist de Lançamento</div>
+<h2>Nada pode ficar de fora</h2>
+
+<div class="g3">
+  <div class="card"><div class="card-title">✓ Técnico</div><ul style="font-size:12px;list-style:none;line-height:2;"><li>· PostgreSQL + Prisma rodando</li><li>· Inventário MC-INV 2.2 carregado de inventario.json</li><li>· Testes de ouro T1–T8 passando no código de produção</li><li>· Definições do botão "?" aprovadas (T1)</li><li>· Algoritmos testados com perfis reais</li><li>· Claude API integrada com retry</li><li>· PDF 42 páginas gerado e validado</li><li>· Stripe + PagSeguro ativos</li><li>· S3 com URLs de expiração</li><li>· Logs de erro configurados</li></ul></div>
+  <div class="card"><div class="card-title">✓ Legal</div><ul style="font-size:12px;list-style:none;line-height:2;"><li>· INPI protocolado</li><li>· Política de privacidade publicada</li><li>· Termos de uso publicados</li><li>· Consentimento LGPD antes do quiz</li><li>· DPO definido</li><li>· Textos 100% originais</li><li>· Sem referência a CIS/Sólides/TTI</li></ul></div>
+  <div class="card"><div class="card-title">✓ Produto</div><ul style="font-size:12px;list-style:none;line-height:2;"><li>· PDF validado por Valmer</li><li>· Narrativa da IA revisada (3+ perfis)</li><li>· Fluxo completo testado end-to-end</li><li>· Mobile testado (iOS + Android)</li><li>· Precificação definida</li><li>· Inventário respondido e aprovado por Valmer</li><li>· Nomes das competências aprovados (T4)</li><li>· Primeiros facilitadores onboarded</li><li>· Domínio mapacomportamental.com.br</li></ul></div>
+</div>
+</section>
+
+
+
+<!-- ========= SEC 23 ========= -->
+<section id="s23">
+<div class="sec-num">23 · Pipeline Completo de Geração do Relatório</div>
+<div class="sec-badge">★ NOVO — O fluxo técnico de ponta a ponta</div>
+<h2>Do clique final do avaliado ao PDF de 42 páginas</h2>
+<p class="lead">Esta seção responde a pergunta mais importante do desenvolvedor: como tudo se conecta? O fluxo completo em 5 etapas — da resposta salva no banco até o PDF entregue ao avaliado.</p>
+
+<div class="nota nota-ouro"><strong>Leia antes de implementar:</strong> O relatório tem dois tipos de conteúdo. Conteúdo CALCULADO (gráficos, barras, tabelas, descritores) — o sistema monta com os scores do banco, sem chamar a IA. Conteúdo NARRATIVO (síntese, análise dos fatores, integração das 3 camadas, PDI) — o sistema monta o prompt, chama a IA uma vez, salva o JSON de retorno e usa cada chave na página correspondente. A IA é chamada UMA VEZ por relatório, não por página.</div>
+
+<div class="g2" style="margin-bottom:24px;">
+  <div class="card" style="border-left:4px solid #C62828;">
+    <div class="card-title" style="color:#C62828;">Conteúdo CALCULADO — sistema monta</div>
+    <ul style="font-size:12px;list-style:none;line-height:2;">
+      <li>· Pg 06 — barras Natural vs Adaptado (scores do banco)</li>
+      <li>· Pg 09–12 — adjetivos por fator e zona (tabela Sec 09)</li>
+      <li>· Pg 23 — arquétipo composto (tabela Sec 10)</li>
+      <li>· Pg 24 — gráfico de barras dos 6 valores Spranger</li>
+      <li>· Pg 29 — estilos de liderança (algoritmo Sec 16)</li>
+      <li>· Pg 31–32 — radar e barras das 16 competências</li>
+      <li>· Pg 35–40 — tabelas de comunicação e liderança (estáticas)</li>
+    </ul>
+  </div>
+  <div class="card" style="border-left:4px solid #267057;">
+    <div class="card-title" style="color:#267057;">Conteúdo NARRATIVO — IA gera (1 chamada)</div>
+    <ul style="font-size:12px;list-style:none;line-height:2;">
+      <li>· Pg 07 — sintese_combinacao_natural + quatro_cruzamentos</li>
+      <li>· Pg 08 — custo_adaptacao_narrativa</li>
+      <li>· Pg 09–12 — fator_d/i/s/c_narrativa</li>
+      <li>· Pg 13 — seis_forcas</li>
+      <li>· Pg 18–20 — jung_e_i / n_s / t_f_narrativa</li>
+      <li>· Pg 21–22 — hierarquia_funcional_narrativa + funcao_inferior_sinais</li>
+      <li>· Pg 25 — dois_valores_narrativa</li>
+      <li>· Pg 26 — leitura_integrada</li>
+      <li>· Pg 28 — resumo_perfil_8_blocos</li>
+      <li>· Pg 33–34 — seis_pontos_desenvolver</li>
+      <li>· Pg 36 — leituras_recomendadas</li>
+      <li>· Pg 37 — pdi</li>
+      <li>· Pg 41 — mensagem_final</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Etapa 1 — Avaliado responde o inventário (frontend)</h3>
+<div class="code">
+<div class="code-label">// Salvar cada TELA em tempo real — sem &quot;enviar&quot; no final</div>
+<pre>// Chamada a cada tela concluída (69 telas: 16 + 16 + 27 + 10)
+async function saveTela(token: string, tela: {
+  etapa: 1 | 2 | 3 | 4
+  tela: string                    // &quot;G07&quot; | &quot;EI04&quot; | &quot;V03&quot;
+  ordem_final?: string[]          // etapas 1, 2, 4 — ids na ordem escolhida (1º = mais)
+  lado_polo_a?: &#x27;esquerda&#x27; | &#x27;direita&#x27;   // etapa 3
+  resposta_exibida?: 0 | 1 | 2 | 3       // etapa 3 — botão clicado
+  moveu_item: boolean
+  entrou_em: string; saiu_em: string     // ISO
+}) {
+  await fetch(`/api/assessment/${token}/tela`, { method: &#x27;POST&#x27;, body: JSON.stringify(tela) })
+  // O backend converte a etapa 3 ao polo A: esquerda → 3 - botão; direita → botão
+  // Reenvio da mesma (etapa, tela) sobrescreve (índice único no banco)
+}
+
+// Ao salvar a 69ª tela, chamar o processamento
+async function finalizeAssessment(token: string) {
+  await fetch(`/api/assessment/${token}/finalize`, { method: &#x27;POST&#x27; })
+  // O painel numérico já pode ser exibido; a narrativa chega pela fila (Etapa 3)
+}</pre>
+</div>
+<h3>Etapa 2 — Sistema calcula todos os scores (backend)</h3>
+<div class="code">
+<div class="code-label">// /api/assessment/[token]/finalize — usa o motor oficial (porte de motor_referencia.py)</div>
+<pre>// Arquivo: app/api/assessment/[token]/finalize/route.ts
+import INV from &#x27;@/data/inventario.json&#x27;            // Sec 24 — nunca redigitar os itens
+import { pontuarDisc, perfil, indices, lideranca, pontuarJung,
+         pontuarValores, zona, validade } from &#x27;@/lib/motor&#x27;   // porte fiel, testes T1–T8
+
+export async function POST(req: Request, { params }: { params: { token: string } }) {
+  const a = await prisma.assessment.findUnique({
+    where: { token: params.token }, include: { answers: true }
+  })
+
+  // 1. Conferir as 69 telas (16 + 16 + 27 + 10); faltando → 409 com a lista das telas
+  // 2. Reconstruir as respostas por etapa: { grupo: { idItem: posição } }
+  const posicoes = (etapa: number) =&gt; Object.fromEntries(
+    a.answers.filter(x =&gt; x.etapa === etapa).map(x =&gt; [
+      Number(x.tela.slice(1)),                                       // &quot;G07&quot; → 7 | &quot;V03&quot; → 3
+      Object.fromEntries((x.ordem_final as string[]).map((id, i) =&gt; [id, i + 1]))
+    ]))
+
+  const nat = pontuarDisc(INV.disc, posicoes(1))     // lança erro se a soma ≠ 200
+  const ada = pontuarDisc(INV.disc, posicoes(2))
+  const jr = { EI: [], NS: [], TF: [] }
+  a.answers.filter(x =&gt; x.etapa === 3).forEach(x =&gt; jr[x.tela.slice(0, 2)].push(x.resposta_polo_a))
+  const jung = pontuarJung(jr)
+  const val  = pontuarValores(INV.valores, posicoes(4))     // soma 300
+
+  const pn = perfil(nat.escore, nat.primeiros)
+  const pa = perfil(ada.escore, ada.primeiros)
+  const ix = indices(nat.escore, ada.escore)
+  const vd = validade(a.answers)                            // V1–V6 → confiabilidade
+
+  // 3. Salvar tudo em results (idempotente: upsert por assessment_id)
+  const result = await prisma.result.upsert({
+    where: { assessment_id: a.id }, update: {},
+    create: {
+      assessment_id: a.id, versao_instrumento: &#x27;MC-INV 2.2&#x27;, versao_motor: &#x27;2.2.0&#x27;,
+      nat_d: nat.escore.D, nat_i: nat.escore.I, nat_s: nat.escore.S, nat_c: nat.escore.C,
+      ada_d: ada.escore.D, ada_i: ada.escore.I, ada_s: ada.escore.S, ada_c: ada.escore.C,
+      zonas_nat: mapZona(nat.escore), zonas_ada: mapZona(ada.escore),
+      perfil_natural: pn.sigla, perfil_adaptado: pa.sigla,
+      variacoes: ix.variacao, indice_adaptacao: ix.indice, classe_adaptacao: ix.classe,
+      amplitude_natural: ix.amplitude, fatores_polarizados: ix.polarizados,
+      competencias_nat: nat.competencias, competencias_ada: ada.competencias,
+      lideranca: lideranca(nat.escore),
+      jung_e: jung.pct.E, jung_n: jung.pct.N, jung_t: jung.pct.T, tipo_jung: jung.tipo,
+      func_dominante: jung.hier[0], func_auxiliar: jung.hier[1],
+      func_terciaria: jung.hier[2], func_inferior: jung.hier[3],
+      val_teorico: val.escore.TEO, val_economico: val.escore.ECO, val_estetico: val.escore.EST,
+      val_social: val.escore.SOC, val_politico: val.escore.POL, val_principios: val.escore.PRI,
+      ranking_valores: val.ranking,
+      confiabilidade: vd.confiabilidade, alertas: vd.alertas, tempo_total_s: vd.segundos,
+      narrativa_ia: {},
+    }
+  })
+
+  // 4. Narrativa em fila (Etapa 3). O cálculo acima leva poucos milissegundos.
+  await filaNarrativa.add({ resultId: result.id })
+  return Response.json({ ok: true, resultId: result.id })
+}</pre>
+</div>
+<h3>Etapa 3 — Montar o prompt e chamar a IA</h3>
+<div class="code">
+<div class="code-label">// generateNarrativa — monta o User Prompt com os dados calculados e chama a Claude API</div>
+<pre><span class="ck">async function</span> <span class="cn">generateNarrativa</span>(resultId: string, data: ScoresCompletos) {
+
+  <span class="cn">const</span> {
+    avaliado, nat_d, nat_i, nat_s, nat_c, ada_d, ada_i, ada_s, ada_c,
+    perfil_natural, indice_adaptacao, amplitude_natural, fatores_polarizados,
+    var_d, var_i, var_s, var_c,
+    jung_e, jung_i, jung_n, jung_s, jung_t, jung_f,
+    polo_ei, polo_ns, polo_tf, tipo_jung, funcHierarquia,
+    val_politico, val_economico, val_social, val_principios,
+    val_teorico, val_estetico, hierarquia_valores,
+    getNivelSpranger
+  } = data   // v2.2: montar a partir do registro de results (Etapa 2)
+
+  <span class="cc">// Montar o User Prompt com os dados calculados</span>
+  <span class="cn">const</span> userPrompt = <span class="cv">`
+Gere as análises personalizadas para o Mapa Comportamental de:
+
+IDENTIFICAÇÃO
+Nome: ${avaliado.nome}
+Pronome: ${avaliado.pronome || 'neutro'}
+Data de emissão: ${new Date().toLocaleDateString('pt-BR')}
+Código: ${avaliado.codigo}
+
+DISC — PERFIL NATURAL
+D (Dominante): ${nat_d}% — Zona: ${getZona(nat_d)}
+I (Influente): ${nat_i}% — Zona: ${getZona(nat_i)}
+S (Estável): ${nat_s}% — Zona: ${getZona(nat_s)}
+C (Conforme): ${nat_c}% — Zona: ${getZona(nat_c)}
+Perfil natural: ${perfil_natural}
+
+DISC — PERFIL ADAPTADO
+D adaptado: ${ada_d}% — Zona: ${getZona(ada_d)}
+I adaptado: ${ada_i}% — Zona: ${getZona(ada_i)}
+S adaptado: ${ada_s}% — Zona: ${getZona(ada_s)}
+C adaptado: ${ada_c}% — Zona: ${getZona(ada_c)}
+
+ÍNDICES
+Índice de adaptação: ${indice_adaptacao} (${classVar(indice_adaptacao)})
+Amplitude natural: ${amplitude_natural}
+Fatores polarizados: ${fatores_polarizados.join(', ') || 'nenhum'}
+Variações D/I/S/C: ${var_d} / ${var_i} / ${var_s} / ${var_c}
+Classificação das variações: D ${classVar(var_d)} | I ${classVar(var_i)} | S ${classVar(var_s)} | C ${classVar(var_c)}
+
+COMPETÊNCIAS (natural → adaptado)
+${listaCompetencias}
+
+VALIDADE
+Confiabilidade da aplicação: ${confiabilidade}
+
+JUNG
+Extroversão: ${jung_e}% | Introversão: ${jung_i}% → polo: ${polo_ei}
+Intuição: ${jung_n}% | Sensação: ${jung_s}% → polo: ${polo_ns}
+Pensamento: ${jung_t}% | Sentimento: ${jung_f}% → polo: ${polo_tf}
+Tipo Jung: ${tipo_jung}
+Tipo completo: ${funcHierarquia.tipo_completo}
+Hierarquia: 1ª ${funcHierarquia.dominante} | 2ª ${funcHierarquia.auxiliar} | 3ª ${funcHierarquia.terciaria} | 4ª (Inferior) ${funcHierarquia.inferior}
+
+VALORES SPRANGER
+Político: ${val_politico} (${getNivelSpranger(val_politico)})
+Econômico: ${val_economico} (${getNivelSpranger(val_economico)})
+Social: ${val_social} (${getNivelSpranger(val_social)})
+Princípios: ${val_principios} (${getNivelSpranger(val_principios)})
+Teórico: ${val_teorico} (${getNivelSpranger(val_teorico)})
+Estético: ${val_estetico} (${getNivelSpranger(val_estetico)})
+Hierarquia Spranger: ${hierarquia_valores.join(' > ')}
+
+Gere o JSON com exatamente as chaves especificadas no system prompt.
+`</span>
+
+  <span class="cc">// Chamar a Claude API</span>
+  <span class="cn">const</span> response = await fetch(<span class="cv">'https://api.anthropic.com/v1/messages'</span>, {
+    method: <span class="cv">'POST'</span>,
+    headers: {
+      <span class="cv">'x-api-key'</span>: process.env.ANTHROPIC_API_KEY!,
+      <span class="cv">'anthropic-version'</span>: <span class="cv">'2023-06-01'</span>,
+      <span class="cv">'content-type'</span>: <span class="cv">'application/json'</span>,
+    },
+    body: JSON.stringify({
+      model: <span class="cv">'claude-sonnet-5'</span>,
+      max_tokens: 8000,
+      system: SYSTEM_PROMPT,     <span class="cc">// constante definida separadamente (Sec 18)</span>
+      messages: [{ role: <span class="cv">'user'</span>, content: userPrompt }]
+    })
+  })
+
+  <span class="cn">const</span> result = await response.json()
+  <span class="cn">const</span> text = result.content[0].text
+
+  <span class="cc">// Parse do JSON retornado pela IA</span>
+  <span class="ck">let</span> narrativa: NarrativaIA
+  <span class="ck">try</span> {
+    narrativa = JSON.parse(text)
+  } <span class="ck">catch</span> (e) {
+    <span class="cc">// Retry automático se JSON inválido (IA raramente retorna JSON corrompido)</span>
+    <span class="cn">const</span> retryResult = await retryWithCleaning(text)
+    narrativa = retryResult
+  }
+
+  <span class="cc">// Salvar narrativa no banco</span>
+  await prisma.result.update({
+    where: { id: resultId },
+    data: { narrativa_ia: narrativa, pdf_url: <span class="cv">null</span> }
+  })
+
+  <span class="cc">// Disparar geração do PDF (Etapa 4)</span>
+  await generatePDF(resultId)
+}</pre>
+</div>
+
+<h3>Etapa 4 — Montar o HTML e gerar o PDF</h3>
+<div class="code">
+<div class="code-label">// generatePDF — junta dados calculados + narrativa da IA no template HTML</div>
+<pre><span class="ck">async function</span> <span class="cn">generatePDF</span>(resultId: string) {
+
+  <span class="cc">// Buscar resultado completo do banco</span>
+  <span class="cn">const</span> result = await prisma.result.findUnique({
+    where: { id: resultId },
+    include: { assessment: { include: { facilitador: true } } }
+  })
+
+  <span class="cn">const</span> narrativa = result.narrativa_ia as NarrativaIA
+
+  <span class="cc">// Montar os dados para o template das 42 páginas</span>
+  <span class="cn">const</span> templateData = {
+
+    <span class="cc">// DADOS CALCULADOS (sem IA)</span>
+    avaliado_nome: result.assessment.avaliado_nome,
+    facilitador_nome: result.assessment.facilitador.name,
+    data_emissao: formatDate(result.generated_at),
+    codigo: result.assessment.codigo,
+
+    disc_nat: { d: result.nat_d, i: result.nat_i, s: result.nat_s, c: result.nat_c },
+    disc_ada: { d: result.ada_d, i: result.ada_i, s: result.ada_s, c: result.ada_c },
+    perfil_natural: result.perfil_natural,
+
+    indice_adaptacao: result.indice_adaptacao,
+    amplitude_natural: result.amplitude_natural,
+    fatores_polarizados: result.fatores_polarizados,
+
+    descritores_d: getDescritores(<span class="cv">'D'</span>, result.nat_d),   <span class="cc">// Pg 09 — tabela Sec 09</span>
+    descritores_i: getDescritores(<span class="cv">'I'</span>, result.nat_i),   <span class="cc">// Pg 10</span>
+    descritores_s: getDescritores(<span class="cv">'S'</span>, result.nat_s),   <span class="cc">// Pg 11</span>
+    descritores_c: getDescritores(<span class="cv">'C'</span>, result.nat_c),   <span class="cc">// Pg 12</span>
+
+    arquetipo: getArquetipo(result.perfil_natural),   <span class="cc">// Pg 23 — tabela Sec 10</span>
+
+    jung_e: result.jung_e, jung_n: result.jung_n, jung_t: result.jung_t,
+    tipo_jung: result.tipo_jung, tipo_jung_full: result.tipo_jung_full,
+    func_dominante: result.func_dominante,
+    func_auxiliar: result.func_auxiliar,
+    func_terciaria: result.func_terciaria,
+    func_inferior: result.func_inferior,
+
+    spranger: {
+      politico: result.val_politico, economico: result.val_economico,
+      social: result.val_social, principios: result.val_principios,
+      teorico: result.val_teorico, estetico: result.val_estetico,
+    },
+
+    competencias: {                                    <span class="cc">// Pg 31–32</span>
+      nat: result.competencias_nat, ada: result.competencias_ada,   <span class="cc">// 16 chaves (Sec 14)</span>
+    },
+
+    estilos_lideranca: calcEstilosLideranca(result),  <span class="cc">// Pg 29</span>
+
+    <span class="cc">// NARRATIVA DA IA — cada chave vai para a página correspondente</span>
+    pg07_sintese:          narrativa.sintese_combinacao_natural,
+    pg07_cruzamentos:      narrativa.quatro_cruzamentos,
+    pg08_custo_adaptacao:  narrativa.custo_adaptacao_narrativa,
+    pg09_fator_d:          narrativa.fator_d_narrativa,
+    pg10_fator_i:          narrativa.fator_i_narrativa,
+    pg11_fator_s:          narrativa.fator_s_narrativa,
+    pg12_fator_c:          narrativa.fator_c_narrativa,
+    pg13_forcas:           narrativa.seis_forcas,
+    pg18_jung_ei:          narrativa.jung_e_i_narrativa,
+    pg19_jung_ns:          narrativa.jung_n_s_narrativa,
+    pg20_jung_tf:          narrativa.jung_t_f_narrativa,
+    pg21_hierarquia:       narrativa.hierarquia_funcional_narrativa,
+    pg22_inferior_sinais:  narrativa.funcao_inferior_sinais,
+    pg25_dois_valores:     narrativa.dois_valores_narrativa,
+    pg26_integracao:       narrativa.leitura_integrada,
+    pg28_resumo_8_blocos:  narrativa.resumo_perfil_8_blocos,
+    pg33_pontos_dev:       narrativa.seis_pontos_desenvolver,
+    pg36_leituras:         narrativa.leituras_recomendadas,
+    pg37_pdi:              narrativa.pdi,
+    pg41_mensagem_final:   narrativa.mensagem_final,
+  }
+
+  <span class="cc">// Renderizar o HTML com os dados</span>
+  <span class="cn">const</span> html = renderTemplate42Paginas(templateData)
+
+  <span class="cc">// Gerar PDF com Puppeteer</span>
+  <span class="cn">const</span> browser = await puppeteer.launch({ args: [<span class="cv">'--no-sandbox'</span>] })
+  <span class="cn">const</span> page = await browser.newPage()
+  await page.setContent(html, { waitUntil: <span class="cv">'networkidle0'</span> })
+  <span class="cn">const</span> pdf = await page.pdf({
+    format: <span class="cv">'A4'</span>, printBackground: true,
+    margin: { top: <span class="cv">'20mm'</span>, bottom: <span class="cv">'20mm'</span>, left: <span class="cv">'20mm'</span>, right: <span class="cv">'20mm'</span> }
+  })
+  await browser.close()
+
+  <span class="cc">// Upload para S3 e salvar URL no banco</span>
+  <span class="cn">const</span> pdf_url = await uploadToS3(pdf, <span class="cv">`pdfs/${resultId}.pdf`</span>)
+  await prisma.result.update({
+    where: { id: resultId },
+    data: { pdf_url, pdf_expires_at: addDays(new Date(), 7) }
+  })
+
+  <span class="cc">// Notificar avaliado e facilitador por email</span>
+  await sendEmail({ to: result.assessment.avaliado_email, pdf_url, template: <span class="cv">'avaliado-pronto'</span> })
+  await sendEmail({ to: result.assessment.facilitador.email, pdf_url, template: <span class="cv">'facilitador-notif'</span> })
+}</pre>
+</div>
+
+<h3>Etapa 5 — Mapeamento Chave da IA → Página do Relatório</h3>
+<p style="font-size:13px;color:var(--ink-light);margin-bottom:16px;">Referência rápida para o desenvolvedor. Cada chave do JSON retornado pela IA vai para exatamente uma ou mais páginas do PDF.</p>
+
+<table>
+<thead>
+<tr>
+  <th>Chave no JSON da IA</th>
+  <th>Página(s) do relatório</th>
+  <th>Como usar</th>
+</tr>
+</thead>
+<tbody>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">sintese_combinacao_natural</td><td>Pg 07</td><td>Parágrafo principal da combinação natural. Inserir como texto corrido.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">quatro_cruzamentos.*</td><td>Pg 07</td><td>4 sub-chaves (alto_d_baixo_s, etc). Cada uma é um bloco com título automático e texto da IA.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">custo_adaptacao_narrativa</td><td>Pg 08</td><td>Texto da narrativa abaixo da tabela de variações. Badge: DERIVADO DO SEU ESCORE.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">fator_d_narrativa</td><td>Pg 09</td><td>Texto personalizado do fator D. Aparece abaixo das barras e dos descritores.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">fator_i_narrativa</td><td>Pg 10</td><td>Idem para I.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">fator_s_narrativa</td><td>Pg 11</td><td>Idem para S. Se polarizado, o texto já menciona isso.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">fator_c_narrativa</td><td>Pg 12</td><td>Idem para C. Se maior variação, ênfase no custo.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">seis_forcas[]</td><td>Pg 13</td><td>Array de 6 objetos: fator + nome + descricao. Renderizar como lista de cartões.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">jung_e_i_narrativa</td><td>Pg 18</td><td>Texto do polo E/I com aplicação prática. Badge: DERIVADO DO SEU ESCORE.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">jung_n_s_narrativa</td><td>Pg 19</td><td>Idem para eixo N/S.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">jung_t_f_narrativa</td><td>Pg 20</td><td>Idem para eixo T/F.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">hierarquia_funcional_narrativa</td><td>Pg 21</td><td>Texto sobre dominante+auxiliar. Badge: A CONFIRMAR NA DEVOLUTIVA (na função inferior).</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">funcao_inferior_sinais[]</td><td>Pg 22</td><td>Array de 3 strings. Renderizar como lista de sinais de alerta.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">dois_valores_narrativa</td><td>Pg 25</td><td>Análise dos 2 valores mais altos de Spranger.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">leitura_integrada</td><td>Pg 26</td><td>Síntese das 3 camadas. Badge: DERIVADO DO SEU ESCORE.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">resumo_perfil_8_blocos.*</td><td>Pg 28</td><td>8 sub-chaves. Cada uma = 2 frases. Renderizar como grade 2×4.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">seis_pontos_desenvolver[]</td><td>Pg 33–34</td><td>Array de 6 objetos. Ponto 01 na metade superior da Pg 33, os demais seguem em dupla página.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">leituras_recomendadas[]</td><td>Pg 36</td><td>Array de 5 objetos: titulo + autor + por_que_para_voce. Renderizar como lista de livros.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">pdi.*</td><td>Pg 37</td><td>4 sub-chaves: prioridade_principal + acoes_semanais[] + desafio_30_dias + como_medir.</td></tr>
+<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">mensagem_final</td><td>Pg 41</td><td>Parágrafo único de encerramento. Deve ser o único texto desta página junto com título fixo.</td></tr>
+</tbody>
+</table>
+
+<div class="nota nota-ok"><strong>Resumo do pipeline em uma linha:</strong> 69 telas salvas no banco → motor oficial calcula todos os scores em milissegundos → Um único User Prompt montado com todos os dados → Claude API retorna um JSON com todas as chaves de narrativa → JSON salvo em narrativa_ia no banco → Puppeteer renderiza o HTML das 42 páginas usando os scores para gráficos e o JSON para os textos → PDF enviado para S3 → URL enviada por email para avaliado e facilitador.</div>
+</section>
+
+
+<!-- ========= SEC 24 ========= -->
+<section id="s24">
+<div class="sec-num">24 · Pacote do Desenvolvedor</div>
+<div class="sec-badge">★ v2.2 — arquivos publicados junto com este documento</div>
+<h2>O que baixar, em que ordem usar</h2>
+<p class="lead">Os arquivos abaixo são a fonte da verdade do inventário. O desenvolvedor não redigita itens nem fórmulas: carrega <code>inventario.json</code> e porta <code>motor_referencia.py</code>.</p>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Arquivo</th><th>Para que serve</th></tr></thead>
+<tbody>
+<tr><td><a href="pacote/motor_referencia.py" target="_blank" rel="noopener">motor_referencia.py</a></td><td>Implementação oficial de todas as contas, com os testes de ouro. <code>python3 motor_referencia.py</code> deve terminar com TODOS OS TESTES PASSARAM. Regenera o <code>inventario.json</code>.</td></tr>
+<tr><td><a href="pacote/banco_adjetivos.py" target="_blank" rel="noopener">banco_adjetivos.py</a></td><td>Banco oficial de adjetivos de Valmer, lista oficial das 64 palavras, palavras retiradas e atribuições. Importado pelo motor.</td></tr>
+<tr><td><a href="pacote/inventario.json" target="_blank" rel="noopener">inventario.json</a></td><td>Inventário em dados: 16 grupos DISC (com fator e competência de cada item), 27 pares de Jung, 10 grupos de valores. É o que o frontend e o backend carregam.</td></tr>
+<tr><td><a href="pacote/AGENTE-INVENTARIO-MC.md" target="_blank" rel="noopener">AGENTE-INVENTARIO-MC.md</a></td><td>Prompt do agente que mantém o inventário (trocas de palavras, portes, dúvidas de cálculo). Colar como instrução de um Projeto no Claude, com os três arquivos acima anexados.</td></tr>
+<tr><td><a href="pacote/inventario-mc.html" target="_blank" rel="noopener">inventario-mc.html</a></td><td>Protótipo funcional do formulário, com o motor em JavaScript já validado contra o Python. Referência de fluxo e de interface, não código de produção.</td></tr>
+</tbody>
+</table></div>
+
+<div class="nota nota-ouro">Se um link não abrir no seu navegador, peça a Valmer a pasta <code>~/Downloads/inventario-mc/</code>, que tem os mesmos arquivos.</div>
+
+<h3>Desempenho para aplicação em massa</h3>
+<div class="card"><ul style="font-size:12px;list-style:none;line-height:1.9;">
+  <li>· Cenário de projeto: 700 pessoas no mesmo dia, até 300 ao mesmo tempo, por um link de campanha que gera token individual no primeiro acesso.</li>
+  <li>· O cálculo é uma função pura, sem acesso ao banco: menos de 5 ms por aplicação. Roda dentro da requisição de finalização.</li>
+  <li>· O salvamento por tela é uma escrita pequena e idempotente. A página do inventário é estática e pode ir para CDN.</li>
+  <li>· O painel numérico aparece na hora. A narrativa da IA entra numa fila com processamento paralelo e limite de chamadas por minuto; o PDF sai quando a fila conclui.</li>
+</ul></div>
+
+<h3>Versionamento</h3>
+<div class="card"><ul style="font-size:12px;list-style:none;line-height:1.9;">
+  <li>· Todo item tem identificador fixo (<code>G07-D</code>, <code>EI04</code>, <code>V03-ECO</code>). Trocar a palavra de um item cria nova versão do instrumento.</li>
+  <li>· A resposta bruta fica guardada para sempre, com a versão. Qualquer resultado pode ser recalculado.</li>
+  <li>· Uma aplicação iniciada numa versão termina na mesma versão.</li>
+  <li>· Toda mudança começa em <code>motor_referencia.py</code>, passa pelos testes e só depois vai para o software.</li>
+</ul></div>
+
+<h3>Precisão: o que se garante e o que se conquista</h3>
+<div class="g2">
+  <div class="card"><div class="card-title">Garantido desde o primeiro dia</div><p>A conta. Para a mesma resposta, o resultado é sempre o mesmo e sempre correto em relação à regra. Os testes de ouro provam isso.</p></div>
+  <div class="card"><div class="card-title">Conquistado com dados</div><p>A validade: o quanto o escore reflete a pessoa real. Nenhum instrumento comportamental tem 99,9% de validade. O que se diz ao mercado: "cálculo 100% auditável, instrumento em processo de validação com norma brasileira própria".</p></div>
+</div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Passo</th><th>Plano de validação</th><th>Meta</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Piloto com 300 respostas ou mais, de perfis variados</td><td>base para os passos 2, 4 e 5</td></tr>
+<tr><td>2</td><td>Consistência interna por fator e por valor (alfa de Cronbach ou ômega)</td><td>≥ 0,70</td></tr>
+<tr><td>3</td><td>Teste e reteste com 50 pessoas, entre 2 e 4 semanas</td><td>correlação ≥ 0,75 e perfil igual em 80% dos casos</td></tr>
+<tr><td>4</td><td>Análise de item: palavra que ninguém ou todo mundo escolhe é trocada pela reserva</td><td>nenhum item com escolha abaixo de 5% ou acima de 60% em 1º lugar</td></tr>
+<tr><td>5</td><td>Norma brasileira: bruto → percentil na base, registrado com N e data</td><td>a partir de 300 respostas</td></tr>
+<tr><td>6</td><td>Reconhecimento na devolutiva: avaliado e facilitador marcam de 1 a 5</td><td>média ≥ 4,3</td></tr>
+</tbody>
+</table></div>
+
+<h3>Pendências abertas</h3>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Código</th><th>Pendência</th><th>Responsável</th></tr></thead>
+<tbody>
+<tr><td>T1</td><td>Definição curta (até 12 palavras) de cada palavra do inventário, para o botão &quot;?&quot;</td><td>Agente redige, Valmer aprova</td></tr>
+<tr><td>T2</td><td>Nome exibido do valor PRI: Princípios, Regulatório ou Propósito e sentido</td><td>Valmer</td></tr>
+<tr><td>T3</td><td>Nome do fator D no relatório: Dominância ou Direção</td><td>Valmer</td></tr>
+<tr><td>T4</td><td>Aprovar os nomes Constância, Cooperação, Análise e Investigação</td><td>Valmer</td></tr>
+<tr><td>T4b</td><td>Observar no piloto se &quot;Criativo&quot; funciona em Sociabilidade</td><td>Valmer + agente</td></tr>
+<tr><td>T5</td><td>Texto do consentimento LGPD e do compromisso de atenção</td><td>Agente redige, jurídico aprova</td></tr>
+<tr><td>T6</td><td>Planejar o piloto de 300 respostas</td><td>Valmer</td></tr>
+<tr><td>T7</td><td>Portar o motor para TypeScript com os testes de ouro</td><td>Desenvolvedor</td></tr>
+</tbody>
+</table></div>
+
+</section>
+
+<footer>
+  <strong>MAPA COMPORTAMENTAL MC 3.1</strong> · Blueprint Master v2.2 · Inventário MC-INV 2.2 · Documento Confidencial — Impacto Academy · Valmer Albuquerque
+</footer>
+
+</body>
+</html>

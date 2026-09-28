@@ -1,0 +1,937 @@
+{
+ "versao": "MC-INV 2.2",
+ "disc": [
+  {
+   "grupo": 1,
+   "itens": [
+    {
+     "id": "G01-D",
+     "texto": "Ousado",
+     "fator": "D",
+     "competencia": "ousadia"
+    },
+    {
+     "id": "G01-I",
+     "texto": "Comunicativo",
+     "fator": "I",
+     "competencia": "extroversao"
+    },
+    {
+     "id": "G01-S",
+     "texto": "Constante",
+     "fator": "S",
+     "competencia": "constancia"
+    },
+    {
+     "id": "G01-C",
+     "texto": "Criterioso",
+     "fator": "C",
+     "competencia": "investigacao"
+    }
+   ]
+  },
+  {
+   "grupo": 2,
+   "itens": [
+    {
+     "id": "G02-D",
+     "texto": "Firme",
+     "fator": "D",
+     "competencia": "comando"
+    },
+    {
+     "id": "G02-I",
+     "texto": "Entusiasmado",
+     "fator": "I",
+     "competencia": "entusiasmo"
+    },
+    {
+     "id": "G02-S",
+     "texto": "Cooperativo",
+     "fator": "S",
+     "competencia": "cooperacao"
+    },
+    {
+     "id": "G02-C",
+     "texto": "Organizado",
+     "fator": "C",
+     "competencia": "organizacao"
+    }
+   ]
+  },
+  {
+   "grupo": 3,
+   "itens": [
+    {
+     "id": "G03-D",
+     "texto": "Objetivo",
+     "fator": "D",
+     "competencia": "objetividade"
+    },
+    {
+     "id": "G03-I",
+     "texto": "Sociável",
+     "fator": "I",
+     "competencia": "sociabilidade"
+    },
+    {
+     "id": "G03-S",
+     "texto": "Acolhedor",
+     "fator": "S",
+     "competencia": "empatia"
+    },
+    {
+     "id": "G03-C",
+     "texto": "Detalhista",
+     "fator": "C",
+     "competencia": "detalhismo"
+    }
+   ]
+  },
+  {
+   "grupo": 4,
+   "itens": [
+    {
+     "id": "G04-D",
+     "texto": "Determinado",
+     "fator": "D",
+     "competencia": "assertividade"
+    },
+    {
+     "id": "G04-I",
+     "texto": "Persuasivo",
+     "fator": "I",
+     "competencia": "persuasao"
+    },
+    {
+     "id": "G04-S",
+     "texto": "Paciente",
+     "fator": "S",
+     "competencia": "paciencia"
+    },
+    {
+     "id": "G04-C",
+     "texto": "Analítico",
+     "fator": "C",
+     "competencia": "analise"
+    }
+   ]
+  },
+  {
+   "grupo": 5,
+   "itens": [
+    {
+     "id": "G05-D",
+     "texto": "Audacioso",
+     "fator": "D",
+     "competencia": "ousadia"
+    },
+    {
+     "id": "G05-I",
+     "texto": "Expressivo",
+     "fator": "I",
+     "competencia": "extroversao"
+    },
+    {
+     "id": "G05-S",
+     "texto": "Estável",
+     "fator": "S",
+     "competencia": "constancia"
+    },
+    {
+     "id": "G05-C",
+     "texto": "Observador",
+     "fator": "C",
+     "competencia": "investigacao"
+    }
+   ]
+  },
+  {
+   "grupo": 6,
+   "itens": [
+    {
+     "id": "G06-D",
+     "texto": "Independente",
+     "fator": "D",
+     "competencia": "comando"
+    },
+    {
+     "id": "G06-I",
+     "texto": "Otimista",
+     "fator": "I",
+     "competencia": "entusiasmo"
+    },
+    {
+     "id": "G06-S",
+     "texto": "Prestativo",
+     "fator": "S",
+     "competencia": "cooperacao"
+    },
+    {
+     "id": "G06-C",
+     "texto": "Sistemático",
+     "fator": "C",
+     "competencia": "organizacao"
+    }
+   ]
+  },
+  {
+   "grupo": 7,
+   "itens": [
+    {
+     "id": "G07-D",
+     "texto": "Pragmático",
+     "fator": "D",
+     "competencia": "objetividade"
+    },
+    {
+     "id": "G07-I",
+     "texto": "Receptivo",
+     "fator": "I",
+     "competencia": "sociabilidade"
+    },
+    {
+     "id": "G07-S",
+     "texto": "Atencioso",
+     "fator": "S",
+     "competencia": "empatia"
+    },
+    {
+     "id": "G07-C",
+     "texto": "Minucioso",
+     "fator": "C",
+     "competencia": "detalhismo"
+    }
+   ]
+  },
+  {
+   "grupo": 8,
+   "itens": [
+    {
+     "id": "G08-D",
+     "texto": "Decidido",
+     "fator": "D",
+     "competencia": "assertividade"
+    },
+    {
+     "id": "G08-I",
+     "texto": "Carismático",
+     "fator": "I",
+     "competencia": "persuasao"
+    },
+    {
+     "id": "G08-S",
+     "texto": "Tranquilo",
+     "fator": "S",
+     "competencia": "paciencia"
+    },
+    {
+     "id": "G08-C",
+     "texto": "Lógico",
+     "fator": "C",
+     "competencia": "analise"
+    }
+   ]
+  },
+  {
+   "grupo": 9,
+   "itens": [
+    {
+     "id": "G09-D",
+     "texto": "Desafiador",
+     "fator": "D",
+     "competencia": "ousadia"
+    },
+    {
+     "id": "G09-I",
+     "texto": "Expansivo",
+     "fator": "I",
+     "competencia": "extroversao"
+    },
+    {
+     "id": "G09-S",
+     "texto": "Ponderado",
+     "fator": "S",
+     "competencia": "constancia"
+    },
+    {
+     "id": "G09-C",
+     "texto": "Investigativo",
+     "fator": "C",
+     "competencia": "investigacao"
+    }
+   ]
+  },
+  {
+   "grupo": 10,
+   "itens": [
+    {
+     "id": "G10-D",
+     "texto": "Autoconfiante",
+     "fator": "D",
+     "competencia": "comando"
+    },
+    {
+     "id": "G10-I",
+     "texto": "Contagiante",
+     "fator": "I",
+     "competencia": "entusiasmo"
+    },
+    {
+     "id": "G10-S",
+     "texto": "Conciliador",
+     "fator": "S",
+     "competencia": "cooperacao"
+    },
+    {
+     "id": "G10-C",
+     "texto": "Estruturado",
+     "fator": "C",
+     "competencia": "organizacao"
+    }
+   ]
+  },
+  {
+   "grupo": 11,
+   "itens": [
+    {
+     "id": "G11-D",
+     "texto": "Proativo",
+     "fator": "D",
+     "competencia": "objetividade"
+    },
+    {
+     "id": "G11-I",
+     "texto": "Envolvente",
+     "fator": "I",
+     "competencia": "sociabilidade"
+    },
+    {
+     "id": "G11-S",
+     "texto": "Compreensivo",
+     "fator": "S",
+     "competencia": "empatia"
+    },
+    {
+     "id": "G11-C",
+     "texto": "Meticuloso",
+     "fator": "C",
+     "competencia": "detalhismo"
+    }
+   ]
+  },
+  {
+   "grupo": 12,
+   "itens": [
+    {
+     "id": "G12-D",
+     "texto": "Direto",
+     "fator": "D",
+     "competencia": "assertividade"
+    },
+    {
+     "id": "G12-I",
+     "texto": "Articulado",
+     "fator": "I",
+     "competencia": "persuasao"
+    },
+    {
+     "id": "G12-S",
+     "texto": "Sereno",
+     "fator": "S",
+     "competencia": "paciencia"
+    },
+    {
+     "id": "G12-C",
+     "texto": "Racional",
+     "fator": "C",
+     "competencia": "analise"
+    }
+   ]
+  },
+  {
+   "grupo": 13,
+   "itens": [
+    {
+     "id": "G13-D",
+     "texto": "Competitivo",
+     "fator": "D",
+     "competencia": "ousadia"
+    },
+    {
+     "id": "G13-I",
+     "texto": "Espontâneo",
+     "fator": "I",
+     "competencia": "extroversao"
+    },
+    {
+     "id": "G13-S",
+     "texto": "Moderado",
+     "fator": "S",
+     "competencia": "constancia"
+    },
+    {
+     "id": "G13-C",
+     "texto": "Estratégico",
+     "fator": "C",
+     "competencia": "investigacao"
+    }
+   ]
+  },
+  {
+   "grupo": 14,
+   "itens": [
+    {
+     "id": "G14-D",
+     "texto": "Enérgico",
+     "fator": "D",
+     "competencia": "comando"
+    },
+    {
+     "id": "G14-I",
+     "texto": "Inspirador",
+     "fator": "I",
+     "competencia": "entusiasmo"
+    },
+    {
+     "id": "G14-S",
+     "texto": "Colaborativo",
+     "fator": "S",
+     "competencia": "cooperacao"
+    },
+    {
+     "id": "G14-C",
+     "texto": "Metódico",
+     "fator": "C",
+     "competencia": "organizacao"
+    }
+   ]
+  },
+  {
+   "grupo": 15,
+   "itens": [
+    {
+     "id": "G15-D",
+     "texto": "Resoluto",
+     "fator": "D",
+     "competencia": "objetividade"
+    },
+    {
+     "id": "G15-I",
+     "texto": "Criativo",
+     "fator": "I",
+     "competencia": "sociabilidade"
+    },
+    {
+     "id": "G15-S",
+     "texto": "Tolerante",
+     "fator": "S",
+     "competencia": "empatia"
+    },
+    {
+     "id": "G15-C",
+     "texto": "Preciso",
+     "fator": "C",
+     "competencia": "detalhismo"
+    }
+   ]
+  },
+  {
+   "grupo": 16,
+   "itens": [
+    {
+     "id": "G16-D",
+     "texto": "Assertivo",
+     "fator": "D",
+     "competencia": "assertividade"
+    },
+    {
+     "id": "G16-I",
+     "texto": "Motivador",
+     "fator": "I",
+     "competencia": "persuasao"
+    },
+    {
+     "id": "G16-S",
+     "texto": "Calmo",
+     "fator": "S",
+     "competencia": "paciencia"
+    },
+    {
+     "id": "G16-C",
+     "texto": "Técnico",
+     "fator": "C",
+     "competencia": "analise"
+    }
+   ]
+  }
+ ],
+ "jung": {
+  "EI": [
+   [
+    "Agitado",
+    "Quieto"
+   ],
+   [
+    "Falante",
+    "Calado"
+   ],
+   [
+    "Desinibido",
+    "Contido"
+   ],
+   [
+    "Enturmado",
+    "Solitário"
+   ],
+   [
+    "Impulsivo",
+    "Pensativo"
+   ],
+   [
+    "Solto",
+    "Discreto"
+   ],
+   [
+    "Conversador",
+    "Silencioso"
+   ],
+   [
+    "Aberto",
+    "Recolhido"
+   ],
+   [
+    "Festeiro",
+    "Caseiro"
+   ]
+  ],
+  "NS": [
+   [
+    "Imaginativo",
+    "Realista"
+   ],
+   [
+    "Inventivo",
+    "Prático"
+   ],
+   [
+    "Sonhador",
+    "Pé no chão"
+   ],
+   [
+    "Inovador",
+    "Tradicional"
+   ],
+   [
+    "Intuitivo",
+    "Concreto"
+   ],
+   [
+    "Original",
+    "Convencional"
+   ],
+   [
+    "Das ideias",
+    "Dos fatos"
+   ],
+   [
+    "Do futuro",
+    "Do presente"
+   ],
+   [
+    "Visionário",
+    "Experiente"
+   ]
+  ],
+  "TF": [
+   [
+    "Pela razão",
+    "Pela emoção"
+   ],
+   [
+    "Imparcial",
+    "Sentimental"
+   ],
+   [
+    "Crítico",
+    "Gentil"
+   ],
+   [
+    "Justo",
+    "Bondoso"
+   ],
+   [
+    "Impessoal",
+    "Pessoal"
+   ],
+   [
+    "Cabeça",
+    "Coração"
+   ],
+   [
+    "Exigente",
+    "Compassivo"
+   ],
+   [
+    "Argumentativo",
+    "Afetuoso"
+   ],
+   [
+    "Pela lógica",
+    "Pelo sentimento"
+   ]
+  ]
+ },
+ "valores": [
+  {
+   "grupo": 1,
+   "itens": [
+    {
+     "id": "V01-TEO",
+     "texto": "Aprender",
+     "valor": "TEO"
+    },
+    {
+     "id": "V01-ECO",
+     "texto": "Dinheiro",
+     "valor": "ECO"
+    },
+    {
+     "id": "V01-EST",
+     "texto": "Beleza",
+     "valor": "EST"
+    },
+    {
+     "id": "V01-SOC",
+     "texto": "Ajudar",
+     "valor": "SOC"
+    },
+    {
+     "id": "V01-POL",
+     "texto": "Poder",
+     "valor": "POL"
+    },
+    {
+     "id": "V01-PRI",
+     "texto": "Princípios",
+     "valor": "PRI"
+    }
+   ]
+  },
+  {
+   "grupo": 2,
+   "itens": [
+    {
+     "id": "V02-TEO",
+     "texto": "Conhecimento",
+     "valor": "TEO"
+    },
+    {
+     "id": "V02-ECO",
+     "texto": "Lucro",
+     "valor": "ECO"
+    },
+    {
+     "id": "V02-EST",
+     "texto": "Arte",
+     "valor": "EST"
+    },
+    {
+     "id": "V02-SOC",
+     "texto": "Servir",
+     "valor": "SOC"
+    },
+    {
+     "id": "V02-POL",
+     "texto": "Liderar",
+     "valor": "POL"
+    },
+    {
+     "id": "V02-PRI",
+     "texto": "Fé",
+     "valor": "PRI"
+    }
+   ]
+  },
+  {
+   "grupo": 3,
+   "itens": [
+    {
+     "id": "V03-TEO",
+     "texto": "Estudo",
+     "valor": "TEO"
+    },
+    {
+     "id": "V03-ECO",
+     "texto": "Retorno",
+     "valor": "ECO"
+    },
+    {
+     "id": "V03-EST",
+     "texto": "Harmonia",
+     "valor": "EST"
+    },
+    {
+     "id": "V03-SOC",
+     "texto": "Caridade",
+     "valor": "SOC"
+    },
+    {
+     "id": "V03-POL",
+     "texto": "Status",
+     "valor": "POL"
+    },
+    {
+     "id": "V03-PRI",
+     "texto": "Ética",
+     "valor": "PRI"
+    }
+   ]
+  },
+  {
+   "grupo": 4,
+   "itens": [
+    {
+     "id": "V04-TEO",
+     "texto": "Curiosidade",
+     "valor": "TEO"
+    },
+    {
+     "id": "V04-ECO",
+     "texto": "Riqueza",
+     "valor": "ECO"
+    },
+    {
+     "id": "V04-EST",
+     "texto": "Natureza",
+     "valor": "EST"
+    },
+    {
+     "id": "V04-SOC",
+     "texto": "Voluntariado",
+     "valor": "SOC"
+    },
+    {
+     "id": "V04-POL",
+     "texto": "Influência",
+     "valor": "POL"
+    },
+    {
+     "id": "V04-PRI",
+     "texto": "Tradição",
+     "valor": "PRI"
+    }
+   ]
+  },
+  {
+   "grupo": 5,
+   "itens": [
+    {
+     "id": "V05-TEO",
+     "texto": "Leitura",
+     "valor": "TEO"
+    },
+    {
+     "id": "V05-ECO",
+     "texto": "Investir",
+     "valor": "ECO"
+    },
+    {
+     "id": "V05-EST",
+     "texto": "Bom gosto",
+     "valor": "EST"
+    },
+    {
+     "id": "V05-SOC",
+     "texto": "Cuidar",
+     "valor": "SOC"
+    },
+    {
+     "id": "V05-POL",
+     "texto": "Reconhecimento",
+     "valor": "POL"
+    },
+    {
+     "id": "V05-PRI",
+     "texto": "Valores",
+     "valor": "PRI"
+    }
+   ]
+  },
+  {
+   "grupo": 6,
+   "itens": [
+    {
+     "id": "V06-TEO",
+     "texto": "Pesquisa",
+     "valor": "TEO"
+    },
+    {
+     "id": "V06-ECO",
+     "texto": "Negócios",
+     "valor": "ECO"
+    },
+    {
+     "id": "V06-EST",
+     "texto": "Música",
+     "valor": "EST"
+    },
+    {
+     "id": "V06-SOC",
+     "texto": "Generosidade",
+     "valor": "SOC"
+    },
+    {
+     "id": "V06-POL",
+     "texto": "Vencer",
+     "valor": "POL"
+    },
+    {
+     "id": "V06-PRI",
+     "texto": "Honestidade",
+     "valor": "PRI"
+    }
+   ]
+  },
+  {
+   "grupo": 7,
+   "itens": [
+    {
+     "id": "V07-TEO",
+     "texto": "Descobrir",
+     "valor": "TEO"
+    },
+    {
+     "id": "V07-ECO",
+     "texto": "Economizar",
+     "valor": "ECO"
+    },
+    {
+     "id": "V07-EST",
+     "texto": "Estilo",
+     "valor": "EST"
+    },
+    {
+     "id": "V07-SOC",
+     "texto": "Solidariedade",
+     "valor": "SOC"
+    },
+    {
+     "id": "V07-POL",
+     "texto": "Comandar",
+     "valor": "POL"
+    },
+    {
+     "id": "V07-PRI",
+     "texto": "Crenças",
+     "valor": "PRI"
+    }
+   ]
+  },
+  {
+   "grupo": 8,
+   "itens": [
+    {
+     "id": "V08-TEO",
+     "texto": "Sabedoria",
+     "valor": "TEO"
+    },
+    {
+     "id": "V08-ECO",
+     "texto": "Patrimônio",
+     "valor": "ECO"
+    },
+    {
+     "id": "V08-EST",
+     "texto": "Conforto",
+     "valor": "EST"
+    },
+    {
+     "id": "V08-SOC",
+     "texto": "Doar",
+     "valor": "SOC"
+    },
+    {
+     "id": "V08-POL",
+     "texto": "Destaque",
+     "valor": "POL"
+    },
+    {
+     "id": "V08-PRI",
+     "texto": "Regras",
+     "valor": "PRI"
+    }
+   ]
+  },
+  {
+   "grupo": 9,
+   "itens": [
+    {
+     "id": "V09-TEO",
+     "texto": "Cultura",
+     "valor": "TEO"
+    },
+    {
+     "id": "V09-ECO",
+     "texto": "Ganhar bem",
+     "valor": "ECO"
+    },
+    {
+     "id": "V09-EST",
+     "texto": "Viver bem",
+     "valor": "EST"
+    },
+    {
+     "id": "V09-SOC",
+     "texto": "Acolher",
+     "valor": "SOC"
+    },
+    {
+     "id": "V09-POL",
+     "texto": "Prestígio",
+     "valor": "POL"
+    },
+    {
+     "id": "V09-PRI",
+     "texto": "Integridade",
+     "valor": "PRI"
+    }
+   ]
+  },
+  {
+   "grupo": 10,
+   "itens": [
+    {
+     "id": "V10-TEO",
+     "texto": "Ciência",
+     "valor": "TEO"
+    },
+    {
+     "id": "V10-ECO",
+     "texto": "Eficiência",
+     "valor": "ECO"
+    },
+    {
+     "id": "V10-EST",
+     "texto": "Bem-estar",
+     "valor": "EST"
+    },
+    {
+     "id": "V10-SOC",
+     "texto": "Fazer o bem",
+     "valor": "SOC"
+    },
+    {
+     "id": "V10-POL",
+     "texto": "Autoridade",
+     "valor": "POL"
+    },
+    {
+     "id": "V10-PRI",
+     "texto": "Propósito",
+     "valor": "PRI"
+    }
+   ]
+  }
+ ]
+}

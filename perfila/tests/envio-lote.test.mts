@@ -208,6 +208,15 @@ describe("envio em lote", () => {
       "o nivel vem da turma, e nao do formulario",
     );
     assert.equal(new Set(mapas.map((mapa) => mapa.token)).size, 3, "um token por mapa");
+    assert.ok(
+      mapas.every((mapa) => mapa.versao_instrumento === "MC-INV 2.2"),
+      "o passaporte do lote nasce no inventario novo (ADR-0007 D3)",
+    );
+    assert.ok(
+      mapas.every((mapa) => /^MC-\d{4}-\d{4}-[A-Z]{2}(-\d+)?$/.test(mapa.codigo ?? "")),
+      "cada um com o codigo da capa",
+    );
+    assert.equal(new Set(mapas.map((mapa) => mapa.codigo)).size, 3, "um codigo por mapa");
 
     assert.equal(await saldoDe(facilitadorA), SALDO_INICIAL - 3, "5 - 3");
     assert.equal(

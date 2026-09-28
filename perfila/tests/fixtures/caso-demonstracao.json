@@ -1,0 +1,456 @@
+{
+ "descricao": "Caso de demonstracao ficticio. Formato do relatorio-modelo, numeros do motor oficial.",
+ "semente_busca": 8,
+ "avaliado": {
+  "nome": "Adriana Prado",
+  "email": "adriana.prado@example.com"
+ },
+ "respostas": {
+  "natural": {
+   "1": {
+    "G01-I": 1,
+    "G01-D": 2,
+    "G01-S": 3,
+    "G01-C": 4
+   },
+   "2": {
+    "G02-D": 1,
+    "G02-I": 2,
+    "G02-S": 3,
+    "G02-C": 4
+   },
+   "3": {
+    "G03-D": 1,
+    "G03-I": 2,
+    "G03-C": 3,
+    "G03-S": 4
+   },
+   "4": {
+    "G04-D": 1,
+    "G04-I": 2,
+    "G04-S": 3,
+    "G04-C": 4
+   },
+   "5": {
+    "G05-D": 1,
+    "G05-I": 2,
+    "G05-C": 3,
+    "G05-S": 4
+   },
+   "6": {
+    "G06-C": 1,
+    "G06-D": 2,
+    "G06-I": 3,
+    "G06-S": 4
+   },
+   "7": {
+    "G07-D": 1,
+    "G07-I": 2,
+    "G07-C": 3,
+    "G07-S": 4
+   },
+   "8": {
+    "G08-I": 1,
+    "G08-D": 2,
+    "G08-C": 3,
+    "G08-S": 4
+   },
+   "9": {
+    "G09-D": 1,
+    "G09-I": 2,
+    "G09-S": 3,
+    "G09-C": 4
+   },
+   "10": {
+    "G10-D": 1,
+    "G10-C": 2,
+    "G10-I": 3,
+    "G10-S": 4
+   },
+   "11": {
+    "G11-D": 1,
+    "G11-I": 2,
+    "G11-S": 3,
+    "G11-C": 4
+   },
+   "12": {
+    "G12-I": 1,
+    "G12-D": 2,
+    "G12-S": 3,
+    "G12-C": 4
+   },
+   "13": {
+    "G13-D": 1,
+    "G13-I": 2,
+    "G13-S": 3,
+    "G13-C": 4
+   },
+   "14": {
+    "G14-D": 1,
+    "G14-I": 2,
+    "G14-S": 3,
+    "G14-C": 4
+   },
+   "15": {
+    "G15-S": 1,
+    "G15-D": 2,
+    "G15-I": 3,
+    "G15-C": 4
+   },
+   "16": {
+    "G16-I": 1,
+    "G16-D": 2,
+    "G16-C": 3,
+    "G16-S": 4
+   }
+  },
+  "adaptado": {
+   "1": {
+    "G01-C": 1,
+    "G01-S": 2,
+    "G01-D": 3,
+    "G01-I": 4
+   },
+   "2": {
+    "G02-S": 1,
+    "G02-C": 2,
+    "G02-I": 3,
+    "G02-D": 4
+   },
+   "3": {
+    "G03-S": 1,
+    "G03-C": 2,
+    "G03-I": 3,
+    "G03-D": 4
+   },
+   "4": {
+    "G04-C": 1,
+    "G04-S": 2,
+    "G04-I": 3,
+    "G04-D": 4
+   },
+   "5": {
+    "G05-C": 1,
+    "G05-S": 2,
+    "G05-D": 3,
+    "G05-I": 4
+   },
+   "6": {
+    "G06-C": 1,
+    "G06-S": 2,
+    "G06-I": 3,
+    "G06-D": 4
+   },
+   "7": {
+    "G07-C": 1,
+    "G07-S": 2,
+    "G07-I": 3,
+    "G07-D": 4
+   },
+   "8": {
+    "G08-C": 1,
+    "G08-S": 2,
+    "G08-D": 3,
+    "G08-I": 4
+   },
+   "9": {
+    "G09-C": 1,
+    "G09-S": 2,
+    "G09-I": 3,
+    "G09-D": 4
+   },
+   "10": {
+    "G10-C": 1,
+    "G10-S": 2,
+    "G10-D": 3,
+    "G10-I": 4
+   },
+   "11": {
+    "G11-C": 1,
+    "G11-S": 2,
+    "G11-D": 3,
+    "G11-I": 4
+   },
+   "12": {
+    "G12-C": 1,
+    "G12-S": 2,
+    "G12-D": 3,
+    "G12-I": 4
+   },
+   "13": {
+    "G13-S": 1,
+    "G13-C": 2,
+    "G13-D": 3,
+    "G13-I": 4
+   },
+   "14": {
+    "G14-C": 1,
+    "G14-I": 2,
+    "G14-S": 3,
+    "G14-D": 4
+   },
+   "15": {
+    "G15-C": 1,
+    "G15-S": 2,
+    "G15-I": 3,
+    "G15-D": 4
+   },
+   "16": {
+    "G16-C": 1,
+    "G16-S": 2,
+    "G16-I": 3,
+    "G16-D": 4
+   }
+  },
+  "jung": {
+   "EI": [
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    3,
+    2
+   ],
+   "NS": [
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    1
+   ],
+   "TF": [
+    2,
+    1,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    1
+   ]
+  },
+  "valores": {
+   "1": {
+    "V01-ECO": 1,
+    "V01-POL": 2,
+    "V01-PRI": 3,
+    "V01-SOC": 4,
+    "V01-TEO": 5,
+    "V01-EST": 6
+   },
+   "2": {
+    "V02-POL": 1,
+    "V02-ECO": 2,
+    "V02-SOC": 3,
+    "V02-TEO": 4,
+    "V02-PRI": 5,
+    "V02-EST": 6
+   },
+   "3": {
+    "V03-POL": 1,
+    "V03-ECO": 2,
+    "V03-SOC": 3,
+    "V03-PRI": 4,
+    "V03-TEO": 5,
+    "V03-EST": 6
+   },
+   "4": {
+    "V04-POL": 1,
+    "V04-PRI": 2,
+    "V04-ECO": 3,
+    "V04-SOC": 4,
+    "V04-TEO": 5,
+    "V04-EST": 6
+   },
+   "5": {
+    "V05-POL": 1,
+    "V05-ECO": 2,
+    "V05-SOC": 3,
+    "V05-EST": 4,
+    "V05-PRI": 5,
+    "V05-TEO": 6
+   },
+   "6": {
+    "V06-TEO": 1,
+    "V06-SOC": 2,
+    "V06-ECO": 3,
+    "V06-POL": 4,
+    "V06-PRI": 5,
+    "V06-EST": 6
+   },
+   "7": {
+    "V07-ECO": 1,
+    "V07-POL": 2,
+    "V07-SOC": 3,
+    "V07-EST": 4,
+    "V07-PRI": 5,
+    "V07-TEO": 6
+   },
+   "8": {
+    "V08-PRI": 1,
+    "V08-POL": 2,
+    "V08-ECO": 3,
+    "V08-SOC": 4,
+    "V08-TEO": 5,
+    "V08-EST": 6
+   },
+   "9": {
+    "V09-POL": 1,
+    "V09-SOC": 2,
+    "V09-ECO": 3,
+    "V09-TEO": 4,
+    "V09-PRI": 5,
+    "V09-EST": 6
+   },
+   "10": {
+    "V10-POL": 1,
+    "V10-ECO": 2,
+    "V10-PRI": 3,
+    "V10-TEO": 4,
+    "V10-SOC": 5,
+    "V10-EST": 6
+   }
+  }
+ },
+ "esperado": {
+  "natural": {
+   "escore": {
+    "D": 87.5,
+    "I": 68.8,
+    "S": 22.9,
+    "C": 20.8
+   },
+   "competencias": {
+    "ousadia": 91.7,
+    "extroversao": 75.0,
+    "constancia": 25.0,
+    "investigacao": 8.3,
+    "comando": 91.7,
+    "entusiasmo": 50.0,
+    "cooperacao": 16.7,
+    "organizacao": 41.7,
+    "objetividade": 91.7,
+    "sociabilidade": 58.3,
+    "empatia": 33.3,
+    "detalhismo": 16.7,
+    "assertividade": 75.0,
+    "persuasao": 91.7,
+    "paciencia": 16.7,
+    "analise": 16.7
+   },
+   "perfil": "DI",
+   "ordem": [
+    "D",
+    "I",
+    "S",
+    "C"
+   ]
+  },
+  "adaptado": {
+   "escore": {
+    "D": 14.6,
+    "I": 20.8,
+    "S": 70.8,
+    "C": 93.8
+   },
+   "competencias": {
+    "ousadia": 25.0,
+    "extroversao": 8.3,
+    "constancia": 75.0,
+    "investigacao": 91.7,
+    "comando": 8.3,
+    "entusiasmo": 33.3,
+    "cooperacao": 66.7,
+    "organizacao": 91.7,
+    "objetividade": 8.3,
+    "sociabilidade": 25.0,
+    "empatia": 75.0,
+    "detalhismo": 91.7,
+    "assertividade": 16.7,
+    "persuasao": 16.7,
+    "paciencia": 66.7,
+    "analise": 100.0
+   },
+   "perfil": "CS",
+   "ordem": [
+    "C",
+    "S",
+    "I",
+    "D"
+   ]
+  },
+  "indices": {
+   "variacao": {
+    "D": -72.9,
+    "I": -48.0,
+    "S": 47.9,
+    "C": 73.0
+   },
+   "indice_adaptacao": 60.5,
+   "classe": "extremamente alta",
+   "polarizados": [
+    "D",
+    "S",
+    "C"
+   ],
+   "amplitude_natural": 66.7
+  },
+  "lideranca": {
+   "executivo": 33.6,
+   "metodico": 12.2,
+   "motivador": 27.9,
+   "sistematico": 26.3
+  },
+  "jung": {
+   "percentuais": {
+    "E": 70.4,
+    "I": 29.6,
+    "N": 63.0,
+    "S": 37.0,
+    "T": 59.3,
+    "F": 40.7
+   },
+   "tipo": "ENT",
+   "hierarquia": [
+    "Intuição Extrovertida",
+    "Pensamento Introvertido",
+    "Sentimento Extrovertido",
+    "Sensação Introvertida"
+   ]
+  },
+  "valores": {
+   "escore": {
+    "TEO": 30.0,
+    "ECO": 76.0,
+    "EST": 8.0,
+    "SOC": 54.0,
+    "POL": 88.0,
+    "PRI": 44.0
+   },
+   "nivel": {
+    "TEO": "Indiferente",
+    "ECO": "Significativo",
+    "EST": "Indiferente",
+    "SOC": "Circunstancial",
+    "POL": "Significativo",
+    "PRI": "Circunstancial"
+   },
+   "ranking": [
+    "POL",
+    "ECO",
+    "SOC",
+    "PRI",
+    "TEO",
+    "EST"
+   ]
+  }
+ }
+}

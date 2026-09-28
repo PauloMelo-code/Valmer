@@ -22,6 +22,9 @@ import {
   criarAssessmentSchema,
 } from "@/lib/validators/assessment";
 import { custoDoRelatorio } from "@/lib/precos";
+import { gerarCodigo } from "@/lib/inventario/codigo";
+import { comNovaTentativaDeCodigo } from "@/lib/codigo-do-mapa";
+import { VERSAO_INSTRUMENTO } from "@/data/inventario-mc";
 
 const TABELA = "assessments";
 
@@ -79,6 +82,11 @@ export async function obter(id: string) {
  * DEGUSTACAO paga com o outro bolso: consome 1 de `usuarios.creditos_degustacao`,
  * grava `creditos_usados = 0` e NAO lanca extrato. Sao tres escritas em vez de
  * quatro, e a mesma trava de linha protege os dois saldos.
+ *
+ * Todo mapa novo nasce no inventario MC-INV 2.2, com o codigo impresso na capa
+ * (ADR-0007, D3). O mapa LEGADO nao nasce mais por aqui; os que existem
+ * continuam no fluxo antigo. A semente da ordem NAO e gravada aqui: e sorteada
+ * no primeiro acesso do respondente (`lib/inventario/aplicacao.ts`).
  */
 export async function criar(dados: unknown) {
   const sessao = await exigirSessao("criar");
@@ -89,9 +97,10 @@ export async function criar(dados: unknown) {
     throw new Error("Sem permissao para criar mapa em nome de outro facilitador");
   }
 
-  const expiraEm = validadeDoLink(new Date());
+  const agora = new Date();
+  const expiraEm = validadeDoLink(agora);
 
-  const criado = await db.transaction(async (tx) => {
+  const criado = await comNovaTentativaDeCodigo(() => db.transaction(async (tx) => {
     const [dono] = await tx
       .select()
       .from(usuarios)
@@ -141,6 +150,8 @@ export async function criar(dados: unknown) {
         creditos_usados: custo,
         degustacao: validado.degustacao,
         expira_em: expiraEm,
+        versao_instrumento: VERSAO_INSTRUMENTO,
+        codigo: await gerarCodigo(tx, validado.avaliado_nome, agora),
         modified_by: sessao.userId,
       })
       .returning();
@@ -195,7 +206,7 @@ export async function criar(dados: unknown) {
     );
 
     return novo;
-  });
+  }));
 
   return criado;
 }

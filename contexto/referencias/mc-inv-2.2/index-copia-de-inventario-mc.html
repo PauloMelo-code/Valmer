@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa Comportamental · Inventário</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0A0A; --card:#1A1A1A; --card2:#222; --line:#333; --gold:#C89F5D; --gold-soft:rgba(200,159,93,.14);
+  --orange:#FF6A00; --text:#FFFFFF; --muted:#A3A3A3; --dim:#7A7A7A;
+  --D:#E0534F; --I:#F2B33D; --S:#3FAE7F; --C:#4F8FD6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:16px;line-height:1.55;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:24px 16px 64px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;gap:12px}
+.brand{font-family:"Bebas Neue",sans-serif;font-size:26px;letter-spacing:1.5px;color:var(--gold)}
+.stage{font-family:Montserrat,sans-serif;font-weight:600;font-size:12px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
+.progress{height:4px;background:var(--line);border-radius:4px;overflow:hidden;margin-bottom:32px}
+.progress>div{height:100%;background:var(--gold);transition:width .3s}
+.card{background:var(--card);border-radius:8px;padding:32px 24px;box-shadow:0 2px 8px rgba(0,0,0,.4);border-top:3px solid var(--gold)}
+h1{font-family:"Bebas Neue",sans-serif;font-size:52px;line-height:1;letter-spacing:1px;margin-bottom:16px}
+h1 em{font-style:normal;color:var(--gold)}
+h2{font-family:Montserrat,sans-serif;font-weight:700;font-size:24px;margin-bottom:12px;line-height:1.25}
+h3{font-family:Montserrat,sans-serif;font-weight:600;font-size:18px;color:var(--gold);margin:32px 0 12px}
+p{color:#D6D6D6;margin-bottom:16px}
+.small{font-size:14px;color:var(--muted)}
+label{display:block;font-family:Montserrat,sans-serif;font-weight:600;font-size:14px;color:var(--gold);margin:16px 0 8px}
+input[type=text]{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:14px;color:var(--text);font:inherit}
+input[type=text]:focus{outline:none;border:2px solid var(--gold);padding:13px}
+.btn{display:block;width:100%;margin-top:24px;padding:16px;border-radius:6px;border:none;font-family:Montserrat,sans-serif;font-weight:700;font-size:15px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;background:var(--gold);color:#0A0A0A;transition:box-shadow .2s,opacity .2s}
+.btn:hover:not(:disabled){box-shadow:0 0 16px rgba(200,159,93,.35)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.cta{background:var(--orange);color:#fff}
+.btn.cta:hover:not(:disabled){box-shadow:0 0 16px rgba(255,106,0,.4)}
+.btn.ghost{background:transparent;border:1px solid var(--gold);color:var(--text)}
+.row-btns{display:flex;gap:12px}
+.row-btns .btn{flex:1}
+.link{background:none;border:none;color:var(--muted);font:inherit;font-size:14px;cursor:pointer;margin-top:16px;text-decoration:underline}
+:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+/* ranking */
+.hint{font-size:14px;color:var(--muted);margin-bottom:20px;min-height:22px}
+.items{display:flex;flex-direction:column;gap:12px}
+.item{display:flex;align-items:center;gap:16px;width:100%;min-height:60px;padding:14px 18px;background:var(--card2);border:1px solid var(--line);border-radius:8px;color:var(--text);font:600 18px Montserrat,sans-serif;text-align:left;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s}
+.item:hover{border-color:var(--gold);box-shadow:0 0 16px rgba(200,159,93,.2)}
+.item .num{flex:0 0 36px;height:36px;border-radius:50%;border:1px dashed #555;display:flex;align-items:center;justify-content:center;font:400 22px "Bebas Neue",sans-serif;color:var(--dim)}
+.item.on{background:var(--gold-soft);border-color:var(--gold)}
+.item.on .num{border:none;background:var(--gold);color:#0A0A0A}
+.item .tag{margin-left:auto;font:500 12px Inter,sans-serif;color:var(--muted)}
+.scale-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-top:8px;text-transform:uppercase;letter-spacing:1px}
+/* pares */
+.pair{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:8px 0 24px}
+.pair .w{font:700 26px Montserrat,sans-serif;flex:1}
+.pair .w.r{text-align:right}
+.pair .vs{color:var(--dim);font-size:14px}
+.opts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.opt{min-height:64px;padding:8px 4px;border-radius:8px;background:var(--card2);border:1px solid var(--line);color:var(--text);font:600 13px Montserrat,sans-serif;cursor:pointer;line-height:1.25;transition:all .15s}
+.opt:hover{border-color:var(--gold);box-shadow:0 0 16px rgba(200,159,93,.2)}
+.opt.on{background:var(--gold);color:#0A0A0A;border-color:var(--gold)}
+/* resultado */
+.res-head{margin-bottom:8px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}
+.kpi{background:var(--card2);border-radius:8px;padding:16px;text-align:center}
+.kpi b{display:block;font:400 40px/1 "Bebas Neue",sans-serif;color:var(--gold);letter-spacing:1px}
+.kpi span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.bar{margin-bottom:14px}
+.bar .lbl{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}
+.bar .lbl b{font-weight:600}
+.bar .lbl span{color:var(--muted);font-variant-numeric:tabular-nums}
+.track{height:12px;background:#2A2A2A;border-radius:6px;overflow:hidden;position:relative}
+.fill{height:100%;border-radius:6px}
+.fill.ada{background-image:repeating-linear-gradient(135deg,rgba(0,0,0,.35) 0 4px,transparent 4px 8px)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0 8px}
+th{text-align:left;font:600 12px Montserrat,sans-serif;color:var(--gold);letter-spacing:1px;text-transform:uppercase;padding:8px 6px;border-bottom:1px solid var(--line)}
+td{padding:9px 6px;border-bottom:1px solid #262626;font-variant-numeric:tabular-nums}
+td.n{text-align:right}
+.pill{display:inline-block;font-size:12px;padding:2px 10px;border-radius:20px;background:var(--gold-soft);color:var(--gold)}
+.alert{background:rgba(255,106,0,.1);border-left:3px solid var(--orange);padding:12px 16px;border-radius:4px;font-size:14px;margin:8px 0}
+.ok{background:rgba(76,175,80,.1);border-left:3px solid #4CAF50;padding:12px 16px;border-radius:4px;font-size:14px;margin:8px 0}
+.jung{display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:14px}
+.jung .side{flex:0 0 96px}
+.jung .side.r{text-align:right}
+.jung .track{flex:1}
+.jung .mid{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:#555}
+.footer-note{font-size:12px;color:var(--dim);margin-top:32px}
+@media (max-width:520px){
+  h1{font-size:42px}
+  .pair .w{font-size:20px}
+  .opt{font-size:12px}
+  .two{grid-template-columns:1fr}
+  .kpis{grid-template-columns:1fr 1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div class="brand">Mapa Comportamental</div><div class="stage" id="stage"></div></div>
+  <div class="progress"><div id="bar" style="width:0"></div></div>
+  <main id="app"></main>
+</div>
+
+<script>
+const INV = {"versao": "MC-INV 2.2", "disc": [{"grupo": 1, "itens": [{"id": "G01-D", "texto": "Ousado", "fator": "D", "competencia": "ousadia"}, {"id": "G01-I", "texto": "Comunicativo", "fator": "I", "competencia": "extroversao"}, {"id": "G01-S", "texto": "Constante", "fator": "S", "competencia": "constancia"}, {"id": "G01-C", "texto": "Criterioso", "fator": "C", "competencia": "investigacao"}]}, {"grupo": 2, "itens": [{"id": "G02-D", "texto": "Firme", "fator": "D", "competencia": "comando"}, {"id": "G02-I", "texto": "Entusiasmado", "fator": "I", "competencia": "entusiasmo"}, {"id": "G02-S", "texto": "Cooperativo", "fator": "S", "competencia": "cooperacao"}, {"id": "G02-C", "texto": "Organizado", "fator": "C", "competencia": "organizacao"}]}, {"grupo": 3, "itens": [{"id": "G03-D", "texto": "Objetivo", "fator": "D", "competencia": "objetividade"}, {"id": "G03-I", "texto": "Sociável", "fator": "I", "competencia": "sociabilidade"}, {"id": "G03-S", "texto": "Acolhedor", "fator": "S", "competencia": "empatia"}, {"id": "G03-C", "texto": "Detalhista", "fator": "C", "competencia": "detalhismo"}]}, {"grupo": 4, "itens": [{"id": "G04-D", "texto": "Determinado", "fator": "D", "competencia": "assertividade"}, {"id": "G04-I", "texto": "Persuasivo", "fator": "I", "competencia": "persuasao"}, {"id": "G04-S", "texto": "Paciente", "fator": "S", "competencia": "paciencia"}, {"id": "G04-C", "texto": "Analítico", "fator": "C", "competencia": "analise"}]}, {"grupo": 5, "itens": [{"id": "G05-D", "texto": "Audacioso", "fator": "D", "competencia": "ousadia"}, {"id": "G05-I", "texto": "Expressivo", "fator": "I", "competencia": "extroversao"}, {"id": "G05-S", "texto": "Estável", "fator": "S", "competencia": "constancia"}, {"id": "G05-C", "texto": "Observador", "fator": "C", "competencia": "investigacao"}]}, {"grupo": 6, "itens": [{"id": "G06-D", "texto": "Independente", "fator": "D", "competencia": "comando"}, {"id": "G06-I", "texto": "Otimista", "fator": "I", "competencia": "entusiasmo"}, {"id": "G06-S", "texto": "Prestativo", "fator": "S", "competencia": "cooperacao"}, {"id": "G06-C", "texto": "Sistemático", "fator": "C", "competencia": "organizacao"}]}, {"grupo": 7, "itens": [{"id": "G07-D", "texto": "Pragmático", "fator": "D", "competencia": "objetividade"}, {"id": "G07-I", "texto": "Receptivo", "fator": "I", "competencia": "sociabilidade"}, {"id": "G07-S", "texto": "Atencioso", "fator": "S", "competencia": "empatia"}, {"id": "G07-C", "texto": "Minucioso", "fator": "C", "competencia": "detalhismo"}]}, {"grupo": 8, "itens": [{"id": "G08-D", "texto": "Decidido", "fator": "D", "competencia": "assertividade"}, {"id": "G08-I", "texto": "Carismático", "fator": "I", "competencia": "persuasao"}, {"id": "G08-S", "texto": "Tranquilo", "fator": "S", "competencia": "paciencia"}, {"id": "G08-C", "texto": "Lógico", "fator": "C", "competencia": "analise"}]}, {"grupo": 9, "itens": [{"id": "G09-D", "texto": "Desafiador", "fator": "D", "competencia": "ousadia"}, {"id": "G09-I", "texto": "Expansivo", "fator": "I", "competencia": "extroversao"}, {"id": "G09-S", "texto": "Ponderado", "fator": "S", "competencia": "constancia"}, {"id": "G09-C", "texto": "Investigativo", "fator": "C", "competencia": "investigacao"}]}, {"grupo": 10, "itens": [{"id": "G10-D", "texto": "Autoconfiante", "fator": "D", "competencia": "comando"}, {"id": "G10-I", "texto": "Contagiante", "fator": "I", "competencia": "entusiasmo"}, {"id": "G10-S", "texto": "Conciliador", "fator": "S", "competencia": "cooperacao"}, {"id": "G10-C", "texto": "Estruturado", "fator": "C", "competencia": "organizacao"}]}, {"grupo": 11, "itens": [{"id": "G11-D", "texto": "Proativo", "fator": "D", "competencia": "objetividade"}, {"id": "G11-I", "texto": "Envolvente", "fator": "I", "competencia": "sociabilidade"}, {"id": "G11-S", "texto": "Compreensivo", "fator": "S", "competencia": "empatia"}, {"id": "G11-C", "texto": "Meticuloso", "fator": "C", "competencia": "detalhismo"}]}, {"grupo": 12, "itens": [{"id": "G12-D", "texto": "Direto", "fator": "D", "competencia": "assertividade"}, {"id": "G12-I", "texto": "Articulado", "fator": "I", "competencia": "persuasao"}, {"id": "G12-S", "texto": "Sereno", "fator": "S", "competencia": "paciencia"}, {"id": "G12-C", "texto": "Racional", "fator": "C", "competencia": "analise"}]}, {"grupo": 13, "itens": [{"id": "G13-D", "texto": "Competitivo", "fator": "D", "competencia": "ousadia"}, {"id": "G13-I", "texto": "Espontâneo", "fator": "I", "competencia": "extroversao"}, {"id": "G13-S", "texto": "Moderado", "fator": "S", "competencia": "constancia"}, {"id": "G13-C", "texto": "Estratégico", "fator": "C", "competencia": "investigacao"}]}, {"grupo": 14, "itens": [{"id": "G14-D", "texto": "Enérgico", "fator": "D", "competencia": "comando"}, {"id": "G14-I", "texto": "Inspirador", "fator": "I", "competencia": "entusiasmo"}, {"id": "G14-S", "texto": "Colaborativo", "fator": "S", "competencia": "cooperacao"}, {"id": "G14-C", "texto": "Metódico", "fator": "C", "competencia": "organizacao"}]}, {"grupo": 15, "itens": [{"id": "G15-D", "texto": "Resoluto", "fator": "D", "competencia": "objetividade"}, {"id": "G15-I", "texto": "Criativo", "fator": "I", "competencia": "sociabilidade"}, {"id": "G15-S", "texto": "Tolerante", "fator": "S", "competencia": "empatia"}, {"id": "G15-C", "texto": "Preciso", "fator": "C", "competencia": "detalhismo"}]}, {"grupo": 16, "itens": [{"id": "G16-D", "texto": "Assertivo", "fator": "D", "competencia": "assertividade"}, {"id": "G16-I", "texto": "Motivador", "fator": "I", "competencia": "persuasao"}, {"id": "G16-S", "texto": "Calmo", "fator": "S", "competencia": "paciencia"}, {"id": "G16-C", "texto": "Técnico", "fator": "C", "competencia": "analise"}]}], "jung": {"EI": [["Agitado", "Quieto"], ["Falante", "Calado"], ["Desinibido", "Contido"], ["Enturmado", "Solitário"], ["Impulsivo", "Pensativo"], ["Solto", "Discreto"], ["Conversador", "Silencioso"], ["Aberto", "Recolhido"], ["Festeiro", "Caseiro"]], "NS": [["Imaginativo", "Realista"], ["Inventivo", "Prático"], ["Sonhador", "Pé no chão"], ["Inovador", "Tradicional"], ["Intuitivo", "Concreto"], ["Original", "Convencional"], ["Das ideias", "Dos fatos"], ["Do futuro", "Do presente"], ["Visionário", "Experiente"]], "TF": [["Pela razão", "Pela emoção"], ["Imparcial", "Sentimental"], ["Crítico", "Gentil"], ["Justo", "Bondoso"], ["Impessoal", "Pessoal"], ["Cabeça", "Coração"], ["Exigente", "Compassivo"], ["Argumentativo", "Afetuoso"], ["Pela lógica", "Pelo sentimento"]]}, "valores": [{"grupo": 1, "itens": [{"id": "V01-TEO", "texto": "Aprender", "valor": "TEO"}, {"id": "V01-ECO", "texto": "Dinheiro", "valor": "ECO"}, {"id": "V01-EST", "texto": "Beleza", "valor": "EST"}, {"id": "V01-SOC", "texto": "Ajudar", "valor": "SOC"}, {"id": "V01-POL", "texto": "Poder", "valor": "POL"}, {"id": "V01-PRI", "texto": "Princípios", "valor": "PRI"}]}, {"grupo": 2, "itens": [{"id": "V02-TEO", "texto": "Conhecimento", "valor": "TEO"}, {"id": "V02-ECO", "texto": "Lucro", "valor": "ECO"}, {"id": "V02-EST", "texto": "Arte", "valor": "EST"}, {"id": "V02-SOC", "texto": "Servir", "valor": "SOC"}, {"id": "V02-POL", "texto": "Liderar", "valor": "POL"}, {"id": "V02-PRI", "texto": "Fé", "valor": "PRI"}]}, {"grupo": 3, "itens": [{"id": "V03-TEO", "texto": "Estudo", "valor": "TEO"}, {"id": "V03-ECO", "texto": "Retorno", "valor": "ECO"}, {"id": "V03-EST", "texto": "Harmonia", "valor": "EST"}, {"id": "V03-SOC", "texto": "Caridade", "valor": "SOC"}, {"id": "V03-POL", "texto": "Status", "valor": "POL"}, {"id": "V03-PRI", "texto": "Ética", "valor": "PRI"}]}, {"grupo": 4, "itens": [{"id": "V04-TEO", "texto": "Curiosidade", "valor": "TEO"}, {"id": "V04-ECO", "texto": "Riqueza", "valor": "ECO"}, {"id": "V04-EST", "texto": "Natureza", "valor": "EST"}, {"id": "V04-SOC", "texto": "Voluntariado", "valor": "SOC"}, {"id": "V04-POL", "texto": "Influência", "valor": "POL"}, {"id": "V04-PRI", "texto": "Tradição", "valor": "PRI"}]}, {"grupo": 5, "itens": [{"id": "V05-TEO", "texto": "Leitura", "valor": "TEO"}, {"id": "V05-ECO", "texto": "Investir", "valor": "ECO"}, {"id": "V05-EST", "texto": "Bom gosto", "valor": "EST"}, {"id": "V05-SOC", "texto": "Cuidar", "valor": "SOC"}, {"id": "V05-POL", "texto": "Reconhecimento", "valor": "POL"}, {"id": "V05-PRI", "texto": "Valores", "valor": "PRI"}]}, {"grupo": 6, "itens": [{"id": "V06-TEO", "texto": "Pesquisa", "valor": "TEO"}, {"id": "V06-ECO", "texto": "Negócios", "valor": "ECO"}, {"id": "V06-EST", "texto": "Música", "valor": "EST"}, {"id": "V06-SOC", "texto": "Generosidade", "valor": "SOC"}, {"id": "V06-POL", "texto": "Vencer", "valor": "POL"}, {"id": "V06-PRI", "texto": "Honestidade", "valor": "PRI"}]}, {"grupo": 7, "itens": [{"id": "V07-TEO", "texto": "Descobrir", "valor": "TEO"}, {"id": "V07-ECO", "texto": "Economizar", "valor": "ECO"}, {"id": "V07-EST", "texto": "Estilo", "valor": "EST"}, {"id": "V07-SOC", "texto": "Solidariedade", "valor": "SOC"}, {"id": "V07-POL", "texto": "Comandar", "valor": "POL"}, {"id": "V07-PRI", "texto": "Crenças", "valor": "PRI"}]}, {"grupo": 8, "itens": [{"id": "V08-TEO", "texto": "Sabedoria", "valor": "TEO"}, {"id": "V08-ECO", "texto": "Patrimônio", "valor": "ECO"}, {"id": "V08-EST", "texto": "Conforto", "valor": "EST"}, {"id": "V08-SOC", "texto": "Doar", "valor": "SOC"}, {"id": "V08-POL", "texto": "Destaque", "valor": "POL"}, {"id": "V08-PRI", "texto": "Regras", "valor": "PRI"}]}, {"grupo": 9, "itens": [{"id": "V09-TEO", "texto": "Cultura", "valor": "TEO"}, {"id": "V09-ECO", "texto": "Ganhar bem", "valor": "ECO"}, {"id": "V09-EST", "texto": "Viver bem", "valor": "EST"}, {"id": "V09-SOC", "texto": "Acolher", "valor": "SOC"}, {"id": "V09-POL", "texto": "Prestígio", "valor": "POL"}, {"id": "V09-PRI", "texto": "Integridade", "valor": "PRI"}]}, {"grupo": 10, "itens": [{"id": "V10-TEO", "texto": "Ciência", "valor": "TEO"}, {"id": "V10-ECO", "texto": "Eficiência", "valor": "ECO"}, {"id": "V10-EST", "texto": "Bem-estar", "valor": "EST"}, {"id": "V10-SOC", "texto": "Fazer o bem", "valor": "SOC"}, {"id": "V10-POL", "texto": "Autoridade", "valor": "POL"}, {"id": "V10-PRI", "texto": "Propósito", "valor": "PRI"}]}]};
+
+/* ---------- utilidades ---------- */
+function r1(x){ // 1 casa, meio para longe do zero (igual ao motor_referencia.py)
+  const s = Math.sign(x), a = Math.abs(x);
+  return s * Math.round(parseFloat((a*10).toPrecision(12))) / 10 || 0;
+}
+function rng(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function shuffle(arr, rand){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(rand()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const lc = t => t.charAt(0).toLowerCase()+t.slice(1);
+const gen = t => /o$/.test(t) ? t+"(a)" : t;
+const fmt = n => n.toFixed(1).replace('.', ',');
+const store = { get(k){ try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;} }, set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }, del(k){ try{localStorage.removeItem(k);}catch(e){} } };
+
+/* ---------- motor (porte fiel de motor_referencia.py) ---------- */
+const FAT = ["D","I","S","C"], VAL = ["TEO","ECO","EST","SOC","POL","PRI"];
+function pontuarDisc(resp){ // resp[grupo] = {id: posicao}
+  const bf={D:0,I:0,S:0,C:0}, bc={}, prim={D:0,I:0,S:0,C:0};
+  INV.disc.forEach(g=>{ const pos=resp[g.grupo]; g.itens.forEach(it=>{ const p=5-pos[it.id]; bf[it.fator]+=p; bc[it.competencia]=(bc[it.competencia]||0)+p; if(pos[it.id]===1) prim[it.fator]++; }); });
+  const G=INV.disc.length, esc={}, comp={};
+  FAT.forEach(f=> esc[f]=r1((bf[f]-G)/(3*G)*100));
+  Object.keys(bc).forEach(c=> comp[c]=r1((bc[c]-4)/12*100));
+  return {bruto:bf, escore:esc, competencias:comp, primeiros:prim};
+}
+const ZONAS=[[88,"EA","Extremo alto"],[70,"MA","Muito alto"],[51,"A","Alto"],[33,"B","Baixo"],[16,"MB","Muito baixo"],[0,"EB","Extremo baixo"]];
+function zona(s){ for(const z of ZONAS) if(s>=z[0]) return z; return ZONAS[5]; }
+function perfil(e, prim){
+  const ordem = FAT.slice().sort((a,b)=> (e[b]-e[a]) || (prim[b]-prim[a]) || (FAT.indexOf(a)-FAT.indexOf(b)));
+  const acima = ordem.filter(f=> e[f]>=51);
+  return {sigla: acima.length ? acima.slice(0,2).join("") : "EQUILIBRADO", ordem};
+}
+function indices(nat, ada){
+  const v={}; FAT.forEach(f=> v[f]=r1(ada[f]-nat[f]));
+  const m=r1(FAT.reduce((s,f)=>s+Math.abs(v[f]),0)/4);
+  const cls = m<=10?"baixa":m<=20?"moderada":m<=25?"alta":m<=35?"muito alta":"extremamente alta";
+  const pol = FAT.filter(f=> (nat[f]<=32&&ada[f]>=70)||(nat[f]>=70&&ada[f]<=32));
+  const vals=FAT.map(f=>nat[f]);
+  return {variacao:v, indice:m, classe:cls, polarizados:pol, amplitude:r1(Math.max(...vals)-Math.min(...vals))};
+}
+function lideranca(n){
+  const e={executivo:n.D*.6+n.C*.4, metodico:n.S*.6+n.C*.4, motivador:n.I*.6+n.S*.4, sistematico:n.C*.6+n.D*.4};
+  const t=Object.values(e).reduce((a,b)=>a+b,0), o={};
+  Object.keys(e).forEach(k=> o[k]= t? r1(e[k]/t*100) : 25);
+  return o;
+}
+function pontuarJung(r){ // r[eixo] = 9 valores 0..3 orientados ao polo A
+  const P={EI:["E","I"],NS:["N","S"],TF:["T","F"]}, out={};
+  Object.keys(P).forEach(ax=>{ const pa=r1(r[ax].reduce((a,b)=>a+b,0)/27*100); out[P[ax][0]]=pa; out[P[ax][1]]=r1(100-pa); });
+  const tipo=(out.E>50?"E":"I")+(out.N>50?"N":"S")+(out.T>50?"T":"F");
+  const nome={N:"Intuição",S:"Sensação",T:"Pensamento",F:"Sentimento"}, op={N:"S",S:"N",T:"F",F:"T"};
+  const att=tipo[0], outra=att==="E"?"I":"E";
+  const adj=(f,a)=>(a==="E"?"Extrovertid":"Introvertid")+((f==="N"||f==="S")?"a":"o");
+  const dom = Math.abs(out.N-50) >= Math.abs(out.T-50) ? tipo[1] : tipo[2];
+  const aux = dom===tipo[1] ? tipo[2] : tipo[1];
+  return {pct:out, tipo, hier:[`${nome[dom]} ${adj(dom,att)}`,`${nome[aux]} ${adj(aux,outra)}`,`${nome[op[aux]]} ${adj(op[aux],att)}`,`${nome[op[dom]]} ${adj(op[dom],outra)}`]};
+}
+function pontuarValores(resp){
+  const b={}; VAL.forEach(v=>b[v]=0);
+  INV.valores.forEach(g=>{ const pos=resp[g.grupo]; g.itens.forEach(it=> b[it.valor]+=7-pos[it.id]); });
+  const G=INV.valores.length, e={}, nv={};
+  VAL.forEach(v=>{ e[v]=r1((b[v]-G)/(5*G)*100); nv[v]= e[v]>=66?"Significativo":e[v]>=31?"Circunstancial":"Indiferente"; });
+  return {escore:e, nivel:nv, ranking: VAL.slice().sort((a,c)=> (e[c]-e[a]) || (VAL.indexOf(a)-VAL.indexOf(c)))};
+}
+/* testes de ouro (mesmos do motor_referencia.py) */
+function testesDeOuro(){
+  const fixa=(grupos,pref,key)=>{const o={}; grupos.forEach(g=>{o[g.grupo]={}; g.itens.forEach(it=> o[g.grupo][it.id]=pref.indexOf(it[key])+1);}); return o;};
+  const eq=(a,b)=>JSON.stringify(a)===JSON.stringify(b), falhas=[];
+  const t1=pontuarDisc(fixa(INV.disc,["D","I","S","C"],"fator"));
+  if(!eq(t1.escore,{D:100,I:66.7,S:33.3,C:0})) falhas.push("T1");
+  const ix=indices({D:100,I:66.7,S:33.3,C:0},{D:33.3,I:0,S:100,C:66.7});
+  if(!(ix.indice===66.7&&ix.polarizados.length===0&&ix.classe==="extremamente alta"&&ix.variacao.D===-66.7)) falhas.push("T3");
+  if(!eq(indices({D:20,I:80,S:50,C:50},{D:75,I:25,S:50,C:50}).polarizados,["D","I"])) falhas.push("T3b");
+  if([100,88,87.9,70,69.9,51,50.9,33,32.9,16,15.9,0].map(x=>zona(x)[1]).join()!=="EA,EA,MA,MA,A,A,B,B,MB,MB,EB,EB") falhas.push("T4");
+  if(!eq(lideranca({D:100,I:66.7,S:33.3,C:0}),{executivo:34.6,metodico:11.5,motivador:30.8,sistematico:23.1})) falhas.push("T5");
+  const j=pontuarJung({EI:[3,3,2,2,2,1,2,3,2],NS:[2,2,1,2,3,2,2,1,2],TF:[3,2,2,3,2,2,3,2,1]});
+  if(!(j.pct.E===74.1&&j.pct.N===63&&j.pct.T===74.1&&j.tipo==="ENT"&&j.hier.join("|")==="Pensamento Extrovertido|Intuição Introvertida|Sensação Extrovertida|Sentimento Introvertido")) falhas.push("T6");
+  const v=pontuarValores(fixa(INV.valores,["PRI","ECO","SOC","POL","TEO","EST"],"valor"));
+  if(!eq(v.escore,{TEO:20,ECO:80,EST:0,SOC:60,POL:40,PRI:100})) falhas.push("T7");
+  return falhas;
+}
+
+/* ---------- estado ---------- */
+const KEY="mc-inv-2.0";
+let S = store.get(KEY);
+function novo(nome){
+  const seed = Math.floor(Math.random()*2147483647);
+  const rand = rng(seed);
+  const ordemItens = g => shuffle(g.itens.map(i=>i.id), rand);
+  const e1 = INV.disc.map(g=>({grupo:g.grupo, ini:ordemItens(g)}));
+  const e2 = shuffle(INV.disc,rand).map(g=>({grupo:g.grupo, ini:ordemItens(g)}));
+  // Jung: intercalado por rodadas, ordem dos eixos sorteada a cada rodada, lado do polo A sorteado
+  const eixos = {}; Object.keys(INV.jung).forEach(ax=> eixos[ax]=shuffle(INV.jung[ax].map((p,i)=>({ax,i,a:p[0],b:p[1]})),rand));
+  const e3=[]; for(let k=0;k<9;k++){ shuffle(["EI","NS","TF"],rand).forEach(ax=>{ const p=eixos[ax][k]; e3.push({...p, aEsq: rand()<.5}); }); }
+  const e4 = shuffle(INV.valores,rand).map(g=>({grupo:g.grupo, ini:ordemItens(g)}));
+  return {nome, seed, inicio:Date.now(), fase:"intro1", idx:0, telas:{e1,e2,e3,e4}, resp:{e1:{},e2:{},e3:{},e4:{}}, tempo:{}};
+}
+function salvar(){ store.set(KEY,S); }
+
+const ETAPAS = {
+  e1:{titulo:"Etapa 1 de 4", tipo:"rank"},
+  e2:{titulo:"Etapa 2 de 4", tipo:"rank"},
+  e3:{titulo:"Etapa 3 de 4", tipo:"par"},
+  e4:{titulo:"Etapa 4 de 4", tipo:"rank"},
+};
+const INSTR = {
+  e1:["Como você é",
+      "Em cada tela você verá quatro palavras. Toque primeiro na que <b>mais combina com você</b>, depois na segunda, e assim por diante. A última é a que menos combina.",
+      "Pense em como você é de verdade, num dia comum, sem ninguém cobrando nada. Não existe palavra certa nem errada, e as quatro são qualidades. Responda rápido: a primeira impressão costuma ser a mais honesta."],
+  e2:["Como a rotina te pede",
+      "Agora as mesmas palavras voltam, em outra ordem. Desta vez, ordene pensando em <b>como a sua rotina atual pede que você seja</b>: trabalho, família, responsabilidades.",
+      "Não como você é, e sim como você sente que precisa ser para dar conta do que esperam de você. A etapa anterior fica travada a partir daqui."],
+  e3:["Como você pensa e decide",
+      "Em cada tela há duas palavras opostas. Marque <b>para qual lado você pende naturalmente</b> e com que força.",
+      "Não há meio-termo de propósito: mesmo que as duas pareçam suas, uma costuma vir primeiro."],
+  e4:["O que te move",
+      "Em cada tela há seis palavras. Toque primeiro na que <b>mais importa para você</b> e siga até a que menos importa.",
+      "Pense no que de fato orienta as suas decisões, não no que seria bonito responder."],
+};
+const ORDEM_FASES = ["e1","e2","e3","e4"];
+const TOTAL_TELAS = 16+16+27+10;
+
+function progresso(){
+  if(!S){ $("#bar").style.width="0"; return; }
+  let feitas=0; ORDEM_FASES.forEach(e=> feitas+=Object.keys(S.resp[e]).length);
+  $("#bar").style.width = (feitas/TOTAL_TELAS*100)+"%";
+}
+
+/* ---------- render ---------- */
+function render(){
+  progresso();
+  const app=$("#app");
+  if(!S){ $("#stage").textContent=""; app.innerHTML=telaBoasVindas(); ligarBoasVindas(); return; }
+  if(S.fase==="resultado"){ renderResultado(); return; }
+  const m=S.fase.match(/^intro(\d)$/);
+  if(m){ const e="e"+m[1]; $("#stage").textContent=ETAPAS[e].titulo; const [t,a,b]=INSTR[e];
+    app.innerHTML=`<div class="card"><h2>${t}</h2><p>${a}</p><p class="small">${b}</p><button class="btn" id="go">Começar</button></div>`;
+    $("#go").onclick=()=>{ S.fase=e; S.idx=0; salvar(); render(); }; return; }
+  const e=S.fase; $("#stage").textContent=ETAPAS[e].titulo;
+  if(ETAPAS[e].tipo==="rank") renderRank(e); else renderPar();
+}
+
+function telaBoasVindas(){
+  const salvo = store.get(KEY);
+  return `<div class="card">
+    <h1>Seu <em>Mapa</em><br>Comportamental</h1>
+    <p>São quatro etapas curtas, com palavras simples. Leva de 16 a 20 minutos.</p>
+    <p class="small">Responda num momento sem interrupções. Não existe resposta certa: o mapa só funciona se descrever você como você é.</p>
+    <label for="nome">Seu nome</label>
+    <input type="text" id="nome" autocomplete="name" placeholder="Como quer ser chamado no relatório">
+    <label style="display:flex;gap:10px;align-items:flex-start;color:#D6D6D6;font:400 14px Inter,sans-serif;cursor:pointer;margin-top:20px">
+      <input type="checkbox" id="ok" style="margin-top:4px;accent-color:#C89F5D"> Concordo em responder com atenção e sei que este é um teste do inventário. As respostas ficam só neste navegador.
+    </label>
+    <button class="btn cta" id="start" disabled>Iniciar inventário</button>
+  </div>`;
+}
+function ligarBoasVindas(){
+  const upd=()=> $("#start").disabled = !($("#nome").value.trim() && $("#ok").checked);
+  $("#nome").oninput=upd; $("#ok").onchange=upd;
+  $("#start").onclick=()=>{ S=novo($("#nome").value.trim()); salvar(); render(); };
+}
+
+function renderRank(e){
+  const tela=S.telas[e][S.idx];
+  const grupos = e==="e4" ? INV.valores : INV.disc;
+  const g = grupos.find(x=>x.grupo===tela.grupo);
+  const byId = {}; g.itens.forEach(it=> byId[it.id]=it);
+  const n=g.itens.length;
+  const prev = S.resp[e][tela.grupo];
+  let ordem = prev ? Object.keys(prev).sort((a,b)=>prev[a]-prev[b]) : [];
+  const t0 = Date.now();
+  const total = S.telas[e].length;
+  $("#app").innerHTML = `<div class="card">
+    <div class="stage" style="margin-bottom:8px">Tela ${S.idx+1} de ${total}</div>
+    <h2>${e==="e4"?"O que mais importa para você?":e==="e2"?"Como a sua rotina pede que você seja?":"Qual combina mais com você?"}</h2>
+    <div class="hint" id="hint"></div>
+    <div class="items" id="items"></div>
+    <div class="row-btns">
+      <button class="btn ghost" id="back">Voltar</button>
+      <button class="btn" id="next" disabled>Avançar</button>
+    </div>
+    <button class="link" id="clear">Limpar e reordenar</button>
+  </div>`;
+  function draw(){
+    $("#items").innerHTML = tela.ini.map(id=>{ const k=ordem.indexOf(id);
+      return `<button class="item ${k>=0?"on":""}" data-id="${id}"><span class="num">${k>=0?k+1:""}</span>${esc(e==="e4"?byId[id].texto:gen(byId[id].texto))}</button>`; }).join("");
+    document.querySelectorAll(".item").forEach(b=> b.onclick=()=>{ const id=b.dataset.id, k=ordem.indexOf(id);
+      if(k>=0) ordem=ordem.slice(0,k); else { ordem.push(id); if(ordem.length===n-1) ordem.push(tela.ini.find(x=>!ordem.includes(x))); }
+      draw(); });
+    const faltam=n-ordem.length;
+    $("#hint").textContent = faltam===0 ? "Ordem completa. Toque num item para refazer a partir dele." :
+      ordem.length===0 ? (e==="e4"?"Toque primeiro no que mais importa.":"Toque primeiro na palavra que mais combina.") : `Agora a ${ordem.length+1}ª opção.`;
+    $("#next").disabled = faltam!==0;
+  }
+  draw();
+  $("#clear").onclick=()=>{ ordem=[]; draw(); };
+  $("#back").disabled = S.idx===0;
+  $("#back").onclick=()=>{ S.idx--; salvar(); render(); };
+  $("#next").onclick=()=>{
+    const pos={}; ordem.forEach((id,i)=> pos[id]=i+1);
+    S.resp[e][tela.grupo]=pos;
+    S.tempo[e+"-"+tela.grupo]=(S.tempo[e+"-"+tela.grupo]||0)+(Date.now()-t0);
+    avancar(e);
+  };
+}
+
+function renderPar(){
+  const tela=S.telas.e3[S.idx];
+  const key=tela.ax+tela.i;
+  const esq = tela.aEsq ? tela.a : tela.b, dir = tela.aEsq ? tela.b : tela.a;
+  const prev = S.resp.e3[key]; // guarda a posição do botão clicado 0..3 (0 = muito esquerda)
+  const t0=Date.now();
+  $("#app").innerHTML = `<div class="card">
+    <div class="stage" style="margin-bottom:8px">Tela ${S.idx+1} de 27</div>
+    <h2>Para qual lado você pende?</h2>
+    <div class="pair"><div class="w">${esc(esq)}</div><div class="vs">ou</div><div class="w r">${esc(dir)}</div></div>
+    <div class="opts">
+      ${[`Muito ${lc(esq)}`,`Mais ${lc(esq)}`,`Mais ${lc(dir)}`,`Muito ${lc(dir)}`].map((t,i)=>`<button class="opt ${prev&&prev.botao===i?"on":""}" data-i="${i}">${esc(t)}</button>`).join("")}
+    </div>
+    <div class="row-btns"><button class="btn ghost" id="back">Voltar</button></div>
+  </div>`;
+  $("#back").disabled = S.idx===0;
+  $("#back").onclick=()=>{ S.idx--; salvar(); render(); };
+  document.querySelectorAll(".opt").forEach(b=> b.onclick=()=>{
+    const botao=+b.dataset.i;
+    const polA = tela.aEsq ? 3-botao : botao; // 3 = muito A
+    S.resp.e3[key]={botao, polA};
+    S.tempo["e3-"+key]=(S.tempo["e3-"+key]||0)+(Date.now()-t0);
+    b.classList.add("on");
+    setTimeout(()=>avancar("e3"),180);
+  });
+}
+
+function avancar(e){
+  S.idx++;
+  if(S.idx>=S.telas[e].length){
+    const k=ORDEM_FASES.indexOf(e);
+    if(k<3){ S.fase="intro"+(k+2); S.idx=0; } else { S.fim=Date.now(); S.fase="resultado"; }
+  }
+  salvar(); render(); window.scrollTo(0,0);
+}
+
+/* ---------- validade ---------- */
+function validade(){
+  const al=[];
+  const min=(S.fim-S.inicio)/60000;
+  if(min<7) al.push(["médio",`Tempo total de ${min.toFixed(1).replace('.',',')} min, abaixo de 7 min.`]);
+  if(min>60) al.push(["médio",`Tempo total acima de 60 min.`]);
+  const tDisc=[]; ["e1","e2"].forEach(e=> INV.disc.forEach(g=> tDisc.push(S.tempo[e+"-"+g.grupo]||0)));
+  if(tDisc.filter(t=>t<2500).length/tDisc.length>.30) al.push(["alto","Mais de 30% das telas DISC respondidas em menos de 2,5 s."]);
+  let semMexer=0, tot=0;
+  ["e1","e2","e4"].forEach(e=> S.telas[e].forEach(t=>{ tot++; const p=S.resp[e][t.grupo]; if(t.ini.every((id,i)=>p[id]===i+1)) semMexer++; }));
+  if(semMexer/tot>.25) al.push(["alto","Mais de 25% dos grupos enviados na mesma ordem em que apareceram."]);
+  const iguais=INV.disc.filter(g=> g.itens.every(it=> S.resp.e1[g.grupo][it.id]===S.resp.e2[g.grupo][it.id])).length;
+  if(iguais>=14) al.push(["info",`Natural e adaptado idênticos em ${iguais} de 16 grupos (pode ser real).`]);
+  const bots=Object.values(S.resp.e3).map(x=>x.botao);
+  const cont=[0,1,2,3].map(b=>bots.filter(x=>x===b).length);
+  if(Math.max(...cont)>=24) al.push(["alto","Etapa 3 respondida quase sempre no mesmo botão."]);
+  if(cont[0]+cont[3]>=26) al.push(["baixo","Etapa 3 com respostas extremas em quase todos os pares."]);
+  const altos=al.filter(a=>a[0]==="alto").length, medios=al.filter(a=>a[0]==="médio").length;
+  const conf = altos||medios>=2 ? "baixa" : medios===1 ? "média" : "alta";
+  return {alertas:al, confiabilidade:conf, minutos:min};
+}
+
+/* ---------- resultado ---------- */
+const NOME_F={D:"Dominância",I:"Influência",S:"Estabilidade",C:"Conformidade"};
+const NOME_V={TEO:"Teórico · Conhecimento",ECO:"Econômico · Utilidade",EST:"Estético · Harmonia",SOC:"Social · Altruísmo",POL:"Político · Influência",PRI:"Princípios"};
+const NOME_C={"ousadia": "Ousadia", "comando": "Comando", "objetividade": "Objetividade", "assertividade": "Assertividade", "persuasao": "Persuasão", "extroversao": "Extroversão", "entusiasmo": "Entusiasmo", "sociabilidade": "Sociabilidade", "empatia": "Empatia", "paciencia": "Paciência", "constancia": "Constância", "cooperacao": "Cooperação", "organizacao": "Organização", "detalhismo": "Detalhismo", "analise": "Análise", "investigacao": "Investigação"};
+const ARQ={DI:"O Protagonista",DC:"O Estrategista",DS:"O Guardião Executor",ID:"O Inspirador de Resultados",IS:"O Catalisador Social",IC:"O Comunicador Preciso",SI:"O Servidor Empático",SD:"O Construtor Paciente",SC:"O Analítico Confiável",CD:"O Arquiteto Decisivo",CS:"O Guardião da Qualidade",CI:"O Analista Persuasivo",D:"Dominância pura",I:"Influência pura",S:"Estabilidade pura",C:"Conformidade pura",EQUILIBRADO:"Perfil equilibrado"};
+
+function calcular(){
+  const pos = e => { const o={}; INV.disc.forEach(g=> o[g.grupo]=S.resp[e][g.grupo]); return o; };
+  const nat=pontuarDisc(pos("e1")), ada=pontuarDisc(pos("e2"));
+  const jr={EI:[],NS:[],TF:[]}; Object.keys(S.resp.e3).forEach(k=> jr[k.slice(0,2)].push(S.resp.e3[k].polA));
+  const vr={}; INV.valores.forEach(g=> vr[g.grupo]=S.resp.e4[g.grupo]);
+  return {nat, ada, pn:perfil(nat.escore,nat.primeiros), pa:perfil(ada.escore,ada.primeiros),
+          ix:indices(nat.escore,ada.escore), lid:lideranca(nat.escore), jung:pontuarJung(jr), val:pontuarValores(vr), vd:validade()};
+}
+function barra(lbl, v, cor, ada, extra){
+  return `<div class="bar"><div class="lbl"><b>${lbl}</b><span>${extra||""}${fmt(v)}</span></div><div class="track"><div class="fill ${ada?"ada":""}" style="width:${v}%;background-color:${cor}"></div></div></div>`;
+}
+function renderResultado(){
+  $("#stage").textContent="Resultado"; $("#bar").style.width="100%";
+  const R=calcular(), n=R.nat.escore, a=R.ada.escore, falhas=testesDeOuro();
+  const somaN=FAT.reduce((s,f)=>s+n[f],0), somaA=FAT.reduce((s,f)=>s+a[f],0), somaV=VAL.reduce((s,v)=>s+R.val.escore[v],0);
+  const discBloco=(e,ada)=> FAT.map(f=> barra(NOME_F[f], e[f], `var(--${f})`, ada, `<span class="pill" style="margin-right:8px">${zona(e[f])[1]}</span>`)).join("");
+  const comps = FAT.map(f=>{ const cs=Object.keys(NOME_C).filter(c=> INV.disc[0] && INV.disc.some(g=>g.itens.some(it=>it.fator===f&&it.competencia===c)));
+    return cs.map(c=>`<tr><td>${NOME_C[c]}</td><td style="color:var(--${f})">${f}</td><td class="n">${fmt(R.nat.competencias[c])}</td><td class="n">${fmt(R.ada.competencias[c])}</td><td class="n">${fmt(r1(R.ada.competencias[c]-R.nat.competencias[c]))}</td></tr>`).join(""); }).join("");
+  const J=R.jung.pct;
+  const jungLinha=(A,B,nA,nB)=>`<div class="bar"><div class="lbl"><span style="color:${J[B]>50?"var(--text)":"var(--muted)"}">${nB} <b>${fmt(J[B])}</b></span><span style="color:${J[A]>50?"var(--text)":"var(--muted)"}"><b>${fmt(J[A])}</b> ${nA}</span></div><div class="track"><div class="fill" style="margin-left:${J[A]>50?50:J[A]}%;width:${Math.abs(J[A]-50)}%;background:var(--gold)"></div><div class="mid" style="position:absolute;left:50%;top:0;bottom:0;width:2px;background:#666"></div></div></div>`;
+  $("#app").innerHTML = `
+  <div class="card">
+    <div class="stage">${esc(S.nome)} · MC-INV 2.2</div>
+    <h1 class="res-head">Seu <em>resultado</em></h1>
+    <div class="kpis">
+      <div class="kpi"><b>${R.pn.sigla}</b><span>Perfil natural</span></div>
+      <div class="kpi"><b>${R.jung.tipo}</b><span>Tipo psicológico</span></div>
+      <div class="kpi"><b>${fmt(R.ix.indice)}</b><span>Adaptação</span></div>
+    </div>
+    <p><b style="color:var(--gold)">${ARQ[R.pn.sigla]||R.pn.sigla}</b> no natural. No adaptado, o perfil lido é <b>${R.pa.sigla}</b> (${ARQ[R.pa.sigla]||R.pa.sigla}). Índice de adaptação ${fmt(R.ix.indice)}: <b>${R.ix.classe}</b>.</p>
+
+    <h3>DISC · Natural</h3>
+    ${discBloco(n,false)}
+    <h3>DISC · Adaptado</h3>
+    ${discBloco(a,true)}
+    <table><tr><th>Fator</th><th class="n">Natural</th><th class="n">Adaptado</th><th class="n">Variação</th></tr>
+      ${FAT.map(f=>`<tr><td style="color:var(--${f})">${NOME_F[f]}</td><td class="n">${fmt(n[f])}</td><td class="n">${fmt(a[f])}</td><td class="n">${R.ix.variacao[f]>0?"+":""}${fmt(R.ix.variacao[f])}</td></tr>`).join("")}
+    </table>
+    <p class="small">Amplitude natural ${fmt(R.ix.amplitude)} · Fatores polarizados: ${R.ix.polarizados.join(", ")||"nenhum"} · Conferência: natural soma ${fmt(somaN)}, adaptado soma ${fmt(somaA)} (esperado 200).</p>
+
+    <h3>Estilo de liderança</h3>
+    ${[["executivo","Executivo"],["motivador","Motivador"],["sistematico","Sistemático"],["metodico","Metódico"]].sort((x,y)=>R.lid[y[0]]-R.lid[x[0]]).map(([k,l])=>barra(l,R.lid[k],"var(--gold)",false)).join("")}
+
+    <h3>16 competências</h3>
+    <table><tr><th>Competência</th><th></th><th class="n">Nat</th><th class="n">Adp</th><th class="n">Dif</th></tr>${comps}</table>
+
+    <h3>Tipos psicológicos · ${R.jung.tipo}</h3>
+    ${jungLinha("E","I","Extroversão","Introversão")}
+    ${jungLinha("N","S","Intuição","Sensação")}
+    ${jungLinha("T","F","Pensamento","Sentimento")}
+    <table><tr><th>Hierarquia funcional</th><th></th></tr>${R.jung.hier.map((h,i)=>`<tr><td>${["Dominante","Auxiliar","Terciária","Inferior"][i]}</td><td>${h}</td></tr>`).join("")}</table>
+
+    <h3>Valores</h3>
+    ${R.val.ranking.map(v=> barra(NOME_V[v], R.val.escore[v], "var(--gold)", false, `<span class="pill" style="margin-right:8px">${R.val.nivel[v]}</span>`)).join("")}
+    <p class="small">Conferência: soma ${fmt(somaV)} (esperado 300).</p>
+
+    <h3>Confiabilidade da aplicação · ${R.vd.confiabilidade}</h3>
+    <p class="small">Tempo total: ${fmt(R.vd.minutos)} min.</p>
+    ${R.vd.alertas.length? R.vd.alertas.map(x=>`<div class="alert"><b>${x[0]}</b> · ${x[1]}</div>`).join("") : `<div class="ok">Nenhum alerta de validade.</div>`}
+    ${falhas.length? `<div class="alert">Testes de ouro com falha: ${falhas.join(", ")}</div>` : `<div class="ok">Motor conferido: os 8 testes de ouro passaram neste navegador.</div>`}
+
+    <div class="row-btns" style="margin-top:8px">
+      <button class="btn ghost" id="dl">Baixar respostas (JSON)</button>
+      <button class="btn" id="novo">Responder de novo</button>
+    </div>
+    <p class="footer-note">Protótipo do inventário para teste interno. Os escores são ipsativos (comparam os fatores dentro da mesma pessoa) e ainda não têm norma brasileira.</p>
+  </div>`;
+  $("#dl").onclick=()=>{ const blob=new Blob([JSON.stringify({versao:"MC-INV 2.2", respostas:S, resultado:R},null,1)],{type:"application/json"});
+    const u=URL.createObjectURL(blob), l=document.createElement("a"); l.href=u; l.download=`mc-inv-${S.nome.replace(/\W+/g,"-")}.json`; l.click(); URL.revokeObjectURL(u); };
+  $("#novo").onclick=()=>{ if(confirm("Apagar este resultado e começar de novo?")){ store.del(KEY); S=null; render(); } };
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+/* ============================================================
+   Relatorio MC 3.1 · molde visual das 42 paginas (ADR-0007 D5)
+   GERADO por contexto/extraido/mc-3.1-paginas/extrair.py a partir de
+   contexto/referencias/mc-3.1/Mapa_Comportamental_MC_3_1_v3_editavel.html.
+   Nao edite a mao: mude o molde ou o script e gere de novo.
+
+   Todo seletor comeca em .mc31. O app carrega CSS global em todas as
+   telas, e .page, .card, h1 e body do molde vazariam para o produto
+   inteiro. O que era regra de html/body virou regra de .mc31.
+
+   O @page e NOMEADO. O relatorio antigo declara um @page sem nome
+   (A4, margem 20mm) e, na mesma impressao, os dois brigariam; com
+   `page: mc31` so as folhas do molde pegam margem zero.
+
+   Os apelidos de fonte (OS, AR, CZ, GA, MS) continuam os do molde
+   porque os estilos inline das paginas e os <text> dos SVG usam
+   esses nomes: OS = Open Sans, AR = Archivo, CZ = Cinzel,
+   GA = EB Garamond, MS = Montserrat (embutida, nao usada).
+   ============================================================ */
+@font-face{font-family:'OS';font-weight:400;font-style:normal;src:url(/relatorio-mc/fontes/open-sans-400.woff2) format('woff2');}
+@font-face{font-family:'OS';font-weight:600;font-style:normal;src:url(/relatorio-mc/fontes/open-sans-600.woff2) format('woff2');}
+@font-face{font-family:'OS';font-weight:700;font-style:normal;src:url(/relatorio-mc/fontes/open-sans-700.woff2) format('woff2');}
+@font-face{font-family:'OS';font-weight:800;font-style:normal;src:url(/relatorio-mc/fontes/open-sans-800.woff2) format('woff2');}
+@font-face{font-family:'MS';font-weight:500;font-style:normal;src:url(/relatorio-mc/fontes/montserrat-500.woff2) format('woff2');}
+@font-face{font-family:'MS';font-weight:600;font-style:normal;src:url(/relatorio-mc/fontes/montserrat-600.woff2) format('woff2');}
+@font-face{font-family:'MS';font-weight:700;font-style:normal;src:url(/relatorio-mc/fontes/montserrat-700.woff2) format('woff2');}
+@font-face{font-family:'MS';font-weight:800;font-style:normal;src:url(/relatorio-mc/fontes/montserrat-800.woff2) format('woff2');}
+@font-face{font-family:'AR';font-weight:600;font-style:normal;src:url(/relatorio-mc/fontes/archivo-600.woff2) format('woff2');}
+@font-face{font-family:'AR';font-weight:700;font-style:normal;src:url(/relatorio-mc/fontes/archivo-700.woff2) format('woff2');}
+@font-face{font-family:'AR';font-weight:800;font-style:normal;src:url(/relatorio-mc/fontes/archivo-800.woff2) format('woff2');}
+@font-face{font-family:'AR';font-weight:900;font-style:normal;src:url(/relatorio-mc/fontes/archivo-900.woff2) format('woff2');}
+@font-face{font-family:'CZ';font-weight:600;font-style:normal;src:url(/relatorio-mc/fontes/cinzel-600.woff2) format('woff2');}
+@font-face{font-family:'CZ';font-weight:700;font-style:normal;src:url(/relatorio-mc/fontes/cinzel-700.woff2) format('woff2');}
+@font-face{font-family:'CZ';font-weight:800;font-style:normal;src:url(/relatorio-mc/fontes/cinzel-800.woff2) format('woff2');}
+@font-face{font-family:'GA';font-weight:400;font-style:normal;src:url(/relatorio-mc/fontes/eb-garamond-400.woff2) format('woff2');}
+@font-face{font-family:'GA';font-weight:500;font-style:normal;src:url(/relatorio-mc/fontes/eb-garamond-500.woff2) format('woff2');}
+@font-face{font-family:'GA';font-weight:600;font-style:normal;src:url(/relatorio-mc/fontes/eb-garamond-600.woff2) format('woff2');}
+@page mc31{size:210mm 297mm;margin:0}
+.mc31,.mc31 *{box-sizing:border-box;margin:0;padding:0}
+/* desfaz o globals.css do app, que o molde nao conhecia */
+.mc31 img,.mc31 svg{display:inline;max-width:none}
+.mc31 a:hover{color:inherit;text-decoration:none}
+.mc31{background:#888}
+.mc31{font-family:'OS',sans-serif;color:#171A1F;font-size:9.7pt;line-height:1.52;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.mc31 .page{width:210mm;height:297mm;background:#F7F3EC;position:relative;overflow:hidden;page-break-after:always;break-after:page;padding:0 15mm}
+.mc31 .page{page:mc31}
+.mc31 .page:last-child{page-break-after:auto}
+.mc31 .hd{position:absolute;left:15mm;right:15mm;top:9mm;height:8mm;display:flex;justify-content:space-between;align-items:center;border-bottom:.6pt solid #D8D2C5;font-size:6.3pt;letter-spacing:.14em;font-weight:700;color:#5B6573;text-transform:uppercase}
+.mc31 .hd .st{display:flex;align-items:center;gap:2mm;color:#171A1F}
+.mc31 .hd .st i{display:inline-block;width:2.4mm;height:2.4mm;border-radius:.4mm}
+.mc31 .tab{position:absolute;left:0;width:3.2mm;height:30mm}
+.mc31 .ft{position:absolute;left:15mm;right:15mm;bottom:8mm;height:8mm;display:flex;justify-content:space-between;align-items:center;font-size:6.2pt;letter-spacing:.16em;font-weight:700;color:#5B6573}
+.mc31 .ft .pn{background:#17324D;color:#fff;width:9mm;height:8mm;border-radius:1.4mm;display:flex;align-items:center;justify-content:center;font-family:'AR';font-size:9pt;letter-spacing:0}
+.mc31 .ft .gl{flex:1;height:.6pt;background:#C39A42;margin:0 4mm;opacity:.7}
+.mc31 .body{position:absolute;left:15mm;right:15mm;top:22mm;bottom:19mm;display:flex;flex-direction:column}
+.mc31 .kick{display:flex;align-items:center;gap:2mm;font-size:6.6pt;letter-spacing:.18em;font-weight:700;color:#5B6573;text-transform:uppercase;margin-bottom:2mm}
+.mc31 .kick i{width:5mm;height:.9mm;border-radius:1mm;display:inline-block}
+.mc31 h1{white-space:nowrap;font-family:'AR';font-weight:800;font-size:27pt;line-height:1.02;color:#17324D;letter-spacing:-.015em;text-transform:uppercase}
+.mc31 h1.big{font-size:33pt}
+.mc31 h1.t2{font-size:23pt}
+.mc31 h1.t3{font-size:20pt}
+.mc31 h1.t4{font-size:17.5pt}
+.mc31 h1.t2{font-size:23pt}
+.mc31 h1.t3{font-size:20pt}
+.mc31 .gline{width:22mm;height:1.1mm;background:#C39A42;margin:2.6mm 0 3mm}
+.mc31 .sub{font-size:10.6pt;color:#5B6573;line-height:1.45;max-width:165mm;margin-bottom:4.5mm}
+.mc31 h2{font-family:'AR';font-weight:700;font-size:12.6pt;color:#17324D;line-height:1.25;margin-bottom:1.6mm}
+.mc31 h3{font-family:'AR';font-weight:700;font-size:9.8pt;color:#171A1F;line-height:1.3;margin-bottom:1.2mm}
+.mc31 .lab{font-size:6.3pt;letter-spacing:.15em;font-weight:700;text-transform:uppercase;color:#5B6573;margin-bottom:1.4mm;display:block}
+.mc31 p{margin-bottom:2.2mm}
+.mc31 p:last-child{margin-bottom:0}
+.mc31 b,.mc31 strong{font-weight:700}
+.mc31 .card{background:#fff;border:.6pt solid #D8D2C5;border-radius:1.6mm;padding:3.6mm 4mm}
+.mc31 .soft{border-radius:1.6mm;padding:3.4mm 4mm;border:.6pt solid}
+.mc31 .row{display:flex;gap:4mm}
+.mc31 .col{flex:1;min-width:0}
+.mc31 .g2{display:grid;grid-template-columns:1fr 1fr;gap:4mm}
+.mc31 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3.5mm}
+.mc31 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm}
+.mc31 .sm{font-size:9pt;line-height:1.5}
+.mc31 .xs{font-size:8.2pt;line-height:1.45}
+.mc31 .mut{color:#5B6573}
+.mc31 .tag{display:inline-flex;align-items:center;gap:1.4mm;border:.8pt solid;border-radius:5mm;padding:.8mm 2.6mm .8mm 1.8mm;font-size:6pt;letter-spacing:.14em;font-weight:700;color:#171A1F;background:#fff;white-space:nowrap}
+.mc31 .ic{flex:none;display:inline-block;vertical-align:middle}
+.mc31 .note{background:#fff;border-left:1.2mm solid #17324D;border-radius:0 1.6mm 1.6mm 0;padding:3.2mm 4.2mm;font-size:8.6pt}
+.mc31 .box-warn{background:#FFF2D8;border:.8pt solid #9A6200;border-radius:1.6mm;padding:3.2mm 4mm}
+.mc31 .box-risk{background:#F5E7EA;border:.8pt solid #9F3345;border-radius:1.6mm;padding:3.2mm 4mm}
+.mc31 .bt{display:flex;align-items:center;gap:1.6mm;font-size:6.5pt;letter-spacing:.14em;font-weight:800;text-transform:uppercase;margin-bottom:1.4mm}
+.mc31 ul.l{list-style:none}
+.mc31 ul.l li{position:relative;padding-left:3.6mm;margin-bottom:1.2mm}
+.mc31 ul.l li:before{content:'';position:absolute;left:0;top:1.7mm;width:1.4mm;height:1.4mm;border-radius:50%;background:var(--bc,#17324D)}
+.mc31 table.t{width:100%;border-collapse:collapse;font-size:8pt}
+.mc31 table.t th{background:#17324D;color:#fff;font-weight:700;text-align:left;padding:1.8mm 2.4mm;font-size:6.6pt;letter-spacing:.12em;text-transform:uppercase}
+.mc31 table.t td{padding:1.8mm 2.4mm;border-bottom:.6pt solid #D8D2C5;vertical-align:top}
+.mc31 table.t tr:nth-child(even) td{background:#F7F3EC}
+.mc31 table.t tr:nth-child(odd) td{background:#fff}
+.mc31 .num{font-family:'AR';font-weight:800}
+.mc31 .h2u{text-transform:uppercase;letter-spacing:.01em}
+.mc31 .quote{background:#fff;border:.6pt solid #D8D2C5;border-left:1.6mm solid #C39A42;border-radius:0 1.6mm 1.6mm 0;padding:3.2mm 4.2mm}
+.mc31 .dark{background:#17324D;color:#fff;border-radius:1.8mm;padding:3.4mm 4.4mm}
+.mc31 .chk{width:3.4mm;height:3.4mm;border:.9pt solid currentColor;border-radius:.6mm;display:inline-block;flex:none}
+.mc31 .spacer{flex:1}
+.mc31 .zw{flex:1;display:flex;flex-direction:column;min-height:0}
+.mc31 .zw svg:not(.ic){max-width:100%;height:auto}
+.mc31 .dense .sm{font-size:8.2pt;line-height:1.42}
+.mc31 .fit .sm{font-size:8.6pt;line-height:1.42}
+.mc31 .fit p{margin-bottom:1.6mm}
+.mc31 .fit h2{font-size:12pt;margin-bottom:1.2mm}
+.mc31 .dense .xs{font-size:7.4pt;line-height:1.38}
+.mc31 .dense p{margin-bottom:1.8mm}
+.mc31 .dense h2{font-size:11.6pt}
+.mc31 .pill{display:inline-block;border-radius:1mm;padding:.3mm 1.6mm;font-size:6.2pt;font-weight:700;letter-spacing:.1em}
+.mc31 .kv{display:flex;justify-content:space-between;border-bottom:.6pt solid #D8D2C5;padding:1mm 0;font-size:7.8pt}
+.mc31 .kv:last-child{border-bottom:0}
+.mc31 .kv span:first-child{color:#5B6573}
+.mc31 .kv span:last-child{font-weight:700;text-align:right}
+.mc31 a{color:inherit;text-decoration:none}

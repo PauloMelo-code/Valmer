@@ -10,11 +10,12 @@
  * servidor. Transformar leitura de tela em endpoint POST publico so aumentaria
  * a superficie exposta.
  */
-import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNotNull, lt, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   assessments,
   assessmentsRelatorios,
+  assessmentsResultados,
   clientes,
   creditosTransacoes,
   DEGUSTACOES_INICIAIS,
@@ -25,7 +26,7 @@ import { getSession, temPermissao, type Sessao } from "@/lib/auth";
 import { initials } from "@/lib/text";
 import { categoriaAtingida, cicloDe, faltamPara, metaDaBarra } from "@/lib/beneficios";
 import type { Assessment, Facilitador, Transacao } from "@/data/facilitadores";
-import type { FatorDisc } from "@/data/dna";
+import { perfisDosMapas, VERSAO_LEGADO, type PerfilDoMapa } from "@/lib/perfil-do-mapa";
 
 const DATA_BR = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "America/Sao_Paulo",
@@ -48,21 +49,31 @@ async function exigirSessao(recurso: string): Promise<Sessao> {
 type LinhaAssessment = typeof assessments.$inferSelect;
 
 /**
- * Converte a linha do banco no formato que as telas esperam.
+ * O `Assessment` das telas, mais o que o inventario MC-INV 2.2 trouxe.
  *
- * Os contadores so entram quando os quatro existem: um assessment em andamento
- * tem os quatro nulos, e montar `{D: 0, I: 0, S: 0, C: 0}` faria a lista exibir
- * "Perfil DI" para quem ainda nao respondeu nada.
+ * Os campos novos ficam FORA de `data/facilitadores.ts` e opcionais para quem
+ * so conhece `Assessment`: as listas repassam os itens a `TabelaAssessments`
+ * sem mexer neles, e os campos chegam la do mesmo jeito.
+ *
+ * `contadores` nao e mais preenchido: o perfil de qualquer versao vem de
+ * `perfil` (`lib/perfil-do-mapa.ts`), e dois campos para o mesmo numero seriam
+ * duas fontes que um leitor esquecido poderia misturar.
  */
-function paraAssessment(linha: LinhaAssessment, comNarrativa?: Set<string>): Assessment {
-  const { contador_d, contador_i, contador_s, contador_c } = linha;
-  const completo =
-    contador_d !== null && contador_i !== null && contador_s !== null && contador_c !== null;
+export type AssessmentDoPortal = Assessment & {
+  /** "LEGADO" ou "MC-INV 2.2". Decide qual botao de relatorio a linha oferece. */
+  versao: string;
+  /** MC-AAAA-MMDD-XX. Nulo no legado. */
+  codigo: string | null;
+  /** DISC natural e confiabilidade. Ausente enquanto nao ha resultado. */
+  perfil?: PerfilDoMapa;
+};
 
-  const contadores: Record<FatorDisc, number> | undefined = completo
-    ? { D: contador_d, I: contador_i, S: contador_s, C: contador_c }
-    : undefined;
-
+/** Converte a linha do banco no formato que as telas esperam. */
+function paraAssessment(
+  linha: LinhaAssessment,
+  comNarrativa: Set<string>,
+  perfis: Map<string, PerfilDoMapa>,
+): AssessmentDoPortal {
   // Expiracao e DERIVADA de `expira_em`, nunca lida de um campo gravado, e
   // concluido tem precedencia sobre vencido: quem respondeu no prazo nao pode
   // aparecer como "expirado" no dia seguinte. Mesma regra de
@@ -85,33 +96,62 @@ function paraAssessment(linha: LinhaAssessment, comNarrativa?: Set<string>): Ass
     criadoEm: data(linha.created_at),
     expiraEm: data(linha.expira_em),
     concluidoEm: linha.concluido_em ? data(linha.concluido_em) : undefined,
-    contadores,
-    temNarrativa: comNarrativa?.has(linha.id) ?? false,
+    temNarrativa: comNarrativa.has(linha.id),
+    versao: linha.versao_instrumento,
+    codigo: linha.codigo,
+    perfil: perfis.get(linha.id),
   };
 }
 
 /**
  * Quais destes assessments ja tem narrativa gravada.
  *
- * Uma consulta para a lista inteira, e nao uma por linha: a lista de mapas de
- * um parceiro passa de centenas, e uma consulta por linha e o mesmo N+1 que
- * derruba a tela quando a conta cresce.
+ * Cada inventario guarda a sua num lugar: o legado em `assessments_relatorios`
+ * (uma linha por versao do texto), o MC-INV 2.2 na coluna `narrativa` do
+ * resultado. Uma consulta por lugar para a lista inteira, e nao uma por linha:
+ * a lista de mapas de um parceiro passa de centenas.
  */
 async function comNarrativaGravada(linhas: LinhaAssessment[]): Promise<Set<string>> {
-  const ids = linhas.filter((l) => l.situacao === "concluido").map((l) => l.id);
-  if (ids.length === 0) return new Set();
+  const concluidos = linhas.filter((l) => l.situacao === "concluido");
+  const legado = concluidos.filter((l) => l.versao_instrumento === VERSAO_LEGADO).map((l) => l.id);
+  const novos = concluidos.filter((l) => l.versao_instrumento !== VERSAO_LEGADO).map((l) => l.id);
 
-  const gravados = await db
-    .selectDistinct({ id: assessmentsRelatorios.assessment_id })
-    .from(assessmentsRelatorios)
-    .where(
-      and(
-        inArray(assessmentsRelatorios.assessment_id, ids),
-        eq(assessmentsRelatorios.is_deleted, false),
-      ),
-    );
+  const [antigos, atuais] = await Promise.all([
+    legado.length === 0
+      ? []
+      : db
+          .selectDistinct({ id: assessmentsRelatorios.assessment_id })
+          .from(assessmentsRelatorios)
+          .where(
+            and(
+              inArray(assessmentsRelatorios.assessment_id, legado),
+              eq(assessmentsRelatorios.is_deleted, false),
+            ),
+          ),
+    novos.length === 0
+      ? []
+      : db
+          .select({ id: assessmentsResultados.assessment_id })
+          .from(assessmentsResultados)
+          .where(
+            and(
+              inArray(assessmentsResultados.assessment_id, novos),
+              eq(assessmentsResultados.is_deleted, false),
+              isNotNull(assessmentsResultados.narrativa),
+            ),
+          ),
+  ]);
 
-  return new Set(gravados.map((g) => g.id));
+  return new Set([...antigos, ...atuais].map((g) => g.id));
+}
+
+/** Narrativa e perfil de uma lista de linhas, em consultas paralelas. */
+async function paraTelas(linhas: LinhaAssessment[]): Promise<AssessmentDoPortal[]> {
+  const [comNarrativa, perfis] = await Promise.all([
+    comNarrativaGravada(linhas),
+    perfisDosMapas(linhas),
+  ]);
+  return linhas.map((linha) => paraAssessment(linha, comNarrativa, perfis));
 }
 
 function paraFacilitador(linha: typeof usuarios.$inferSelect): Facilitador {
@@ -136,7 +176,7 @@ function paraFacilitador(linha: typeof usuarios.$inferSelect): Facilitador {
  * numa filtragem depois da consulta, para nao existir caminho em que a linha
  * de outro chegue a ser carregada.
  */
-export async function assessmentsVisiveis(): Promise<Assessment[]> {
+export async function assessmentsVisiveis(): Promise<AssessmentDoPortal[]> {
   const sessao = await exigirSessao("assessments");
 
   const linhas = await db
@@ -150,8 +190,7 @@ export async function assessmentsVisiveis(): Promise<Assessment[]> {
     )
     .orderBy(desc(assessments.created_at));
 
-  const comNarrativa = await comNarrativaGravada(linhas);
-  return linhas.map((linha) => paraAssessment(linha, comNarrativa));
+  return paraTelas(linhas);
 }
 
 /**
@@ -166,7 +205,7 @@ export async function assessmentsVisiveis(): Promise<Assessment[]> {
  * Devolve no mesmo formato de `assessmentsVisiveis`, entao a tela de detalhe
  * reaproveita `TabelaAssessments` sem uma segunda conversao.
  */
-export async function assessmentsDaTurma(turmaId: string): Promise<Assessment[]> {
+export async function assessmentsDaTurma(turmaId: string): Promise<AssessmentDoPortal[]> {
   const sessao = await exigirSessao("assessments");
 
   const linhas = await db
@@ -181,8 +220,7 @@ export async function assessmentsDaTurma(turmaId: string): Promise<Assessment[]>
     )
     .orderBy(desc(assessments.created_at));
 
-  const comNarrativa = await comNarrativaGravada(linhas);
-  return linhas.map((linha) => paraAssessment(linha, comNarrativa));
+  return paraTelas(linhas);
 }
 
 /** Os facilitadores, para o painel do admin. */

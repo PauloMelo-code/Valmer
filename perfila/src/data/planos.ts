@@ -25,7 +25,14 @@ export type TipoRelatorio = {
   nome: string
   /** Quantos créditos o assessment consome. */
   creditos: number
-  /** O que entra além do nível anterior. */
+  /**
+   * O que entra além do nível anterior, pelas páginas do relatório MC 3.1
+   * (ADR-0007, D9: S1 = 01-16, S2 = 01-28, S3 = 01-36, S4 = 01-42). O
+   * inventário é sempre o completo; o nível só recorta páginas. Os títulos
+   * seguem o índice do molde (`data/relatorio-mc/textos-fixos.ts`). Nada de
+   * "dashboard" ou "histórico": não existem, e a vitrine não promete o que a
+   * plataforma não entrega.
+   */
   conteudo: string
   /** Faixa sugerida de revenda ao cliente final, em reais. */
   revendaMin: number
@@ -37,7 +44,7 @@ export const tiposRelatorio: TipoRelatorio[] = [
     codigo: 'S1',
     nome: 'Perfil Essencial',
     creditos: 1,
-    conteudo: 'DISC + narrativa por IA básica + encaixe de cargos',
+    conteudo: 'Páginas 01 a 16: perfil DISC natural e adaptado, mapa de intensidade, combinação natural, custo da adaptação, os quatro fatores, forças, tensões e gatilhos',
     revendaMin: 97,
     revendaMax: 147,
   },
@@ -45,7 +52,7 @@ export const tiposRelatorio: TipoRelatorio[] = [
     codigo: 'S2',
     nome: 'Perfil Completo',
     creditos: 2,
-    conteudo: 'S1 + estilo de liderança + como gerir este perfil',
+    conteudo: 'S1 + páginas 17 a 28: tipos psicológicos e hierarquia funcional, os seis valores, leitura integrada das três camadas e resumo do perfil',
     revendaMin: 147,
     revendaMax: 197,
   },
@@ -53,7 +60,7 @@ export const tiposRelatorio: TipoRelatorio[] = [
     codigo: 'S3',
     nome: 'Perfil Executivo',
     creditos: 3,
-    conteudo: 'S2 + Plano de Desenvolvimento Individual (PDI)',
+    conteudo: 'S2 + páginas 29 a 36: estilo de liderança, mapa de competências, pontos a desenvolver e o início do guia de comunicação (perfis DOMINANTE e INFLUENTE)',
     revendaMin: 197,
     revendaMax: 297,
   },
@@ -61,7 +68,7 @@ export const tiposRelatorio: TipoRelatorio[] = [
     codigo: 'S4',
     nome: 'Perfil Estratégico',
     creditos: 4,
-    conteudo: 'S3 + dashboard online do avaliado + histórico de evolução',
+    conteudo: 'Relatório completo, 42 páginas: S3 + comunicação com os perfis ESTÁVEL e CONFORME, como liderar cada perfil e o fechamento',
     revendaMin: 297,
     revendaMax: 497,
   },

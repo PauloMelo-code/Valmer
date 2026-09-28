@@ -4,6 +4,8 @@ export * from "./usuarios";
 /** sessoes, contas e verificacoes: as tabelas do Better Auth. */
 export * from "./sessoes";
 export * from "./assessments";
+/** Inventario MC-INV 2.2: telas respondidas e resultado do motor (ADR-0007). */
+export * from "./inventario";
 export * from "./creditos";
 export * from "./auditoria";
 export * from "./cursos";

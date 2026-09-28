@@ -18,6 +18,9 @@
  *   assessments: todo assessment consumiu creditos ao ser criado, mas dois
  *   deles (Fernando e Antonio) nao tinham linha de uso no extrato fixo.
  *
+ * Os mapas do inventario MC-INV 2.2 (um concluido, um pendente) vem de
+ * `seed-mc.ts`, que roda tambem num banco que ja tinha usuarios.
+ *
  * Os concluidos ficam sem respostas por questao: o prototipo guarda so os
  * contadores deles, e inventar 28 respostas para casar com contadores ja
  * fixados seria dado falso. O em andamento e a excecao — ver
@@ -45,6 +48,7 @@ import {
 import { assessments as dadosAssessments, facilitadores, transacoes } from "../../data/facilitadores";
 import { pacotesCreditos, tiposRelatorio } from "../../data/planos";
 import { novoToken } from "../assessment-link";
+import { semearMapasMc } from "./seed-mc";
 
 config({ path: [".env.local", ".env"] });
 
@@ -232,7 +236,8 @@ async function main(): Promise<void> {
     // ocupa o e-mail no indice unico, entao re-semear por cima estouraria.
     const existentes = await db.select({ id: usuarios.id }).from(usuarios).limit(1);
     if (existentes.length > 0) {
-      console.log("Banco ja tem usuarios; nada a fazer.");
+      console.log("Banco ja tem usuarios; so os mapas MC-INV 2.2 que faltarem.");
+      await semearMapasMc(db, idUsuario.valmer!);
       return;
     }
 
@@ -336,6 +341,9 @@ async function main(): Promise<void> {
     for (const facilitador of facilitadores) {
       console.log(`  saldo ${facilitador.nome}: ${saldo(facilitador.id)}`);
     }
+    // Depois do saldo impresso acima: os mapas MC-INV 2.2 debitam do Valmer e
+    // imprimem o saldo que sobra.
+    await semearMapasMc(db, idUsuario.valmer!);
   } finally {
     await pool.end();
   }

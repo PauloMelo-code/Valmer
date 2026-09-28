@@ -38,6 +38,8 @@ import { getSession, temPermissao, type Acao, type Sessao } from "@/lib/auth";
 import { registrarAuditoria } from "@/lib/audit/logger";
 import { novoToken, validadeDoLink } from "@/lib/assessment-link";
 import { envioLoteSchema } from "@/lib/validators/envio-lote";
+import { codigosDoLote, comNovaTentativaDeCodigo } from "@/lib/codigo-do-mapa";
+import { VERSAO_INSTRUMENTO } from "@/data/inventario-mc";
 import { custoDoRelatorio } from "@/lib/precos";
 import { RecusaDeRegra } from "./recusa";
 
@@ -156,7 +158,10 @@ export async function criarLote(dados: unknown) {
     );
   }
 
-  return db.transaction(async (tx) => {
+  // Todo passaporte nasce MC-INV 2.2 com codigo proprio, como em
+  // `actions/assessments.ts`. A colisao de codigo com um envio simultaneo
+  // refaz o lote inteiro (tudo-ou-nada continua valendo na nova tentativa).
+  return comNovaTentativaDeCodigo(() => db.transaction(async (tx) => {
     const turma = await turmaDoDono(tx, validado.turma_id, sessao);
     const dono = await donoTravado(tx, turma.facilitador_id);
 
@@ -176,11 +181,16 @@ export async function criarLote(dados: unknown) {
 
     const agora = new Date();
     const expiraEm = validadeDoLink(agora);
+    const codigos = await codigosDoLote(
+      tx,
+      validado.destinatarios.map((d) => d.avaliado_nome),
+      agora,
+    );
 
     const novos = await tx
       .insert(assessments)
       .values(
-        validado.destinatarios.map((destinatario) => ({
+        validado.destinatarios.map((destinatario, indice) => ({
           token: novoToken(),
           facilitador_id: turma.facilitador_id,
           turma_id: turma.id,
@@ -190,6 +200,8 @@ export async function criarLote(dados: unknown) {
           situacao: "pendente" as const,
           creditos_usados: custoUnitario,
           expira_em: expiraEm,
+          versao_instrumento: VERSAO_INSTRUMENTO,
+          codigo: codigos[indice]!,
           modified_by: sessao.userId,
         })),
       )
@@ -236,7 +248,7 @@ export async function criarLote(dados: unknown) {
       creditos: custoTotal,
       saldo: dono.creditos - custoTotal,
     };
-  });
+  }));
 }
 
 /**

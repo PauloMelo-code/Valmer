@@ -125,6 +125,11 @@ describe("assessments", () => {
     assert.equal(criado.situacao, "pendente");
     assert.match(criado.token, /^[0-9a-f]{12}$/);
     assert.equal(criado.avaliado_email, `maria.${marca}@exemplo.com`, "e-mail normalizado");
+    // ADR-0007 D3: todo mapa novo nasce no inventario MC-INV 2.2, com o codigo
+    // da capa. A semente da ordem so e sorteada no primeiro acesso.
+    assert.equal(criado.versao_instrumento, "MC-INV 2.2");
+    assert.match(criado.codigo ?? "", /^MC-\d{4}-\d{4}-MS(-\d+)?$/, "iniciais de Maria Silva");
+    assert.equal(criado.semente_ordem, null);
 
     const [dono] = await db.select().from(usuarios).where(eq(usuarios.id, facilitadorA));
     assert.equal(dono.creditos, 8, "10 - 2");
@@ -141,6 +146,21 @@ describe("assessments", () => {
       .from(auditoria)
       .where(and(eq(auditoria.registro_id, criado.id), eq(auditoria.acao, "criar")));
     assert.equal(trilha.length, 1, "criacao gravada na auditoria");
+  });
+
+  it("duas pessoas com as mesmas iniciais no mesmo dia ganham codigos diferentes", async () => {
+    entrarComo(facilitadorA);
+    const dados = (n: number) => ({
+      avaliado_nome: "Otavio Reis",
+      avaliado_email: `otavio${n}.${marca}@exemplo.com`,
+      tipo_relatorio: "S1",
+    });
+    const primeiro = await acoes.criar(dados(1));
+    const segundo = await acoes.criar(dados(2));
+
+    assert.match(primeiro.codigo ?? "", /^MC-\d{4}-\d{4}-OR(-\d+)?$/);
+    assert.match(segundo.codigo ?? "", /^MC-\d{4}-\d{4}-OR-\d+$/, "o segundo leva sufixo");
+    assert.notEqual(primeiro.codigo, segundo.codigo);
   });
 
   it("recusa criacao sem saldo", async () => {

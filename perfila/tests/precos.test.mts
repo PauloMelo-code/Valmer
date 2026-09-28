@@ -337,6 +337,9 @@ describe("degustacao", () => {
     const depois = await usuarioPorId(facilitador);
 
     assert.equal(amostra.degustacao, true);
+    // A amostra e o produto de verdade: mesmo inventario e codigo de um mapa pago.
+    assert.equal(amostra.versao_instrumento, "MC-INV 2.2");
+    assert.match(amostra.codigo ?? "", /^MC-\d{4}-\d{4}-CD(-\d+)?$/);
     // Zero de propria vontade: nenhum credito saiu da carteira. Guardar aqui o
     // custo "equivalente" faria o estorno de `removerPendentes` devolver
     // credito de verdade por um mapa que nunca custou credito.

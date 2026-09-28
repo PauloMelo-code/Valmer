@@ -5,8 +5,9 @@
  * assessments -> assessments_relatorios.
  */
 import {
-  pgTable, uuid, text, integer, boolean, timestamp, jsonb, foreignKey, index, uniqueIndex,
+  pgTable, uuid, text, integer, boolean, timestamp, jsonb, foreignKey, index, uniqueIndex, check,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { usuarios } from "./usuarios";
 import { turmas } from "./turmas";
 import { fatorDisc, situacaoAssessment, tipoRelatorio } from "./enums";
@@ -108,6 +109,38 @@ export const assessments = pgTable(
     contador_s: integer("contador_s"),
     contador_c: integer("contador_c"),
 
+    // --- inventario MC-INV 2.2 (ADR-0007) ---
+    /**
+     * Qual inventario este mapa usa, do comeco ao fim (secao 8 do AGENTE).
+     *
+     * DEFAULT 'LEGADO', e nao 'MC-INV 2.2' como no blueprint: todo mapa que ja
+     * existe foi respondido no inventario de 28 questoes, e a criacao continua
+     * nascendo LEGADO ate a onda que liga o fluxo novo (D3). Trocar o default
+     * aqui mudaria o fluxo de quem cria mapa hoje sem ninguem ter pedido.
+     *
+     * Sem CHECK de lista fechada de proposito: cada versao nova do instrumento
+     * viraria migration. A trava que importa e a FK composta das telas (ver
+     * `uq_assessments_id_versao`), que impede a versao de mudar no meio.
+     */
+    versao_instrumento: text("versao_instrumento").notNull().default("LEGADO"),
+    /**
+     * Codigo humano do mapa, impresso na capa: MC-AAAA-MMDD-XX. Quem gera e
+     * `gerarCodigo` (lib/inventario/codigo.ts). Nulo nos mapas LEGADO, que
+     * nunca tiveram codigo.
+     */
+    codigo: text("codigo"),
+    /**
+     * Semente da ordem aleatoria de telas e itens, sorteada uma vez no
+     * primeiro acesso do respondente. Gravada porque V3 (secao 6) compara a
+     * ordem enviada com a ordem sorteada: sem a semente nao ha como provar que
+     * alguem enviou sem mexer em nada.
+     */
+    semente_ordem: integer("semente_ordem"),
+    /** R6 LGPD: o aceite explicito, antes da primeira tela. */
+    consentimento_em: timestamp("consentimento_em", TEMPO),
+    /** Inicio do inventario. Base do tempo total da validade V1. */
+    iniciado_em: timestamp("iniciado_em", TEMPO),
+
     // --- colunas de auditoria OBRIGATORIAS (nunca omitir) ---
     created_at: timestamp("created_at", TEMPO).notNull().defaultNow(),
     updated_at: timestamp("updated_at", TEMPO).notNull().defaultNow(),
@@ -138,6 +171,22 @@ export const assessments = pgTable(
     uniqueIndex("uq_assessments_id_facilitador").on(t.id, t.facilitador_id),
     index("idx_assessments_facilitador").on(t.facilitador_id),
     index("idx_assessments_ativos").on(t.is_deleted),
+
+    // Parcial: os mapas LEGADO nao tem codigo, e NULL nao colide com NULL de
+    // qualquer jeito — o WHERE so deixa isso escrito. SEM `is_deleted` no
+    // WHERE de proposito: o codigo vai impresso num PDF que ja saiu, e um mapa
+    // excluido nao pode ceder o dele para outra pessoa.
+    uniqueIndex("uq_assessments_codigo").on(t.codigo).where(sql`${t.codigo} IS NOT NULL`),
+    check(
+      "ck_assessments_codigo",
+      sql`${t.codigo} IS NULL OR ${t.codigo} ~ '^MC-[0-9]{4}-[0-9]{4}-[A-Z]{2}(-[0-9]+)?$'`,
+    ),
+    // Alvo das FKs COMPOSTAS de assessments_telas e assessments_resultados
+    // (schema/inventario.ts). Com elas o banco garante a regra da secao 8 —
+    // "iniciada numa versao, termina na mesma": uma tela gravada com versao
+    // diferente da do mapa e recusada, e a versao do mapa nao muda mais depois
+    // da primeira tela (ON UPDATE NO ACTION, o padrao).
+    uniqueIndex("uq_assessments_id_versao").on(t.id, t.versao_instrumento),
   ],
 );
 
