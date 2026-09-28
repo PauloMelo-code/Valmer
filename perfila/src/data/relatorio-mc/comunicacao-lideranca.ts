@@ -11,6 +11,9 @@
  *     do escore e vem da montagem da pagina, nao daqui;
  *   - a "Decisao" de S e C: na pagina 37 o molde diz "ponderada" e nas 11,
  *     12 e 40 diz "demorada". Cada tabela guarda a palavra da sua pagina.
+ *
+ * Na "Decisao", o espaco depois do "e" e sem quebra ( ): a celula e
+ * estreita e, sem isso, o "e" ficava sozinho numa linha (defeito do molde).
  */
 import type { Fator } from '../inventario-mc'
 
@@ -43,7 +46,7 @@ export type LiderancaPerfil = Base & {
 export const COMUNICACAO_POR_PERFIL: Record<Fator, ComunicacaoPerfil> = {
   D: {
     preferencia: 'Prefere objetividade, autonomia, desafio e foco no resultado.',
-    foco: 'Resultado', comunicacao: 'Direta e objetiva', decisao: 'Racional e rápida', perguntaCentral: 'O quê?',
+    foco: 'Resultado', comunicacao: 'Direta e objetiva', decisao: 'Racional e\u00a0rápida', perguntaCentral: 'O quê?',
     comoConduzir: 'Vá direto ao ponto. Apresente primeiro o objetivo, os limites e o resultado esperado. Depois, ofereça apenas o contexto necessário.',
     abertura: '“Precisamos decidir X até Y. Temos duas alternativas e estes são os impactos.”',
     aplicacao: 'Comece pela decisão necessária, ofereça alternativas claras e combine prazo, responsabilidade e margem de autonomia na mesma conversa.',
@@ -53,7 +56,7 @@ export const COMUNICACAO_POR_PERFIL: Record<Fator, ComunicacaoPerfil> = {
   },
   I: {
     preferencia: 'Prefere interação, reconhecimento, entusiasmo e possibilidade de expressão.',
-    foco: 'Pessoas', comunicacao: 'Informal e pessoal', decisao: 'Emocional e rápida', perguntaCentral: 'Quem?',
+    foco: 'Pessoas', comunicacao: 'Informal e pessoal', decisao: 'Emocional e\u00a0rápida', perguntaCentral: 'Quem?',
     comoConduzir: 'Crie conexão antes do assunto, mostre o impacto sobre as pessoas e permita participação real na construção da solução.',
     abertura: '“Sua participação pode mobilizar o grupo. Vamos definir juntos a melhor forma de avançar?”',
     aplicacao: 'Use exemplos e linguagem viva, marque checkpoints curtos e registre os combinados por escrito depois da conversa.',
@@ -63,7 +66,7 @@ export const COMUNICACAO_POR_PERFIL: Record<Fator, ComunicacaoPerfil> = {
   },
   S: {
     preferencia: 'Prefere segurança, previsibilidade, colaboração e tempo para adaptação.',
-    foco: 'Método', comunicacao: 'Suave e empática', decisao: 'Emocional e ponderada', perguntaCentral: 'Como?',
+    foco: 'Método', comunicacao: 'Suave e empática', decisao: 'Emocional e\u00a0ponderada', perguntaCentral: 'Como?',
     comoConduzir: 'Explique o contexto, apresente o passo a passo e mostre como a mudança afetará a rotina, as relações e o que continuará igual.',
     abertura: '“Quero explicar o que muda, o que permanece e como faremos esta transição com segurança.”',
     aplicacao: 'Avise mudanças com antecedência, escute as preocupações até o fim e estabeleça transições com marcos claros e apoio definido.',
@@ -73,7 +76,7 @@ export const COMUNICACAO_POR_PERFIL: Record<Fator, ComunicacaoPerfil> = {
   },
   C: {
     preferencia: 'Prefere precisão, critérios, lógica, qualidade e redução de riscos.',
-    foco: 'Critério', comunicacao: 'Formal e específica', decisao: 'Racional e ponderada', perguntaCentral: 'Por quê?',
+    foco: 'Critério', comunicacao: 'Formal e específica', decisao: 'Racional e\u00a0ponderada', perguntaCentral: 'Por quê?',
     comoConduzir: 'Apresente fatos, padrões, método, prazos e critérios de decisão. Evidência e coerência valem mais do que confiança pedida.',
     abertura: '“Estes são os dados, os critérios e os riscos considerados. Analise e retorne até esta data.”',
     aplicacao: 'Envie informações organizadas com antecedência, dê tempo real para análise e responda às perguntas com consistência.',
@@ -91,7 +94,7 @@ export const COMUNICACAO_POR_PERFIL: Record<Fator, ComunicacaoPerfil> = {
 export const LIDERANCA_POR_PERFIL: Record<Fator, LiderancaPerfil> = {
   D: {
     descricao: 'Tende a responder bem a desafios, autonomia, metas ambiciosas e decisões rápidas. Precisa perceber progresso e espaço para agir.',
-    foco: 'Resultado', comunicacao: 'Direta e objetiva', decisao: 'Racional e rápida', perguntaCentral: 'O quê?',
+    foco: 'Resultado', comunicacao: 'Direta e objetiva', decisao: 'Racional e\u00a0rápida', perguntaCentral: 'O quê?',
     comoLiderar: 'Defina resultados claros, dê margem de decisão e use conversas objetivas. Apresente o desafio antes do processo.',
     aplicacao: 'Delegue projetos com meta, prazo, limite de autoridade e indicador de sucesso. Faça acompanhamentos curtos, centrados em obstáculos e resultados.',
     eviteEDesenvolva: 'Evite microgerenciamento, lentidão e feedback indireto. Desenvolva escuta, paciência, análise de impacto e colaboração.',
@@ -99,7 +102,7 @@ export const LIDERANCA_POR_PERFIL: Record<Fator, LiderancaPerfil> = {
   },
   I: {
     descricao: 'Tende a se engajar por reconhecimento, interação, visibilidade e entusiasmo. Precisa sentir conexão com as pessoas e com o significado da entrega.',
-    foco: 'Pessoas', comunicacao: 'Informal e pessoal', decisao: 'Emocional e rápida', perguntaCentral: 'Quem?',
+    foco: 'Pessoas', comunicacao: 'Informal e pessoal', decisao: 'Emocional e\u00a0rápida', perguntaCentral: 'Quem?',
     comoLiderar: 'Mostre o impacto do trabalho, reconheça avanços e permita que apresente ideias. Combine energia com estrutura.',
     aplicacao: 'Divida projetos longos em marcos, registre acordos, estabeleça prioridades e use reuniões rápidas de acompanhamento.',
     eviteEDesenvolva: 'Evite isolamento prolongado, comunicação fria e tarefas sem significado percebido. Desenvolva organização, constância, escuta e conclusão.',
@@ -107,7 +110,7 @@ export const LIDERANCA_POR_PERFIL: Record<Fator, LiderancaPerfil> = {
   },
   S: {
     descricao: 'Tende a produzir melhor em ambientes previsíveis, colaborativos e respeitosos. Valoriza confiança, continuidade e relações consistentes.',
-    foco: 'Método', comunicacao: 'Suave e empática', decisao: 'Emocional e demorada', perguntaCentral: 'Como?',
+    foco: 'Método', comunicacao: 'Suave e empática', decisao: 'Emocional e\u00a0demorada', perguntaCentral: 'Como?',
     comoLiderar: 'Explique mudanças, dê tempo razoável para adaptação e reconheça a contribuição silenciosa. Seja firme sem ser abrupto.',
     aplicacao: 'Delegue com sequência, contexto, apoio disponível e critérios estáveis. Convide-o a expressar discordâncias antes que o incômodo se acumule.',
     eviteEDesenvolva: 'Evite mudanças bruscas, exposição pública e pressão agressiva. Desenvolva posicionamento, agilidade e abertura à mudança.',
@@ -115,7 +118,7 @@ export const LIDERANCA_POR_PERFIL: Record<Fator, LiderancaPerfil> = {
   },
   C: {
     descricao: 'Tende a responder bem a critérios claros, lógica, qualidade, precisão e preparação. Precisa compreender por que a decisão é segura e coerente.',
-    foco: 'Critério', comunicacao: 'Formal e específica', decisao: 'Racional e demorada', perguntaCentral: 'Por quê?',
+    foco: 'Critério', comunicacao: 'Formal e específica', decisao: 'Racional e\u00a0demorada', perguntaCentral: 'Por quê?',
     comoLiderar: 'Forneça dados, padrões, escopo e parâmetros de qualidade. Respeite a necessidade de análise e combine prazo para decidir.',
     aplicacao: 'Delegue problemas complexos, revisão, planejamento e melhoria de processos. Defina o nível de precisão realmente necessário.',
     eviteEDesenvolva: 'Evite instruções vagas, regras instáveis e urgência artificial. Desenvolva velocidade, tolerância ao erro controlado e visão do todo.',

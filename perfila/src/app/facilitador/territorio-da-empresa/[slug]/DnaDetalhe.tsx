@@ -32,6 +32,9 @@ const CLASSE_FATOR: Record<FatorDisc, string> = {
   C: styles.fatorC!,
 }
 
+/** Escores com a vírgula do pt-BR: o MC-INV 2.2 tem uma casa decimal (87,5). */
+const ESCORE = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 })
+
 const CLASSE_CHIP: Record<FatorDisc, string> = {
   D: styles.chipD!,
   I: styles.chipI!,
@@ -53,6 +56,8 @@ export type LinhaDoTerritorio = {
   iniciais: string
   /** Nulo enquanto não respondeu: aí não há perfil nem percentual. */
   perfil: string | null
+  /** Versão do inventário ("LEGADO", "MC-INV 2.2"); nula enquanto não respondeu. */
+  versao: string | null
   percentuais: Record<FatorDisc, number> | null
   respondidoEm: string | null
   /** `aaaa-mm-dd` da resposta, no fuso de São Paulo — o que o filtro compara. */
@@ -85,6 +90,8 @@ export function DnaDetalhe({
   descricao,
   subtitulo,
   medias,
+  escala,
+  foraDaMedia,
   linhas,
   disponiveis,
   grupos,
@@ -94,6 +101,10 @@ export function DnaDetalhe({
   descricao: string | null
   subtitulo: string
   medias: Record<FatorDisc, number>
+  /** A escala das médias — ver `perfilDoTerritorio`. */
+  escala: string
+  /** Respondentes de outra escala: listados, mas fora da média. */
+  foraDaMedia: number
   linhas: LinhaDoTerritorio[]
   disponiveis: OpcaoInventario[]
   grupos: OpcaoGrupo[]
@@ -109,6 +120,7 @@ export function DnaDetalhe({
 
   const respondentes = linhas.filter((linha) => linha.percentuais !== null)
   const pendentes = linhas.length - respondentes.length
+  const naMedia = respondentes.length - foraDaMedia
 
   function limpar() {
     setBusca('')
@@ -261,6 +273,19 @@ export function DnaDetalhe({
         ))}
       </AutoGrid>
 
+      {/* A escala sob os cartões: sem ela, 88 de MC-INV 2.2 seria lido como
+          percentual, e os quatro somam ~200, não 100. */}
+      {respondentes.length > 0 ? (
+        <p className={tableStyles.secondary}>
+          {escala === 'LEGADO'
+            ? 'Média do questionário antigo: percentual das 28 respostas; os quatro fatores somam 100.'
+            : `Média do ${escala}: cada fator vai de 0 a 100 e os quatro somam cerca de 200.`}
+          {foraDaMedia > 0
+            ? ` ${foraDaMedia} respondente(s) do questionário antigo ficaram fora da média, porque a escala dele é outra.`
+            : ''}
+        </p>
+      ) : null}
+
       {respondentes.length === 0 ? (
         <div className={`${ui.callout} ${ui.calloutInfo}`}>
           <span className={ui.calloutIcon}>
@@ -396,19 +421,25 @@ export function DnaDetalhe({
                       {pessoa.percentuais ? (
                         <div className={styles.chips}>
                           <span className={`${styles.chip} ${CLASSE_CHIP.D}`} title="Dominância">
-                            {pessoa.percentuais.D}
+                            {ESCORE.format(pessoa.percentuais.D)}
                           </span>
                           <span className={`${styles.chip} ${CLASSE_CHIP.I}`} title="Influência">
-                            {pessoa.percentuais.I}
+                            {ESCORE.format(pessoa.percentuais.I)}
                           </span>
                           <span className={`${styles.chip} ${CLASSE_CHIP.S}`} title="Estabilidade">
-                            {pessoa.percentuais.S}
+                            {ESCORE.format(pessoa.percentuais.S)}
                           </span>
                           <span className={`${styles.chip} ${CLASSE_CHIP.C}`} title="Conformidade">
-                            {pessoa.percentuais.C}
+                            {ESCORE.format(pessoa.percentuais.C)}
                           </span>
                         </div>
-                      ) : (
+                      ) : null}
+                      {pessoa.percentuais && pessoa.versao !== escala ? (
+                        <div className={tableStyles.secondary}>
+                          Questionário antigo, fora da média
+                        </div>
+                      ) : null}
+                      {pessoa.percentuais ? null : (
                         <span className={tableStyles.secondary}>
                           Fora da média até responder
                         </span>
@@ -452,7 +483,9 @@ export function DnaDetalhe({
 
         <TableFooter>
           {filtradas.length === linhas.length
-            ? `${linhas.length} inventário(s) · ${respondentes.length} na média · ${pendentes} aguardando resposta`
+            ? `${linhas.length} inventário(s) · ${naMedia} na média · ` +
+              (foraDaMedia > 0 ? `${foraDaMedia} fora da média (questionário antigo) · ` : '') +
+              `${pendentes} aguardando resposta`
             : `${filtradas.length} de ${linhas.length} inventário(s)`}
         </TableFooter>
       </Card>

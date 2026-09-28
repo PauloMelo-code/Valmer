@@ -29,10 +29,10 @@ function CartaoLideranca({ fator, dados }: { fator: Fator; dados: DadosRelatorio
   // Nunca texto branco sobre o ambar do I (regra da paleta, cores.ts).
   const sobrePrincipal = fator === 'I' ? '#171A1F' : '#FFFFFF'
   const secundaria = { background: '#fff', color: cor.texto, borderLeft: `1.2mm solid ${cor.principal}` }
+  // Sem a letra-marca d'agua do molde: presa entre a faixa e as colunas, so aparecia em pedacos.
   return (
-    <div style={{ position: 'relative', background: '#fff', border: '.6pt solid #D8D2C5', borderTop: `1.6mm solid ${cor.principal}`, borderRadius: '1.6mm', padding: '3mm 3.6mm', overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}>
-      <div style={{ position: 'absolute', right: '5mm', top: '50%', transform: 'translateY(-50%)', fontFamily: 'AR', fontWeight: 900, fontSize: '80pt', color: cor.fundoSuave, lineHeight: 0.8, zIndex: 0 }}>{fator}</div>
-      <div style={{ display: 'flex', gap: '5mm', alignItems: 'flex-start', position: 'relative' }}>
+    <div style={{ background: '#fff', border: '.6pt solid #D8D2C5', borderTop: `1.6mm solid ${cor.principal}`, borderRadius: '1.6mm', padding: '3mm 3.6mm', overflow: 'hidden', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', gap: '5mm', alignItems: 'flex-start' }}>
         <div style={{ flex: 1.05 }}>
           <div style={{ fontFamily: 'AR', fontWeight: 900, fontSize: '19pt', color: cor.principal, lineHeight: 1, textTransform: 'uppercase' }}>{rotulo}</div>
           <div className="sm mut" style={{ marginTop: '1.2mm' }}>{p.descricao}</div>
@@ -41,7 +41,7 @@ function CartaoLideranca({ fator, dados }: { fator: Fator; dados: DadosRelatorio
           <FaixaBase fator={fator} base={p} celula="0 3mm" />
         </div>
       </div>
-      <div style={{ display: 'flex', gap: '4mm', marginTop: '2.6mm', flex: 1, position: 'relative', zIndex: 1 }}>
+      <div style={{ display: 'flex', gap: '4mm', marginTop: '2.6mm', flex: 1 }}>
         <Coluna titulo={R.comoLiderar} cabeca={{ background: cor.principal, color: sobrePrincipal }} fundo="#FBFAF7" texto={p.comoLiderar} />
         <Coluna titulo={R.aplicacao} cabeca={secundaria} fundo={cor.fundoSuave} texto={p.aplicacao} />
         <Coluna titulo={R.eviteEDesenvolva} cabeca={secundaria} fundo={cor.fundoSuave} texto={p.eviteEDesenvolva} />

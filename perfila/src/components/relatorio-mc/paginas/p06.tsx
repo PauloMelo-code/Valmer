@@ -92,7 +92,8 @@ function Linha({ f, i, adaptado, tx }: { f: FatorDados; i: number; adaptado: boo
       {MARCAS_DA_REGUA.map((m) => (
         <g key={m}>
           <line x1={x(m)} y1={y + 38} x2={x(m)} y2={y + 48} stroke="#B9B3A5" strokeWidth="2" />
-          <text x={x(m)} y={y + 72} textAnchor="middle" fontSize="19" fill="#5B6573" fontFamily="OS">{m}</text>
+          {/* O 51 ja esta no selo do topo, e a linha dourada cortaria o rotulo ("5|1"). */}
+          {m === PREDOMINANCIA ? null : <text x={x(m)} y={y + 72} textAnchor="middle" fontSize="19" fill="#5B6573" fontFamily="OS">{m}</text>}
         </g>
       ))}
       <rect

@@ -10,12 +10,13 @@ type Ponto = NarrativaMC['seis_pontos_desenvolver'][number]
 
 const CAIXA = { borderRadius: '1.2mm', padding: '2mm 2.4mm' }
 
-export function PontosDesenvolver({ pontos, primeiro }: { pontos: readonly Ponto[] | null; primeiro: 0 | 3 }) {
+/** `compacto`: a pagina 34 divide a altura com o PDI e precisa de folga para texto da IA mais longo. */
+export function PontosDesenvolver({ pontos, primeiro, compacto = false }: { pontos: readonly Ponto[] | null; primeiro: 0 | 3; compacto?: boolean }) {
   return [0, 1, 2].map((i) => {
     const p = pontos?.[primeiro + i] ?? null
     return (
-      <div key={i} className="card" style={{ padding: '3.2mm 4mm', marginBottom: '3mm' }}>
-        <div style={{ display: 'flex', gap: '3mm', alignItems: 'center', marginBottom: '2mm' }}>
+      <div key={i} className="card" style={compacto ? { padding: '2.6mm 4mm', marginBottom: '2.2mm' } : { padding: '3.2mm 4mm', marginBottom: '3mm' }}>
+        <div style={{ display: 'flex', gap: '3mm', alignItems: 'center', marginBottom: compacto ? '1.4mm' : '2mm' }}>
           <span
             className="num"
             style={{ background: '#1F7A6D', color: '#fff', borderRadius: '1.2mm', width: '9mm', height: '8mm', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10pt', flex: 'none' }}

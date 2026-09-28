@@ -15,6 +15,10 @@ import type { PropsPagina } from './registro'
 
 export default function Pagina15({ dados }: PropsPagina) {
   const [primeiro] = dados.tensoes
+  // No equilibrado os quatro empatam: "mais alto" seria falso, a ordem e so do desempate.
+  const empate = dados.perfis.natural.tipo === 'equilibrado'
+  const rotulo = (posicao: 'primeiro' | 'segundo') =>
+    posicao === 'primeiro' ? (empate ? PAGINA_15.rotuloPrimeiroEmpate : PAGINA_15.rotuloPrimeiro) : empate ? PAGINA_15.rotuloSegundoEmpate : PAGINA_15.rotuloSegundo
   return (
     <Pagina dados={dados} numero={15} kicker={PAGINA_15.sobretitulo} titulo={PAGINA_15.titulo} subtitulo={PAGINA_15.intro}>
       <div className="g2" style={{ marginBottom: '4mm' }}>
@@ -27,7 +31,7 @@ export default function Pagina15({ dados }: PropsPagina) {
                 <h2 style={{ color: f.cor.texto }}>{PAGINA_15.ligadosAoFator(f.rotulo)}</h2>
                 <span className="num" style={{ color: f.cor.texto, fontSize: '14pt' }}>{f.natural.escore.texto}</span>
               </div>
-              <span className="lab">{posicao === 'primeiro' ? PAGINA_15.rotuloPrimeiro : PAGINA_15.rotuloSegundo}</span>
+              <span className="lab">{rotulo(posicao)}</span>
               <ul className="l sm" style={{ '--bc': f.cor.principal, margin: '1.6mm 0 2.4mm' } as CSSProperties}>
                 {tensao.itens.map((item) => <li key={item}>{item}</li>)}
               </ul>

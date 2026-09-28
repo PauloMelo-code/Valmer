@@ -56,11 +56,14 @@ export const ALERTA_AMBIENTE = {
   titulo: 'Atenção · o que o ambiente pede hoje',
   texto: (adaptado: string, natural: string) =>
     `O gráfico adaptado mostra ${adaptado}, enquanto o seu natural é conduzido por ${natural}. O contexto está pedindo uma forma de liderar diferente da que você exerce com naturalidade. Você não precisa se tornar esse estilo. Ele precisa existir na estrutura, exercido por alguém, ou a operação não sustenta crescimento.`,
+  /** Natural EQUILIBRADO: nenhum fator a partir de 51, entao nada "conduz" o natural. */
+  textoEquilibrado: (adaptado: string) =>
+    `O gráfico adaptado mostra ${adaptado}, enquanto o seu natural não tem fator a partir de 51: nenhum fator conduz sozinho. O contexto está pedindo uma forma de liderar mais marcada do que a que você exerce com naturalidade. Você não precisa se tornar esse estilo. Ele precisa existir na estrutura, exercido por alguém, ou a operação não sustenta crescimento.`,
 }
 
 /** Pagina 31: frase depois de cada lista de destaques (C28), e a de lista vazia. */
 export const FRASES_DESTAQUE: Record<CodigoNivelCompetencia, string> & { vazio: string } = {
-  potencializar: 'As mais altas do seu mapa. São o recurso que aparece sem esforço e o que a equipe reconhece primeiro em você.',
+  potencializar: 'Entre as mais altas do seu mapa. São o recurso que aparece sem esforço e o que a equipe reconhece primeiro em você.',
   consolidar: 'Disponíveis conforme o contexto. Ganham estabilidade com prática recorrente e uso deliberado.',
   desenvolver: 'As que mais pedem atenção. Crescem com repertório e acompanhamento, ou são supridas por outra pessoa da equipe.',
   vazio: 'Nenhuma das doze competências do radar está nesta faixa.',

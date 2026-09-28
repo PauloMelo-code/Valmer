@@ -77,7 +77,8 @@ export default function Pagina08({ dados }: PropsPagina) {
                   <circle cx="12" cy="12" r="9" fill="none" stroke="#9A6200" strokeWidth="2.4" />
                   <path d="M12 7v6.5M12 16.6v.4" stroke="#9A6200" strokeWidth="2.6" strokeLinecap="round" />
                 </svg>
-                <span style={{ color: '#171A1F' }}>Atenção · onde isso aparece na prática</span>
+                {/* O molde abre com "Atenção ·"; aqui a coluna e mais estreita (C39) e o icone ja faz esse papel. */}
+                <span style={{ color: '#171A1F' }}>Onde isso aparece na prática</span>
               </div>
               <div className="sm">
                 Cansaço que não corresponde ao volume de trabalho. Irritação com processos que antes não incomodavam. E a sensação de estar

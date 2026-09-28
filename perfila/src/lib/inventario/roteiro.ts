@@ -111,10 +111,13 @@ export function telaDoRoteiro(roteiro: Roteiro, etapa: 1 | 2 | 3 | 4, tela: stri
 }
 
 /**
- * Regra de exibicao do prototipo (`gen`): adjetivo terminado em "o" ganha
- * "(a)" — "Ousado(a)". So nas etapas 1 e 2; palavra de valor ("Dinheiro")
- * nao tem genero. A chave das definicoes continua sendo o texto cru.
+ * Regra de exibicao do prototipo (`gen`), ampliada: adjetivo terminado em
+ * "o" ou "or" ganha "(a)" — "Ousado(a)", "Acolhedor(a)" (AGENTE 4.1, blueprint
+ * 15.0). O `gen` do prototipo so via o "o" e deixava seis grupos no masculino
+ * (Acolhedor, Observador, Desafiador, Conciliador, Inspirador, Motivador).
+ * So nas etapas 1 e 2; palavra de valor ("Dinheiro") nao tem genero. A chave
+ * das definicoes continua sendo o texto cru.
  */
 export function comGenero(texto: string): string {
-  return /o$/.test(texto) ? `${texto}(a)` : texto
+  return /o$|or$/.test(texto) ? `${texto}(a)` : texto
 }

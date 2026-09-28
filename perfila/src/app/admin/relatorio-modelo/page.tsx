@@ -38,7 +38,10 @@ export default async function RelatorioModeloPage() {
     assessment: { nome: caso.avaliado.nome, codigo: 'MC-2026-0928-AP', emitidoEm: new Date('2026-09-28T12:00:00-03:00') },
     resultado,
     narrativa: esquemaNarrativaMC.parse(narrativaExemplo),
-    facilitador: { nome: 'Nome do Instrutor' },
+    // O instrutor do modelo e quem esta vendo: o Valmer, quando ele abrir. Um
+    // texto fixo aqui aparecia na capa como "NOME DO INSTRUTOR" e parecia
+    // campo esquecido de preencher.
+    facilitador: { nome: sessao.nome },
     nivel: 'S4',
   })
 

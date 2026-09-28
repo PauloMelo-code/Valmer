@@ -12,6 +12,7 @@
 import { after, before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { config } from "dotenv";
 
 config({ path: [".env.local", ".env"] });
@@ -23,7 +24,9 @@ const { VERSAO_INSTRUMENTO } = await import("@/data/inventario-mc");
 const { LEITURAS } = await import("@/data/relatorio-mc/leituras");
 const { esquemaNarrativaMC, PARAGRAFOS } = await import("@/lib/relatorio-mc/narrativa-esquema");
 const { SISTEMA, montarPedido } = await import("@/lib/relatorio-mc/narrativa-prompt");
-const { gerarNarrativaMC, conferirNarrativa, FalhaNaNarrativaMC, MODELO_NARRATIVA_MC } = await import(
+// A mesma copia (CJS) que narrativa.ts carrega: o instanceof de la precisa bater.
+const { AnthropicError } = createRequire(import.meta.url)("@anthropic-ai/sdk") as typeof import("@anthropic-ai/sdk");
+const { gerarNarrativaMC, conferirNarrativa, escreverNarrativa, FalhaNaNarrativaMC, MODELO_NARRATIVA_MC } = await import(
   "@/lib/relatorio-mc/narrativa"
 );
 const { gerarRelatorioMC } = await import("@/lib/actions/relatorio-mc");
@@ -169,27 +172,36 @@ after(async () => {
 });
 
 describe("narrativa MC: o pedido", () => {
-  const pedido = montarPedido(resultado, { nome: "Adriana Prado", codigo: "MC-2026-0928-AP", emitidoEm: new Date("2026-09-28T15:00:00Z") });
+  const pedido = montarPedido(resultado, { emitidoEm: new Date("2026-09-28T15:00:00Z") });
 
   it("traz os numeros do resultado com virgula decimal", () => {
     for (const trecho of [
-      "D (Dominante): 87,5% · Zona: Muito alto",
-      "C (Conforme): 20,8% · Zona: Muito baixo",
-      "C adaptado: 93,8% · Zona: Extremo alto",
+      "D (Dominante): 87,5 · Zona: Muito alto",
+      "C (Conforme): 20,8 · Zona: Muito baixo",
+      "C adaptado: 93,8 · Zona: Extremo alto",
       "Índice de adaptação: 60,5 (extremamente alta)",
-      "Variações D/I/S/C (adaptado menos natural): -72,9 / -48 / +47,9 / +73",
+      "Variações D/I/S/C (adaptado menos natural): −72,9 / −48 / +47,9 / +73",
       "Fatores polarizados: D, S, C",
-      "Extroversão: 70,4% | Introversão: 29,6% → polo: Extroversão",
+      "Extroversão: 70,4 | Introversão: 29,6 | diferença: 40,8 pontos → polo: Extroversão",
+      "Pensamento: 59,3 | Sentimento: 40,7 | diferença: 18,6 pontos → polo: Pensamento",
       "Hierarquia: 1ª Intuição Extrovertida",
       "Político: 88 (Significativo)",
       "Hierarquia Spranger: Político > Econômico > Social > Princípios > Teórico > Estético",
+      "Diferença entre os dois mais altos: 12 pontos",
+      "Confiabilidade da aplicação: média | Alertas: V1 · Tempo total",
       "Ousadia: 91,7 → 25",
       "Data de emissão: 28/09/2026",
-      "Código: MC-2026-0928-AP",
     ]) {
       assert.ok(pedido.includes(trecho), `falta: ${trecho}`);
     }
     assert.doesNotMatch(pedido, /\d\.\d/, "nenhum numero com ponto decimal");
+    assert.doesNotMatch(pedido, /%/, "escore sem %, como as paginas imprimem");
+    assert.doesNotMatch(pedido, /-\d/, "sinal de menos e o U+2212 de formato.ts");
+  });
+
+  it("nao leva nome nem codigo do avaliado (R6: o texto volta para a tabela de calculo)", () => {
+    assert.doesNotMatch(pedido, /Adriana|Prado|MC-2026|Nome:|Código:/);
+    assert.ok(SISTEMA.includes("Não use o nome da pessoa"));
   });
 
   it("diz a ordem natural e traduz as chaves de cruzamento por posicao", () => {
@@ -200,6 +212,32 @@ describe("narrativa MC: o pedido", () => {
     assert.ok(pedido.includes("alto1_baixo2: D (Dominante) alto × S (Estável) baixo"));
     assert.ok(pedido.includes("alto2_baixo1: I (Influente) alto × C (Conforme) baixo"));
     assert.ok(pedido.includes("alto2_baixo2: I (Influente) alto × S (Estável) baixo"));
+  });
+
+  it("perfil duplo: cruzamentos com a zona real e sem aviso de perfil", () => {
+    assert.ok(pedido.includes("Zonas reais: D Muito alto · I Alto · S Muito baixo · C Muito baixo."));
+    assert.doesNotMatch(pedido, /EQUILIBRADO:|puro: só/);
+  });
+
+  it("perfil EQUILIBRADO: avisa que nenhum fator e alto, para a IA nao chamar de alto um fator na zona Baixo", () => {
+    const n = resultado.disc.natural;
+    const equilibrado = {
+      ...resultado,
+      disc: {
+        ...resultado.disc,
+        natural: {
+          ...n,
+          escore: { D: 50, I: 50, S: 50, C: 50 },
+          zona: { D: "B", I: "B", S: "B", C: "B" },
+          perfil: "EQUILIBRADO",
+          ordem: ["D", "I", "S", "C"],
+        },
+      },
+    } as typeof resultado;
+    const p = montarPedido(equilibrado, { emitidoEm: new Date("2026-09-28T15:00:00Z") });
+    assert.ok(p.includes("EQUILIBRADO: nenhum fator chega a 51"));
+    assert.ok(p.includes("nunca chame de alto um fator que está nas zonas Baixo"));
+    assert.ok(p.includes("Zonas reais: D Baixo · I Baixo · S Baixo · C Baixo."));
   });
 
   it("pede a quantidade de paragrafos de cada chave", () => {
@@ -213,6 +251,7 @@ describe("narrativa MC: o pedido", () => {
     assert.ok(SISTEMA.includes("travessão"));
     assert.ok(SISTEMA.includes("fórmula antitética"));
     assert.ok(SISTEMA.includes("NUNCA nomeie o documento"));
+    assert.ok(SISTEMA.includes("Não anuncie seções ou conteúdos que vêm depois"), "S1/S2 cortam paginas (C35)");
     for (const f of ["D", "I", "S", "C"] as const) {
       for (const l of LEITURAS[f]) assert.ok(SISTEMA.includes(l.titulo), l.titulo);
     }
@@ -244,7 +283,7 @@ describe("narrativa MC: geracao e gravacao", () => {
     assert.equal(pedidos[0]!.model, MODELO_NARRATIVA_MC);
     assert.equal(MODELO_NARRATIVA_MC, "claude-sonnet-5");
     assert.equal(pedidos[0]!.system[0]!.text, SISTEMA);
-    assert.ok(pedidos[0]!.messages[0]!.content.includes("D (Dominante): 87,5%"));
+    assert.ok(pedidos[0]!.messages[0]!.content.includes("D (Dominante): 87,5 · Zona"));
 
     const l = await linha(mapa.id);
     assert.deepEqual(l.narrativa, boa);
@@ -268,6 +307,48 @@ describe("narrativa MC: geracao e gravacao", () => {
     assert.match(pedidos[1]!.messages[0]!.content, /tentativa anterior saiu fora do pedido/);
     assert.match(pedidos[1]!.messages[0]!.content, /sintese_combinacao_natural veio com 1 parágrafo/);
     assert.deepEqual((await linha(mapa.id)).narrativa, boa);
+  });
+
+  it("recusa no fim do stream (parse falhou antes) e recusa, sem segunda chamada", async () => {
+    let chamadas = 0;
+    const cliente: Cliente = {
+      beta: {
+        messages: {
+          stream() {
+            chamadas++;
+            return {
+              finalMessage: () => Promise.reject(new AnthropicError("Failed to parse structured output")),
+              currentMessage: { stop_reason: "refusal", stop_details: { category: "cyber" } },
+            };
+          },
+        },
+      },
+    };
+    await assert.rejects(
+      escreverNarrativa(cliente, "pedido"),
+      (e: unknown) => e instanceof FalhaNaNarrativaMC && e.causa === "recusa" && /cyber/.test(e.message),
+    );
+    assert.equal(chamadas, 1, "recusa nao paga segunda chamada");
+  });
+
+  it("truncado por max_tokens diz isso na segunda tentativa", async () => {
+    const pedidos: string[] = [];
+    const boa = narrativaValida();
+    const cliente: Cliente = {
+      beta: {
+        messages: {
+          stream(params) {
+            pedidos.push(params.messages[0]!.content);
+            return pedidos.length === 1
+              ? { finalMessage: () => Promise.reject(new AnthropicError("Failed to parse")), currentMessage: { stop_reason: "max_tokens" } }
+              : { finalMessage: async () => ({ stop_reason: "end_turn", parsed_output: boa }) };
+          },
+        },
+      },
+    };
+    const { narrativa } = await escreverNarrativa(cliente, "pedido");
+    assert.deepEqual(narrativa, boa);
+    assert.match(pedidos[1]!, /max_tokens/);
   });
 
   it("o arrendamento impede a geracao dupla, inclusive com forcar", async () => {

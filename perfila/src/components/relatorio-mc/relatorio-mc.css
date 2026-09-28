@@ -75,7 +75,7 @@
 .mc31 .row{display:flex;gap:4mm}
 .mc31 .col{flex:1;min-width:0}
 .mc31 .g2{display:grid;grid-template-columns:1fr 1fr;gap:4mm}
-.mc31 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3.5mm}
+.mc31 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3.5mm}
 .mc31 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm}
 .mc31 .sm{font-size:9pt;line-height:1.5}
 .mc31 .xs{font-size:8.2pt;line-height:1.45}
@@ -110,7 +110,7 @@
 .mc31 .dense p{margin-bottom:1.8mm}
 .mc31 .dense h2{font-size:11.6pt}
 .mc31 .pill{display:inline-block;border-radius:1mm;padding:.3mm 1.6mm;font-size:6.2pt;font-weight:700;letter-spacing:.1em}
-.mc31 .kv{display:flex;justify-content:space-between;border-bottom:.6pt solid #D8D2C5;padding:1mm 0;font-size:7.8pt}
+.mc31 .kv{display:flex;justify-content:space-between;gap:2mm;border-bottom:.6pt solid #D8D2C5;padding:1mm 0;font-size:7.8pt}
 .mc31 .kv:last-child{border-bottom:0}
 .mc31 .kv span:first-child{color:#5B6573}
 .mc31 .kv span:last-child{font-weight:700;text-align:right}

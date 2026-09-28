@@ -93,15 +93,15 @@ export const esquemaNarrativaMC = z.object({
     .describe('Os quatro cruzamentos entre os dois fatores mais altos e os dois mais baixos da ordem natural informada no pedido. Cada texto descreve o efeito comportamental daquele par específico nesta pessoa.'),
   custo_adaptacao_narrativa: z
     .string()
-    .describe('180 a 240 palavras em EXATAMENTE 3 parágrafos: (1) o que a distância entre natural e adaptado e as polarizações significam no mapa desta pessoa; (2) o que reduz o custo dessa adaptação; (3) por que isso muda a leitura do restante do relatório.'),
+    .describe('180 a 240 palavras em EXATAMENTE 3 parágrafos: (1) o que a distância entre natural e adaptado e as polarizações significam no mapa desta pessoa; (2) o que reduz o custo dessa adaptação; (3) por que essa distância muda a forma de ler os demais resultados.'),
   fator_d_narrativa: z.string().describe('200 palavras em EXATAMENTE 3 parágrafos: (1) e (2) como o fator D se manifesta nesta intensidade e o que a variação no adaptado significa; (3) uma a duas frases de aplicação no trabalho, começando pela ação'),
   fator_i_narrativa: z.string().describe('200 palavras em EXATAMENTE 3 parágrafos: (1) e (2) idem para I; (3) uma a duas frases de aplicação no trabalho, começando pela ação'),
   fator_s_narrativa: z.string().describe('200 palavras em EXATAMENTE 3 parágrafos: (1) e (2) idem para S; se polarizado, o que isso significa no dia a dia; (3) uma a duas frases de aplicação no trabalho, começando pela ação'),
   fator_c_narrativa: z.string().describe('200 palavras em EXATAMENTE 3 parágrafos: (1) e (2) idem para C; se for a maior variação, enfatizar o custo; (3) uma a duas frases de aplicação no trabalho, começando pela ação'),
   seis_forcas: z.array(forca).length(6),
-  jung_e_i_narrativa: z.string().describe('120 palavras em EXATAMENTE 2 parágrafos sobre o eixo de atitude: (1) como o polo predominante aparece nesta pessoa, com o percentual exato; (2) uma aplicação no trabalho, começando pela ação'),
-  jung_n_s_narrativa: z.string().describe('120 palavras em EXATAMENTE 2 parágrafos sobre o eixo de percepção: (1) como o polo predominante aparece nesta pessoa, com o percentual exato; (2) uma aplicação no trabalho, começando pela ação'),
-  jung_t_f_narrativa: z.string().describe('120 palavras em EXATAMENTE 2 parágrafos sobre o eixo de julgamento, incluindo a diferença de pontos entre os polos: (1) como o polo predominante aparece nesta pessoa, com o percentual exato; (2) uma aplicação no trabalho, começando pela ação'),
+  jung_e_i_narrativa: z.string().describe('120 palavras em EXATAMENTE 2 parágrafos sobre o eixo de atitude: (1) como o polo predominante aparece nesta pessoa, com o número exato do pedido; (2) uma aplicação no trabalho, começando pela ação'),
+  jung_n_s_narrativa: z.string().describe('120 palavras em EXATAMENTE 2 parágrafos sobre o eixo de percepção: (1) como o polo predominante aparece nesta pessoa, com o número exato do pedido; (2) uma aplicação no trabalho, começando pela ação'),
+  jung_t_f_narrativa: z.string().describe('120 palavras em EXATAMENTE 2 parágrafos sobre o eixo de julgamento, incluindo a diferença de pontos entre os polos: (1) como o polo predominante aparece nesta pessoa, com o número exato do pedido; (2) uma aplicação no trabalho, começando pela ação'),
   hierarquia_funcional_narrativa: z
     .string()
     .describe('150 palavras sobre a dominante e a auxiliar, e o que a inferior gera sob pressão'),

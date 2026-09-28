@@ -35,6 +35,9 @@ export const RESPONDENTE = "00000000-0000-0000-0000-000000000000";
 
 const ETAPAS = [1, 2, 3, 4] as const satisfies readonly Etapa[];
 
+/** Salto do relogio do navegador tolerado dentro de uma tela (ajuste de hora, maquina que dormiu). */
+const FOLGA_RELOGIO_MS = 60 * 60_000;
+
 export type FalhaInventario =
   | "invalido"
   | "legado"
@@ -207,6 +210,19 @@ export async function salvarTela(token: string, payload: unknown): Promise<{ ok:
     const mapa = await travarMapa(tx, token);
     if (recusou(mapa)) return mapa;
     if (!mapa.consentimento_em) return { ok: false, erro: "sem_consentimento" };
+
+    // Os carimbos sao do relogio do navegador, e so a DURACAO (saida menos
+    // entrada, mesmo relogio) independe do acerto dele. Uma tela nao dura mais
+    // do que o tempo real desde o aceite, medido no servidor: isso barra o
+    // "1970 a 2999" sem trancar quem tem o relogio do PC adiantado ou atrasado,
+    // o que um limite absoluto (saiu_em <= agora) faria. O tempo de recebimento
+    // pelo servidor ja fica em created_at/updated_at, para auditoria.
+    // ponytail: nao impede duracoes plausiveis forjadas (V1/V2); para isso, o
+    // motor teria de ler o tempo do servidor em vez do carimbo do cliente.
+    const duracaoMs = tela.saiu_em.getTime() - tela.entrou_em.getTime();
+    if (duracaoMs > Date.now() - mapa.consentimento_em.getTime() + FOLGA_RELOGIO_MS) {
+      throw new RangeError(`tela ${tela.tela}: duracao maior que o tempo desde o consentimento`);
+    }
 
     // A ordem e decidida aqui, com a linha do mapa travada: duas abas nao
     // conseguem gravar etapa 1 e etapa 2 cruzadas.

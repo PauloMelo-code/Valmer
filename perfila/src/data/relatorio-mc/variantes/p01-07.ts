@@ -71,6 +71,17 @@ export const TITULO_CARTAO_07 = {
   equilibrado: 'Os dois mais altos',
 } as const
 
+/**
+ * Titulo dos quatro cruzamentos. O par e por posicao na ordem natural (C07),
+ * e nao por zona: no perfil puro o "segundo mais alto" pode estar em Baixo, e
+ * no equilibrado os quatro empatam e a ordem sai do desempate.
+ */
+export const TITULO_CRUZAMENTOS_07 = {
+  comPredominante: 'Quatro camadas complementares · os dois fatores mais altos cruzados com os dois mais baixos',
+  equilibrado: (escore: string) =>
+    `Quatro camadas complementares · os quatro empatam em ${escore}, e os pares seguem o desempate`,
+} as const
+
 /** Rotulo do arquetipo no cartao (D5, C06): o nome ja e o titulo da coluna. */
 export const ROTULO_ARQUETIPO = 'Arquétipo'
 
@@ -87,5 +98,7 @@ export const STATUS_VARIANTES_01_07: Record<string, Status> = {
   'SUBTITULO_07.puro': 'rascunho',
   'SUBTITULO_07.equilibrado': 'rascunho',
   TITULO_CARTAO_07: 'rascunho',
+  'TITULO_CRUZAMENTOS_07.comPredominante': 'rascunho',
+  'TITULO_CRUZAMENTOS_07.equilibrado': 'rascunho',
   ROTULO_ARQUETIPO: 'rascunho',
 }

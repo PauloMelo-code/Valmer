@@ -53,11 +53,14 @@ let tokenConcluidoVencido = "";
 let tokenBorda = "";
 let idAberto = "";
 let idBorda = "";
+let tokenMc = "";
+let idMc = "";
 
 async function inserirAssessment(
   token: string,
   situacao: "pendente" | "em_andamento" | "concluido" | "expirado",
   expiraEm: Date,
+  versao = "LEGADO",
 ): Promise<string> {
   const [linha] = await db
     .insert(assessments)
@@ -69,6 +72,7 @@ async function inserirAssessment(
       tipo_relatorio: "S1",
       situacao,
       expira_em: expiraEm,
+      versao_instrumento: versao,
       modified_by: SISTEMA,
     })
     .returning();
@@ -102,6 +106,8 @@ before(async () => {
   // fixture ja concluida ou vencida a recusa poderia vir do estado, e o teste
   // de validacao passaria mesmo se o schema sumisse.
   idBorda = await inserirAssessment(tokenBorda, "pendente", new Date(Date.now() + 7 * DIA));
+  tokenMc = `mc${marca}`;
+  idMc = await inserirAssessment(tokenMc, "pendente", new Date(Date.now() + 7 * DIA), "MC-INV 2.2");
 });
 
 after(async () => {
@@ -116,7 +122,7 @@ after(async () => {
   // der credito a este facilitador a suite quebraria dentro do `after`, com
   // erro que nao aponta para a causa. Apagando tudo junto o usuario ja nao
   // existe no COMMIT e a checagem pula quem sumiu.
-  const tokens = [tokenAberto, tokenExpirado, tokenConcluidoVencido, tokenBorda];
+  const tokens = [tokenAberto, tokenExpirado, tokenConcluidoVencido, tokenBorda, tokenMc];
   const lista = tokens.map((token) => `'${token}'`).join(",");
 
   await db.transaction(async (tx) => {
@@ -354,6 +360,22 @@ describe("avaliacao", () => {
 
     // O link continua respondivel: a recusa foi da entrada, e nao do estado.
     assert.deepEqual(await acoes.salvarResposta(tokenBorda, "Q01", "D"), { ok: true });
+  });
+
+  it("recusa mapa MC-INV 2.2: o questionario antigo nao responde nem fecha", async () => {
+    // Sem a guarda, 28 respostas + concluir fechavam o mapa novo sem
+    // consentimento, sem as 69 telas e sem resultado (ADR-0007, D3).
+    assert.deepEqual(await acoes.salvarResposta(tokenMc, "Q01", "D"), { ok: false, erro: "invalido" });
+    assert.deepEqual(await acoes.concluir(tokenMc), { ok: false, erro: "invalido" });
+
+    const linhas = await db
+      .select()
+      .from(assessmentsRespostas)
+      .where(eq(assessmentsRespostas.assessment_id, idMc));
+    assert.equal(linhas.length, 0);
+
+    const [linha] = await db.select().from(assessments).where(eq(assessments.id, idMc));
+    assert.equal(linha!.situacao, "pendente");
   });
 
   it("concluido tem precedencia sobre a data vencida", async () => {

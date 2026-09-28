@@ -12,6 +12,7 @@
     "db:seed": "tsx src/lib/db/seed.ts",
     "db:studio": "drizzle-kit studio",
     "relatorio:gerar": "tsx src/lib/relatorio/cli.ts",
+    "relatorio-mc:conferir": "tsx scripts/conferir-relatorio-mc.mts",
     "test": "node --import tsx --test --test-concurrency=1 \"tests/*.test.mts\""
   },
   "dependencies": {

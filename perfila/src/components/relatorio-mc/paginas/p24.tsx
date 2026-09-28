@@ -66,7 +66,7 @@ export default function Pagina24({ dados }: PropsPagina) {
           const frase = FRASE_FAIXA_24[f.codigo]
           return (
             <div key={f.codigo} className="card">
-              <span className="lab">{`${f.nome} · ${numero(f.minimo)} a ${numero(f.maximo)}`}</span>
+              <span className="lab">{`${f.nome} · ${numero(f.minimo)}\u00a0a\u00a0${numero(f.maximo)}`}</span>
               {lista.length ? (
                 <>
                   <div className="sm"><b>{juntar(lista.map((v) => v.nomeMaiusculo))}.</b></div>

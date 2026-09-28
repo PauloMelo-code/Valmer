@@ -70,6 +70,10 @@ describe("paginas 08-14", () => {
       assert.ok(h.includes(`>${x.natural.escore.texto}<`) && h.includes(`>${x.adaptado.zona.nome}<`));
       assert.ok(h.toLocaleLowerCase("pt-BR").includes(x.adaptado.descritores[3].toLocaleLowerCase("pt-BR")));
     }
+    // C adaptado 93,8 nao cabe depois da barra: o rotulo vai para dentro, alinhado a direita.
+    const x = 250 + (1360 * d.fatores.C.adaptado.escore.valor) / 100 - 16;
+    assert.ok(html(P12, d).includes(`x="${x}" y="152" text-anchor="end"`), "93,8 dentro da barra");
+    assert.ok(!html(P09, d).includes('text-anchor="end"'), "D 87,5 e 14,6 continuam depois da barra");
     // So a 09 explica a linha "Emocao associada".
     assert.ok(html(P09, d).includes("Como ler a linha"));
     assert.ok(!html(P10, d).includes("Como ler a linha"));

@@ -26,6 +26,39 @@ const H1_FONTE_MINIMA_PX = 14;
 const H1_PASSO_PX = 0.6;
 /** Maior ampliacao de um bloco .zw que sobra espaco. Valor do molde. */
 const ZW_ZOOM_MAXIMO = 1.3;
+/**
+ * Menor reducao de um bloco .zw que nao cabe. O molde nao reduzia: la o texto
+ * era fixo e cabia por construcao. Aqui o texto e da IA, que pode vir ate 40%
+ * acima do pedido e passar na conferencia (narrativa.ts), e o que passasse da
+ * folha era cortado pelo `overflow: hidden` sem ninguem saber. 0,88 leva o
+ * corpo de 9,7pt a ~8,5pt, o piso de legibilidade que o redesign da pagina 07
+ * pede para o A4.
+ */
+const ZW_ZOOM_MINIMO = 0.88;
+
+/**
+ * O maior zoom com que o bloco cabe, entre `minimo` e `maximo`. Funcao pura
+ * (recebe o teste de encaixe), para ser testada sem navegador.
+ *
+ * Cabe em `maximo`: usa `maximo`. Cabe em 1: amplia o que der. Nao cabe em 1:
+ * reduz o que precisar, ate `minimo`. Nem em `minimo`: devolve `minimo` e
+ * `transborda`, que e o sinal para o PDF avisar em vez de sair cortado calado.
+ */
+export function escolherZoom(
+  cabe: (zoom: number) => boolean,
+  minimo = ZW_ZOOM_MINIMO,
+  maximo = ZW_ZOOM_MAXIMO,
+): { zoom: number; transborda: boolean } {
+  if (cabe(maximo)) return { zoom: maximo, transborda: false };
+  let [cabeEm, naoCabeEm] = cabe(1) ? [1, maximo] : [minimo, 1];
+  if (cabeEm === minimo && !cabe(minimo)) return { zoom: minimo, transborda: true };
+  for (let i = 0; i < 14; i++) {
+    const meio = (cabeEm + naoCabeEm) / 2;
+    if (cabe(meio)) cabeEm = meio;
+    else naoCabeEm = meio;
+  }
+  return { zoom: cabeEm, transborda: false };
+}
 
 /**
  * Reduz o h1 que estoura a largura. Titulo com <br> foi quebrado a mao no
@@ -46,14 +79,13 @@ function ajustarTitulos(raiz: ParentNode): void {
 }
 
 /**
- * Amplia o bloco .zw ate ocupar a altura que a pagina da a ele (busca
- * binaria entre 1 e 1,3) e devolve a folga aos .spacer de dentro.
- *
- * Igual ao molde, o zoom nunca fica abaixo de 1: bloco que ja nao cabe em 1
- * continua cortado. Quem garante que cabe e o limite de palavras do texto da
- * IA, nao este ajuste.
+ * Ajusta o bloco .zw a altura que a pagina da a ele — amplia ate 1,3 quando
+ * sobra espaco, reduz ate 0,88 quando falta (ver `escolherZoom`) — e devolve a
+ * folga aos .spacer de dentro. Devolve quantos blocos nao couberam nem
+ * reduzidos; esses ficam marcados com `data-transborda`.
  */
-function ajustarBlocos(raiz: ParentNode): void {
+function ajustarBlocos(raiz: ParentNode): number {
+  let transbordados = 0;
   raiz.querySelectorAll<HTMLElement>(".zw").forEach((z) => {
     const espacadores = z.querySelectorAll<HTMLElement>(".spacer");
     z.style.zoom = "";
@@ -70,23 +102,20 @@ function ajustarBlocos(raiz: ParentNode): void {
       return z.getBoundingClientRect().height <= disponivel - 4 && z.scrollWidth <= z.clientWidth + 1;
     };
 
-    let baixo = 1;
-    let alto = ZW_ZOOM_MAXIMO;
-    if (cabe(alto)) {
-      baixo = alto;
-    } else {
-      for (let i = 0; i < 14; i++) {
-        const meio = (baixo + alto) / 2;
-        if (cabe(meio)) baixo = meio;
-        else alto = meio;
-      }
-    }
+    const { zoom, transborda } = escolherZoom(cabe);
 
-    z.style.zoom = String(baixo);
-    z.style.height = `${disponivel / baixo}px`;
+    z.style.zoom = String(zoom);
+    z.style.height = `${disponivel / zoom}px`;
     espacadores.forEach((e) => (e.style.flex = "1"));
-    z.setAttribute("data-zoom", baixo.toFixed(3));
+    z.setAttribute("data-zoom", zoom.toFixed(3));
+    if (transborda) {
+      z.setAttribute("data-transborda", "sim");
+      transbordados++;
+    } else {
+      z.removeAttribute("data-transborda");
+    }
   });
+  return transbordados;
 }
 
 /** Espera as imagens do container: a altura dos blocos depende delas. */
@@ -104,6 +133,8 @@ export async function ajustarPaginas(raiz: HTMLElement): Promise<void> {
   await document.fonts.ready;
   await imagensCarregadas(raiz);
   ajustarTitulos(raiz);
-  ajustarBlocos(raiz);
+  // Lido pelo gerador de PDF (pdf.ts), que roda em outro processo: pagina com
+  // texto que nem reduzido coube sai com aviso, e nao cortada em silencio.
+  raiz.setAttribute("data-transborda", String(ajustarBlocos(raiz)));
   raiz.setAttribute("data-ajuste", "pronto");
 }

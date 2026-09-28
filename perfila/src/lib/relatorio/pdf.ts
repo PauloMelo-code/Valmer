@@ -52,6 +52,17 @@ async function prepararMC(pagina: Page): Promise<boolean> {
   if (!(await pagina.$(".mc31"))) return false;
   await pagina.evaluate(() => document.fonts.ready.then(() => undefined));
   await pagina.waitForSelector('.mc31[data-ajuste="pronto"]', { timeout: 60_000 });
+  // `ajustarPaginas` reduz ate 0,88 o bloco que nao cabe; o que nem assim
+  // coube fica marcado. Sai no log com o numero da pagina, porque o que passa
+  // da folha e cortado pelo overflow e ninguem veria no PDF que faltou texto.
+  const transbordadas = await pagina.evaluate(() =>
+    Array.from(document.querySelectorAll('.mc31 .zw[data-transborda]')).map(
+      (z) => z.closest('section.page')?.id ?? '?',
+    ),
+  );
+  if (transbordadas.length > 0) {
+    console.warn(`aviso: texto não coube nem reduzido em ${transbordadas.join(', ')} de ${pagina.url()}`);
+  }
   await pagina.evaluate(() => {
     const raiz = document.querySelector(".mc31")!;
     document.body.replaceChildren(raiz);

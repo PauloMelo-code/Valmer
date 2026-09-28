@@ -16,6 +16,7 @@ import { assessments, assessmentsRespostas, usuarios } from "@/lib/db/schema";
 import { registrarAuditoria } from "@/lib/audit/logger";
 import { respostaSchema } from "@/lib/validators/assessment";
 import { gerarESalvar } from "@/lib/relatorio/persistir";
+import { VERSAO_LEGADO } from "@/lib/perfil-do-mapa";
 import { questoes } from "@/data/assessment";
 import type { Respostas } from "@/lib/disc";
 import type { FatorDisc } from "@/data/dna";
@@ -143,6 +144,10 @@ export async function salvarResposta(
       .for("update");
 
     if (!linha) return { ok: false, erro: "invalido" };
+    // So o questionario antigo passa por aqui (ADR-0007, D3). Um mapa MC-INV
+    // 2.2 concluido por este caminho ficaria sem consentimento, sem as 69 telas
+    // e sem resultado — e o link morreria. Espelha o "legado" de travarMapa.
+    if (linha.versao_instrumento !== VERSAO_LEGADO) return { ok: false, erro: "invalido" };
     if (linha.situacao === "concluido") return { ok: false, erro: "concluido" };
     if (expirou(linha.situacao, linha.expira_em)) return { ok: false, erro: "expirado" };
 
@@ -246,6 +251,9 @@ export async function concluir(
       .for("update");
 
     if (!linha) return { ok: false, erro: "invalido" } as const;
+    // Idem salvarResposta: fechar um MC-INV 2.2 aqui ainda agendaria a
+    // narrativa ANTIGA, chamada paga de IA, sobre um mapa que nao e dela.
+    if (linha.versao_instrumento !== VERSAO_LEGADO) return { ok: false, erro: "invalido" } as const;
     if (linha.situacao === "concluido") return { ok: false, erro: "concluido" } as const;
     if (expirou(linha.situacao, linha.expira_em)) return { ok: false, erro: "expirado" } as const;
 

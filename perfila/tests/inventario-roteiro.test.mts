@@ -81,8 +81,11 @@ describe("roteiro por semente", () => {
     assert.deepEqual([...lados].sort(), [false, true]);
   });
 
-  it("genero: termina em 'o' ganha (a)", () => {
+  it("genero: termina em 'o' ou 'or' ganha (a)", () => {
     assert.equal(comGenero("Ousado"), "Ousado(a)");
+    for (const t of ["Acolhedor", "Observador", "Desafiador", "Conciliador", "Inspirador", "Motivador"]) {
+      assert.equal(comGenero(t), `${t}(a)`);
+    }
     assert.equal(comGenero("Firme"), "Firme");
     assert.equal(comGenero("Sociável"), "Sociável");
   });

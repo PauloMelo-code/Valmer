@@ -89,7 +89,7 @@ INSERT INTO mapa_demo VALUES
   ('marcos@grupotavares.com',     'Marcos Tavares',           'Marcos',   'Rogerio Lima',   'Rogerio',  'rogerio.lima@example.com',    '+55 (41) 90000-0003'),
   ('dani@danipires.com.br',       'Dani Pires',               'Dani',     'Carla Menezes',  'Carla',    'carla.menezes@example.com',   '+55 (48) 90000-0004'),
   -- avaliados
-  ('contatopaulonvr@gmail.com',   'Paulo V S Melo',           'Paulo',    'Adriana Prado',  'Adriana',  'adriana.prado@example.com',   NULL),
+  ('contatopaulonvr@gmail.com',   'Paulo V S Melo',           'Paulo',    'Fernanda Lopes', 'Fernanda', 'fernanda.lopes@example.com',   NULL),
   ('elmaiasilva83@gmail.com',     'Elias da Silva Maia',      'Elias',    'Bruno Carvalho', 'Bruno',    'bruno.carvalho@example.com',  NULL),
   ('thaismuniz83@gmail.com',      'Thais da Silva Muniz',     'Thais',    'Camila Ferraz',  'Camila',   'camila.ferraz@example.com',   NULL),
   ('fernandobrambilla@hotmail.com','Fernando Brambilla',      'Fernando', 'Diego Antunes',  'Diego',    'diego.antunes@example.com',   NULL),
@@ -122,7 +122,7 @@ UNION ALL SELECT 'narrativas geradas',    count(*) FROM assessments_relatorios r
 -- plataforma.
 --
 -- Nome completo antes do primeiro nome: "Paulo V S Melo" contem "Paulo", e
--- trocar o curto primeiro deixaria "Adriana V S Melo" no meio do texto.
+-- trocar o curto primeiro deixaria "Fernanda V S Melo" no meio do texto.
 UPDATE assessments_relatorios r
 SET narrativa = replace(replace(r.narrativa::text, m.nome_antigo, m.nome_novo), m.primeiro_antigo, m.primeiro_novo)::jsonb,
     updated_at = now(),

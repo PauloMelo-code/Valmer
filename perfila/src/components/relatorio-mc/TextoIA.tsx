@@ -49,7 +49,21 @@ export function TextoIA({
   return (
     <Tag className={className} style={style}>
       {abertura}
-      {texto}
+      {semQuebraNoHifen(texto)}
     </Tag>
   )
+}
+
+/**
+ * O navegador quebra linha em qualquer hifen, e a narrativa tem encliticos
+ * ("aprendê-lo" saia "aprendê-" / "lo"). As fontes do relatorio nao tem o
+ * hifen nao separavel (U+2011), entao a palavra com hifen vai inteira num
+ * span sem quebra.
+ */
+const COM_HIFEN = /(\p{L}+(?:-\p{L}+)+)/u
+
+function semQuebraNoHifen(texto: string) {
+  const partes = texto.split(COM_HIFEN)
+  if (partes.length === 1) return texto
+  return partes.map((p, i) => (i % 2 ? <span key={i} style={{ whiteSpace: 'nowrap' }}>{p}</span> : p))
 }

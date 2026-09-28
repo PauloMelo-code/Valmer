@@ -62,7 +62,7 @@ async function inserirMapa(
 
 // --- payloads montados a partir do INVENTARIO, nunca redigitados ---
 const entrou = "2026-09-28T12:00:00.000Z";
-const saiu = "2026-09-28T12:00:09.500-03:00"; // offset do navegador aceito
+const saiu = "2026-09-28T09:00:09.500-03:00"; // offset do navegador aceito: 9,5 s depois de `entrou`
 
 function telaDisc(etapa: 1 | 2, indice: number, invertida = false) {
   const g = GRUPOS_DISC[indice]!;
@@ -233,6 +233,18 @@ describe("inventario: recusas de estado", () => {
   it("entrada adulterada lanca antes de tocar o banco", async () => {
     await assert.rejects(() => inv.salvarTela(semConsentir.token, { ...telaDisc(1, 0), tela: "G99" }));
     await assert.rejects(() => inv.salvarTela(semConsentir.token, null));
+  });
+});
+
+describe("inventario: carimbos de tempo do cliente", () => {
+  it("recusa tela que dura mais que o tempo desde o consentimento", async () => {
+    const m = await inserirMapa("rl", { versao: VERSAO_INSTRUMENTO });
+    assert.equal((await inv.registrarConsentimento(m.token)).ok, true);
+    const absurda = { ...telaDisc(1, 0), entrou_em: "1970-01-01T00:00:00Z", saiu_em: "2999-01-01T00:00:00Z" };
+    await assert.rejects(() => inv.salvarTela(m.token, absurda), RangeError);
+    // O relogio do PC pode estar errado: so a duracao importa, nao a data.
+    const relogioAtrasado = { ...telaDisc(1, 0), entrou_em: "2001-01-01T00:00:00Z", saiu_em: "2001-01-01T00:00:08Z" };
+    assert.deepEqual(await inv.salvarTela(m.token, relogioAtrasado), { ok: true });
   });
 });
 

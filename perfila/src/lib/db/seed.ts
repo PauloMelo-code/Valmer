@@ -48,7 +48,7 @@ import {
 import { assessments as dadosAssessments, facilitadores, transacoes } from "../../data/facilitadores";
 import { pacotesCreditos, tiposRelatorio } from "../../data/planos";
 import { novoToken } from "../assessment-link";
-import { semearMapasMc } from "./seed-mc";
+import { semearMapasMc, semearTerritorioMisto } from "./seed-mc";
 
 config({ path: [".env.local", ".env"] });
 
@@ -238,6 +238,7 @@ async function main(): Promise<void> {
     if (existentes.length > 0) {
       console.log("Banco ja tem usuarios; so os mapas MC-INV 2.2 que faltarem.");
       await semearMapasMc(db, idUsuario.valmer!);
+      await semearTerritorioMisto(db, idUsuario["beatriz-nunes"]!, idAssessment.a5!);
       return;
     }
 
@@ -344,6 +345,7 @@ async function main(): Promise<void> {
     // Depois do saldo impresso acima: os mapas MC-INV 2.2 debitam do Valmer e
     // imprimem o saldo que sobra.
     await semearMapasMc(db, idUsuario.valmer!);
+    await semearTerritorioMisto(db, idUsuario["beatriz-nunes"]!, idAssessment.a5!);
   } finally {
     await pool.end();
   }

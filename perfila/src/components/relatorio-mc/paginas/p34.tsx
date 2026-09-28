@@ -16,9 +16,9 @@ export default function Pagina34({ dados }: PropsPagina) {
   const pdi = dados.ia.pdi
   return (
     <Pagina dados={dados} numero={34} kicker="Depois do perfil" titulo="Pontos a desenvolver · continuação" subtitulo="Pontos 04 a 06.">
-      <PontosDesenvolver pontos={dados.ia.pontosDesenvolver} primeiro={3} />
+      <PontosDesenvolver pontos={dados.ia.pontosDesenvolver} primeiro={3} compacto />
       <div className="row" style={{ gap: '3.5mm' }}>
-        <div className="card" style={{ flex: 1 }}>
+        <div className="card" style={{ flex: 0.8 }}>
           <h3>{POR_ONDE_COMECAR.titulo}</h3>
           <div className="xs">{POR_ONDE_COMECAR.texto}</div>
         </div>

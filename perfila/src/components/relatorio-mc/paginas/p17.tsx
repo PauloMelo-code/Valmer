@@ -38,7 +38,7 @@ export default function Pagina17({ dados }: PropsPagina) {
             <div key={eixo} style={{ background: '#fff', border: '.6pt solid #D8D2C5', borderTop: '1.4mm solid #17324D', borderRadius: '1.6mm', padding: '3mm 3.4mm', display: 'flex', flexDirection: 'column' }}>
               <div className="lab" style={{ margin: 0 }}>Eixo {e.numero}</div>
               <div style={{ fontFamily: 'AR', fontWeight: 800, fontSize: '12.4pt', color: '#17324D', lineHeight: 1.12, margin: '.6mm 0 2mm' }}>{e.tituloPagina17}</div>
-              <div style={{ display: 'flex', gap: '1.6mm', marginBottom: '2.4mm' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', columnGap: '1.6mm', rowGap: '1.2mm', marginBottom: '2.4mm' }}>
                 {(POLOS[eixo] as readonly PoloJung[]).map((p) => (
                   <span key={p} className="pill" style={{ background: COR_POLO[p], color: '#fff' }}>{maiusculas(POLOS_JUNG[p].nome)}</span>
                 ))}

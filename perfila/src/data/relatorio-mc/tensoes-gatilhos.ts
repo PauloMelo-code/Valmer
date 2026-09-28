@@ -128,6 +128,9 @@ export const PAGINA_15 = {
   ligadosAoFator: (rotulo: string) => `Ligados ao fator ${rotulo}`,
   rotuloPrimeiro: 'Fator mais alto',
   rotuloSegundo: 'Segundo fator',
+  /** Perfil EQUILIBRADO: os quatro empatam, a ordem e do desempate (rascunho). */
+  rotuloPrimeiroEmpate: 'Primeiro no desempate',
+  rotuloSegundoEmpate: 'Segundo no desempate',
   rotuloComoAparece: 'Como aparece.',
   /** Vem antes do `comoAparece` do SEGUNDO fator. */
   notaSegundoFator: 'Aparecem com menos frequência, e com mais força quando o primeiro grupo já foi acionado.',

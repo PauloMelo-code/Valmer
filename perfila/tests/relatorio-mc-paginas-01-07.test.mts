@@ -28,6 +28,8 @@ import * as M04 from "@/components/relatorio-mc/paginas/p04";
 import * as M05 from "@/components/relatorio-mc/paginas/p05";
 import * as M06 from "@/components/relatorio-mc/paginas/p06";
 import * as M07 from "@/components/relatorio-mc/paginas/p07";
+import * as M15 from "@/components/relatorio-mc/paginas/p15";
+import { FATORES, GRUPOS_DISC } from "@/data/inventario-mc";
 
 const resultado = calcularResultado(caso.respostas as unknown as RespostasInventario, []);
 const narrativa = esquemaNarrativaMC.parse(narrativaExemplo);
@@ -45,6 +47,7 @@ function montar(nivel: CodigoNivel = "S4", n: NarrativaMC | null = narrativa, co
 // O .tsx sai como CommonJS e o teste e ESM: o `default` chega embrulhado uma vez a mais.
 const pagina = (m: { default: unknown }) => ((m.default as { default?: unknown }).default ?? m.default) as ComponentType<PropsPagina>;
 const [P01, P02, P03, P04, P05, P06, P07] = [M01, M02, M03, M04, M05, M06, M07].map(pagina);
+const P15 = pagina(M15);
 
 const html = (P: ComponentType<PropsPagina>, d: DadosRelatorioMC) => renderToStaticMarkup(createElement(P, { dados: d }));
 const TODAS = [P01, P02, P03, P04, P05, P06, P07];
@@ -94,9 +97,35 @@ describe("paginas 01-07 do relatorio MC 3.1", () => {
     const p07 = html(P07, montar());
     assert.ok(p07.includes("O Protagonista"));
     assert.ok(p07.includes("DOMINANTE em 87,5 e INFLUENTE em 68,8."));
-    assert.equal(p07.match(/DOMINANTE alto/g)?.length, 2);
-    assert.equal(p07.match(/INFLUENTE alto/g)?.length, 2);
-    assert.ok(p07.includes("CONFORME baixo") && p07.includes("ESTÁVEL baixo"));
+    // Pilula com a zona real do fator: D 87,5 muito alto, I 68,8 alto, S 22,9 e C 20,8 muito baixo.
+    assert.equal(p07.match(/DOMINANTE muito alto</g)?.length, 2);
+    assert.equal(p07.match(/INFLUENTE alto</g)?.length, 2);
+    assert.equal(p07.match(/CONFORME muito baixo</g)?.length, 2);
+    assert.equal(p07.match(/ESTÁVEL muito baixo</g)?.length, 2);
+    assert.ok(p07.includes("os dois fatores mais altos cruzados com os dois mais baixos"));
+  });
+
+  it("perfil EQUILIBRADO: os quatro em 50, nenhuma pilula diz alto e a 15 nao fala em fator mais alto", () => {
+    // Cada fator passa uma vez por cada posicao a cada 4 grupos: bruto 40, escore 50 nos quatro.
+    const natural = Object.fromEntries(
+      GRUPOS_DISC.map((g, i) => [g.grupo, Object.fromEntries(g.itens.map((it) => [it.id, ((FATORES.indexOf(it.fator) + i) % 4) + 1]))]),
+    );
+    const r = calcularResultado({ ...(caso.respostas as unknown as RespostasInventario), natural }, []);
+    assert.equal(r.disc.natural.perfil, "EQUILIBRADO");
+    const d = montarDadosRelatorio({
+      assessment: { nome: "Adriana Prado", codigo: null, emitidoEm: new Date("2026-09-28T12:00:00-03:00") },
+      resultado: r,
+      narrativa: null,
+      facilitador: { nome: "Nome do Instrutor" },
+      nivel: "S4",
+    });
+    const p07 = html(P07, d);
+    assert.ok(!/(DOMINANTE|INFLUENTE|ESTÁVEL|CONFORME) alto</.test(p07), "pilula 'alto' com o fator em 50");
+    assert.equal(p07.match(/(DOMINANTE|INFLUENTE|ESTÁVEL|CONFORME) baixo</g)?.length, 8);
+    assert.ok(p07.includes("os quatro empatam em 50"));
+    const p15 = html(P15, d);
+    assert.ok(!p15.includes("Fator mais alto") && !p15.includes("Segundo fator"));
+    assert.ok(p15.includes("Primeiro no desempate") && p15.includes("Segundo no desempate"));
   });
 
   it("sem narrativa, a 07 mostra os oito blocos de IA como pendentes", () => {

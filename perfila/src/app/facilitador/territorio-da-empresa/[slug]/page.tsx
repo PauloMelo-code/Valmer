@@ -47,7 +47,7 @@ export default async function TerritorioPage({ params }: { params: Promise<{ slu
   const dados = await detalhe(slug)
   if (!dados) notFound()
 
-  const { territorio, medias, respondentes } = dados
+  const { territorio, medias, escala, foraDaMedia, respondentes } = dados
 
   const [disponiveis, mapasVisiveis, grupos] = await Promise.all([
     inventariosDisponiveis(territorio.id),
@@ -84,6 +84,7 @@ export default async function TerritorioPage({ params }: { params: Promise<{ slu
       email: pessoa.email,
       iniciais: pessoa.iniciais,
       perfil: pessoa.perfil,
+      versao: pessoa.versao,
       percentuais: { D: pessoa.d, I: pessoa.i, S: pessoa.s, C: pessoa.c },
       respondidoEm: pessoa.respondido_em ? DATA_HORA_BR.format(pessoa.respondido_em) : null,
       dia: pessoa.respondido_em ? DIA_ISO.format(pessoa.respondido_em) : null,
@@ -95,6 +96,7 @@ export default async function TerritorioPage({ params }: { params: Promise<{ slu
       email: mapa.avaliadoEmail,
       iniciais: initials(mapa.avaliadoNome),
       perfil: null,
+      versao: null,
       percentuais: null,
       respondidoEm: null,
       dia: null,
@@ -113,6 +115,8 @@ export default async function TerritorioPage({ params }: { params: Promise<{ slu
       descricao={territorio.descricao}
       subtitulo={subtitulo}
       medias={medias}
+      escala={escala}
+      foraDaMedia={foraDaMedia}
       linhas={linhas}
       disponiveis={disponiveis.map((mapa) => ({
         id: mapa.id,

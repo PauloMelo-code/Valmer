@@ -15,9 +15,14 @@ import { COR_POLO, TOM_HIERARQUIA, clarear } from './p15-21/cores'
 import type { PropsPagina } from './registro'
 
 // O molde tem 8mm 1fr 40mm 12mm, para "Intuição" e "64". Com a atitude
-// ("Intuição Extrovertida") e uma casa decimal ("88,9") o nome e o numero
-// precisam de mais largura: a barra cede 10mm.
-const COLUNAS = '8mm 1fr 30mm 15mm'
+// ("Pensamento Introvertido") e uma casa decimal ("59,3") os dois precisam de
+// mais largura, e a barra cede.
+//
+// `minmax(0, 1fr)`, e nao `1fr`: um 1fr puro nao encolhe abaixo do proprio
+// conteudo. Com o nome inteiro numa linha ele media uns 50mm numa coluna de
+// 37mm, a grade passava da largura do cartao e empurrava a coluna do numero
+// para fora da borda — o relatorio saia com "59" no lugar de "59,3".
+const COLUNAS = '8mm minmax(0, 1fr) 24mm 16mm'
 const REFERENCIA_22 = ', e está detalhada na página 22'
 
 export default function Pagina21({ dados }: PropsPagina) {
@@ -46,14 +51,14 @@ export default function Pagina21({ dados }: PropsPagina) {
                 <div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', columnGap: '2mm', alignItems: 'baseline' }}>
                     <span className="lab" style={{ margin: 0 }}>{f.rotulo}</span>
-                    <span style={{ fontFamily: 'AR', fontWeight: 800, fontSize: '10.5pt', color: cor, whiteSpace: 'nowrap' }}>{f.nome}</span>
+                    <span style={{ fontFamily: 'AR', fontWeight: 800, fontSize: '10.5pt', lineHeight: 1.15, color: cor }}>{f.nome}</span>
                   </div>
                   <div className="xs">{definicao(f.definicao)}</div>
                 </div>
                 <div style={{ height: '4mm', background: '#EDE7DB', borderRadius: '1mm' }}>
                   <div style={{ width: `${f.percentual.valor}%`, height: '100%', background: clarear(cor, TOM_HIERARQUIA[i]), borderRadius: '1mm' }} />
                 </div>
-                <div className="num" style={{ fontSize: '14pt', textAlign: 'right' }}>{f.percentual.texto}</div>
+                <div className="num" style={{ fontSize: '14pt', textAlign: 'right', whiteSpace: 'nowrap' }}>{f.percentual.texto}</div>
               </div>
             )
           })}

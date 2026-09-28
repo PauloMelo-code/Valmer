@@ -44,8 +44,12 @@ const MAX_TOKENS = 32000
 /** Assina as linhas escritas pelo gerador; nao ha pessoa por tras delas. */
 const GERADOR = '00000000-0000-0000-0000-000000000000'
 
-/** Igual a persistir.ts: o teto e o tempo de UMA chamada, com folga. */
-const PRAZO_DA_GERACAO_MS = 10 * 60 * 1000
+/**
+ * Maior que o de persistir.ts (10 min, UMA chamada): aqui a geracao pode fazer
+ * DUAS chamadas em streaming, cada uma com o timeout padrao de 10 min do SDK.
+ * Vencido o prazo, um clique arrenda de novo e paga outra narrativa.
+ */
+const PRAZO_DA_GERACAO_MS = 25 * 60 * 1000
 
 /** Erro de negocio: a API respondeu, mas nao com a narrativa (ou nem foi chamada). */
 export class FalhaNaNarrativaMC extends Error {
@@ -71,16 +75,16 @@ function parametros(pedido: string) {
 
 export type ParametrosIA = ReturnType<typeof parametros>
 
+type Parada = { stop_reason: string | null; stop_details?: { category?: string | null } | null }
+
 /** O pedaco do SDK que este modulo usa. O teste injeta um simulado com esta forma. */
 export type ClienteIA = {
   beta: {
     messages: {
       stream(params: ParametrosIA): {
-        finalMessage(): Promise<{
-          stop_reason: string | null
-          stop_details?: { category?: string | null } | null
-          parsed_output?: NarrativaMC | null
-        }>
+        finalMessage(): Promise<Parada & { parsed_output?: NarrativaMC | null }>
+        /** A mensagem parcial, que continua ai quando o parse do esquema falha no fim do stream. */
+        readonly currentMessage?: Parada | undefined
       }
     }
   }
@@ -139,25 +143,33 @@ export function conferirNarrativa(n: NarrativaMC): string[] {
   return problemas
 }
 
-/** Uma chamada. Devolve null quando o JSON nao veio no esquema (truncado ou invalido). */
-async function chamar(cliente: ClienteIA, pedido: string): Promise<NarrativaMC | null> {
+const FORA_DO_FORMATO = 'a resposta não veio no formato pedido'
+const TRUNCADA = 'a resposta foi cortada no limite de tamanho (max_tokens) antes de fechar o JSON'
+
+/** Recusa chega com HTTP 200: olhar o motivo antes do conteudo. */
+function conferirRecusa(m: Parada | undefined) {
+  if (m?.stop_reason === 'refusal') {
+    throw new FalhaNaNarrativaMC(`O modelo recusou gerar a narrativa (${m.stop_details?.category ?? 'sem categoria'}).`, 'recusa')
+  }
+}
+
+/** Uma chamada. Devolve o motivo, em texto, quando o JSON nao veio no esquema (truncado ou invalido). */
+async function chamar(cliente: ClienteIA, pedido: string): Promise<NarrativaMC | string> {
+  const stream = cliente.beta.messages.stream(parametros(pedido))
   let resposta
   try {
-    resposta = await cliente.beta.messages.stream(parametros(pedido)).finalMessage()
+    resposta = await stream.finalMessage()
   } catch (erro) {
-    // O SDK lanca AnthropicError puro quando o texto nao passa no esquema. Erro
-    // de API (APIError, subclasse) e de rede continuam subindo.
-    if (erro instanceof AnthropicError && !(erro instanceof APIError)) return null
-    throw erro
+    // O SDK lanca AnthropicError puro quando o texto nao passa no esquema, e o
+    // parse roda no fim do stream, ANTES de a resposta chegar aqui: recusa ou
+    // max_tokens com texto parcial caem neste catch, e o motivo so esta na
+    // mensagem parcial. Erro de API (APIError, subclasse) e de rede sobem.
+    if (!(erro instanceof AnthropicError) || erro instanceof APIError) throw erro
+    conferirRecusa(stream.currentMessage)
+    return stream.currentMessage?.stop_reason === 'max_tokens' ? TRUNCADA : FORA_DO_FORMATO
   }
-  // Recusa chega com HTTP 200 e conteudo vazio: olhar o motivo antes do conteudo.
-  if (resposta.stop_reason === 'refusal') {
-    throw new FalhaNaNarrativaMC(
-      `O modelo recusou gerar a narrativa (${resposta.stop_details?.category ?? 'sem categoria'}).`,
-      'recusa',
-    )
-  }
-  return resposta.parsed_output ?? null
+  conferirRecusa(resposta)
+  return resposta.parsed_output ?? (resposta.stop_reason === 'max_tokens' ? TRUNCADA : FORA_DO_FORMATO)
 }
 
 /**
@@ -171,13 +183,13 @@ export async function escreverNarrativa(
   pedido: string,
 ): Promise<{ narrativa: NarrativaMC; avisos: string[] }> {
   const primeira = await chamar(cliente, pedido)
-  const problemas = primeira ? conferirNarrativa(primeira) : ['a resposta não veio no formato pedido']
-  if (primeira && problemas.length === 0) return { narrativa: primeira, avisos: [] }
+  const problemas = typeof primeira === 'string' ? [primeira] : conferirNarrativa(primeira)
+  if (typeof primeira !== 'string' && problemas.length === 0) return { narrativa: primeira, avisos: [] }
 
   const correcao = `\n\nUma tentativa anterior saiu fora do pedido:\n${problemas.map((p) => `- ${p}`).join('\n')}\nRespeite as quantidades de parágrafos e os tamanhos pedidos.`
   const segunda = await chamar(cliente, pedido + correcao)
-  if (segunda) return { narrativa: segunda, avisos: conferirNarrativa(segunda) }
-  if (primeira) return { narrativa: primeira, avisos: problemas }
+  if (typeof segunda !== 'string') return { narrativa: segunda, avisos: conferirNarrativa(segunda) }
+  if (typeof primeira !== 'string') return { narrativa: primeira, avisos: problemas }
   throw new FalhaNaNarrativaMC('A resposta não veio no formato esperado da narrativa.', 'formato')
 }
 
@@ -241,7 +253,6 @@ export async function gerarNarrativaMC(
       resultado: assessmentsResultados.resultado,
       narrativa: assessmentsResultados.narrativa,
       nome: assessments.avaliado_nome,
-      codigo: assessments.codigo,
       concluidoEm: assessments.concluido_em,
       criadoEm: assessments.created_at,
     })
@@ -279,11 +290,7 @@ export async function gerarNarrativaMC(
   try {
     // O SDK respeita o retry-after; num lote, 429 e o regime normal (gerar.ts).
     const cliente = opcoes.cliente ?? new Anthropic({ maxRetries: 5 })
-    const pedido = montarPedido(alvo.resultado as ResultadoMotor, {
-      nome: alvo.nome,
-      codigo: alvo.codigo,
-      emitidoEm: alvo.concluidoEm ?? alvo.criadoEm,
-    })
+    const pedido = montarPedido(alvo.resultado as ResultadoMotor, { emitidoEm: alvo.concluidoEm ?? alvo.criadoEm })
     const { narrativa, avisos } = await escreverNarrativa(cliente, pedido)
 
     await db.transaction(async (tx) => {

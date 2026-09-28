@@ -141,6 +141,13 @@
       "when": 1790621902102,
       "tag": "0019_inventario_mc_telas_e_resultados",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1790630886708,
+      "tag": "0020_catalogo_de_precos_pelas_paginas_mc",
+      "breakpoints": true
     }
   ]
 }

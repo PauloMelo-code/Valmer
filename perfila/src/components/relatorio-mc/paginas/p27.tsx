@@ -116,7 +116,7 @@ export default function Pagina27({ dados }: PropsPagina) {
         <div className="card" style={{ padding: '3mm' }}>
           <span className="lab">Processamento</span>
           <Linhas itens={eixos.map(({ predominante: p }) => ({ chave: p.polo, nome: p.nome, pct: p.percentual.valor, cor: COR_POLO[p.polo].principal, texto: p.percentual.texto }))} />
-          <div className="xs mut">Complementares: {eixos.map((e) => `${e.complementar.nome} ${e.complementar.percentual.texto}`).join(' · ')}.</div>
+          <div className="xs mut">Complementares: {eixos.map((e) => `${e.complementar.nome}\u00a0${e.complementar.percentual.texto}`).join(' · ')}.</div>
           <div className="xs" style={{ marginTop: '1.4mm' }}>{hierarquiaTexto}</div>
         </div>
         <div className="card" style={{ padding: '3mm' }}>
@@ -150,7 +150,7 @@ export default function Pagina27({ dados }: PropsPagina) {
               </div>
             ))}
           </div>
-          {dados.nivel.inclui[8] ? <div className="xs mut">Detalhes na página 08.</div> : null}
+          {dados.nivel.inclui[8] ? <div className="xs mut">Detalhes na página{'\u00a0'}08.</div> : null}
         </Indicador>
       </div>
       <div className="spacer" />

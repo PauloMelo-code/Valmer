@@ -14,7 +14,7 @@ import { Pagina } from '../Pagina'
 import { TextoIA } from '../TextoIA'
 import type { Fator } from '@/data/inventario-mc'
 import { ROTULO_PONTO_DE_ATENCAO } from '@/data/relatorio-mc/arquetipos'
-import { ROTULO_ARQUETIPO, SUBTITULO_07, TITULO_CARTAO_07 } from '@/data/relatorio-mc/variantes/p01-07'
+import { ROTULO_ARQUETIPO, SUBTITULO_07, TITULO_CARTAO_07, TITULO_CRUZAMENTOS_07 } from '@/data/relatorio-mc/variantes/p01-07'
 import type { DadosRelatorioMC } from '@/lib/relatorio-mc/dados'
 import type { PropsPagina } from './registro'
 
@@ -23,6 +23,9 @@ const ROTULOS_SINTESE = ['O que significa.', 'Como aparece no cotidiano.', 'Impa
 // Borda da pilula do fator baixo. S e C sao do molde; D e I seguem a mesma
 // proporcao entre o fundo suave e a cor principal.
 const BORDA_PILULA: Record<Fator, string> = { D: '#E3A1A1', I: '#EBC766', S: '#8DBEAA', C: '#93ABC3' }
+
+/** "DOMINANTE muito alto": a zona real do fator, e nao "alto"/"baixo" pela posicao no par. */
+const pilula = (d: DadosRelatorioMC, f: Fator) => `${d.fatores[f].rotulo} ${d.fatores[f].natural.zona.nome.toLocaleLowerCase('pt-BR')}`
 
 /** Zonas A, MA e EA: escore a partir de 51. */
 const predominante = (d: DadosRelatorioMC, f: Fator) => ['A', 'MA', 'EA'].includes(d.fatores[f].natural.zona.codigo)
@@ -82,7 +85,9 @@ export default function Pagina07({ dados }: PropsPagina) {
           </div>
         </div>
       </div>
-      <span className="lab">Quatro camadas complementares · cada uma cruza um fator alto com um fator baixo</span>
+      <span className="lab">
+        {tipo === 'equilibrado' ? TITULO_CRUZAMENTOS_07.equilibrado(fatores[ordemNatural[0]].natural.escore.texto) : TITULO_CRUZAMENTOS_07.comPredominante}
+      </span>
       <div className="g2" style={{ gap: '3mm' }}>
         {dados.cruzamentos.map(({ chave, alto, baixo }) => {
           const fa = fatores[alto]
@@ -91,8 +96,8 @@ export default function Pagina07({ dados }: PropsPagina) {
             <div key={chave} className="card" style={{ padding: '3mm 3.4mm' }}>
               <div style={{ display: 'flex', gap: '1.4mm', marginBottom: '1.4mm' }}>
                 {/* Nunca texto branco sobre o ambar (paleta, secao 02). */}
-                <span className="pill" style={{ background: fa.cor.principal, color: alto === 'I' ? '#171A1F' : '#fff' }}>{`${fa.rotulo} alto`}</span>
-                <span className="pill" style={{ background: fb.cor.fundoSuave, color: fb.cor.texto, border: `.5pt solid ${BORDA_PILULA[baixo]}` }}>{`${fb.rotulo} baixo`}</span>
+                <span className="pill" style={{ background: fa.cor.principal, color: alto === 'I' ? '#171A1F' : '#fff' }}>{pilula(dados, alto)}</span>
+                <span className="pill" style={{ background: fb.cor.fundoSuave, color: fb.cor.texto, border: `.5pt solid ${BORDA_PILULA[baixo]}` }}>{pilula(dados, baixo)}</span>
               </div>
               <TextoIA como="div" className="xs" texto={ia.cruzamentos[chave]} />
             </div>

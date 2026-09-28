@@ -29,10 +29,12 @@ const y = (v: number) => 510 - 4.5 * v
 export default function Pagina29({ dados }: PropsPagina) {
   const est = dados.lideranca
   const soma = (a: number, b: number) => numero(Math.round((a + b) * 10) / 10)
-  const [n1, n2] = dados.ordemNatural
-  const [a1, a2] = dados.ordemAdaptado
-  const mudouOTopo = !(new Set([n1, n2]).has(a1) && new Set([n1, n2]).has(a2))
+  // So os predominantes (>= 51) conduzem: perfil puro tem um, EQUILIBRADO nenhum.
+  const naturais = dados.perfis.natural.fatores
+  const adaptados = dados.perfis.adaptado.fatores
+  const mudouOTopo = adaptados.some((x) => !naturais.includes(x))
   const f = dados.fatores
+  const lista = (fs: Fator[], lado: 'natural' | 'adaptado') => juntar(fs.map((x) => `${f[x].rotulo} em ${f[x][lado].escore.texto}`))
 
   return (
     <Pagina
@@ -89,10 +91,9 @@ export default function Pagina29({ dados }: PropsPagina) {
                 <span style={{ color: '#171A1F' }}>{ALERTA_AMBIENTE.titulo}</span>
               </div>
               <div className="sm">
-                {ALERTA_AMBIENTE.texto(
-                  juntar([a1, a2].map((x) => `${f[x].rotulo} em ${f[x].adaptado.escore.texto}`)),
-                  juntar([n1, n2].map((x) => `${f[x].rotulo} em ${f[x].natural.escore.texto}`)),
-                )}
+                {naturais.length
+                  ? ALERTA_AMBIENTE.texto(lista(adaptados, 'adaptado'), lista(naturais, 'natural'))
+                  : ALERTA_AMBIENTE.textoEquilibrado(lista(adaptados, 'adaptado'))}
               </div>
             </div>
           ) : null}
@@ -116,8 +117,9 @@ export default function Pagina29({ dados }: PropsPagina) {
                 <g key={fator}>
                   <rect x={cx - 35.7} y={topo} width="71.4" height={510 - topo} fill={d.cor.principal} />
                   <text x={cx} y={topo - 14} textAnchor="middle" fontSize="40" fontWeight="800" fill={d.cor.texto} fontFamily="AR">{d.natural.escore.texto}</text>
-                  <text x={cx} y="550" textAnchor="middle" fontSize="19" fontWeight="700" fill="#171A1F" fontFamily="OS" letterSpacing="1">{d.rotulo}</text>
-                  <text x={cx} y="582" textAnchor="middle" fontSize="22" fill="#5B6573" fontFamily="OS">{d.natural.zona.nome}</text>
+                  {/* 17 e 18 (molde: 19 com espacamento e 22): colunas a 127,5 de distancia; "DOMINANTE INFLUENTE" e dois "Muito baixo" vizinhos se encostavam. */}
+                  <text x={cx} y="550" textAnchor="middle" fontSize="17" fontWeight="700" fill="#171A1F" fontFamily="OS">{d.rotulo}</text>
+                  <text x={cx} y="580" textAnchor="middle" fontSize="18" fill="#5B6573" fontFamily="OS">{d.natural.zona.nome}</text>
                 </g>
               )
             })}

@@ -130,8 +130,8 @@ export const assessments: Omit<Assessment, 'token'>[] = [
   {
     id: 'a1',
     facilitadorId: 'valmer',
-    avaliadoNome: 'Adriana Prado',
-    avaliadoEmail: 'adriana.prado@example.com',
+    avaliadoNome: 'Fernanda Lopes',
+    avaliadoEmail: 'fernanda.lopes@example.com',
     tipoRelatorio: 'S2',
     situacao: 'pendente',
     creditosUsados: 2,
@@ -267,7 +267,7 @@ export const transacoes: Transacao[] = [
     facilitadorId: 'valmer',
     tipo: 'uso',
     quantidade: -2,
-    descricao: 'Mapa S2 · Adriana Prado',
+    descricao: 'Mapa S2 · Fernanda Lopes',
     data: '02/09/2026',
   },
   {

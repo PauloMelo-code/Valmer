@@ -41,7 +41,7 @@ describe("paginas 22-28", () => {
   it("nada do exemplo do molde sobra no HTML", () => {
     for (const n of NUMEROS) {
       const h = html(n);
-      for (const proibido of ["VALMER", "REGULATÓRIO", "Regulatório", "Direção e resultado", "Sensação · 36", "Detalhes nas páginas 31", "contorno nítido", "1 a 30"]) {
+      for (const proibido of ["VALMER", "REGULATÓRIO", "Regulatório", "Direção e resultado", "Sensação · 36", "Detalhes nas páginas 31", "contorno nítido", "1 a 30", "1 a 30"]) {
         assert.ok(!h.includes(proibido), `pagina ${n} ainda tem "${proibido}"`);
       }
     }
@@ -56,7 +56,7 @@ describe("paginas 22-28", () => {
     assert.match(p24, /TEÓRICO e ESTÉTICO\./);
     assert.match(html(25), />88<.*>76</s);
     const p27 = html(27);
-    for (const t of ["87,5", "93,8", "Extremo alto", "Executivo", "33,6", "Metódico", "12,2", "adaptação extremamente alta", "66,7", "−72,9", "Detalhes na página 08."]) {
+    for (const t of ["87,5", "93,8", "Extremo alto", "Executivo", "33,6", "Metódico", "12,2", "adaptação extremamente alta", "66,7", "−72,9", "Detalhes na página 08."]) {
       assert.ok(p27.includes(t), `pagina 27 sem "${t}"`);
     }
   });

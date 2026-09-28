@@ -27,6 +27,26 @@ export const BORDA_FATOR: Record<Fator, string> = { D: '#E4A3A3', I: '#E8C173', 
 const X0 = 250
 const LARGURA = 1360
 const escalaX = (v: number) => (LARGURA * v) / 100
+/** Largura que o escore ocupa a 44 ("93,8" mede uns 90) mais o respiro de 16 antes dele. */
+const ESPACO_ROTULO = 116
+
+/**
+ * Escore ao lado da barra; perto de 100 nao cabe antes do fim do trilho e vai
+ * para dentro da barra, encostado a direita.
+ */
+function RotuloEscore({ w, y, texto, cor, corDentro, halo }: { w: number; y: number; texto: string; cor: string; corDentro: string; halo?: boolean }) {
+  const dentro = w + ESPACO_ROTULO > LARGURA
+  return (
+    <text
+      x={dentro ? X0 + w - 16 : X0 + w + 16} y={y} textAnchor={dentro ? 'end' : undefined}
+      fontSize="44" fontWeight="800" fill={dentro ? corDentro : cor} fontFamily="AR"
+      // Sobre a hachura, o contorno branco separa o numero das listras.
+      stroke={dentro && halo ? '#fff' : undefined} strokeWidth={dentro && halo ? 8 : undefined} paintOrder="stroke" strokeLinejoin="round"
+    >
+      {texto}
+    </text>
+  )
+}
 
 /** Mistura a cor com branco: `t` = 0 branco, 1 a cor. Gera os 6 tons da legenda a partir da cor do fator. */
 function tom(hex: string, t: number): string {
@@ -52,7 +72,7 @@ function Adjetivos({ c, rotulo, cor, fundo, adaptado, texto, borda }: { c: Condi
       }}
     >
       <span className="lab" style={{ color: texto }}>
-        {rotulo} · {c.zona.nome}
+        {rotulo} · <span style={{ whiteSpace: 'nowrap' }}>{c.zona.nome}</span>
       </span>
       <div className="xs">{frase}</div>
       {c.zona.atencao ? <div className="xs mut" style={{ marginTop: '.8mm', fontStyle: 'italic' }}>{ZONAS[c.zona.codigo].comoAparece}</div> : null}
@@ -89,12 +109,12 @@ export function PaginaFator({ dados, fator, numero }: { dados: DadosRelatorioMC;
           <text x="0" y="74" fontSize="22" fill="#5B6573" fontFamily="OS">barra sólida</text>
           <rect x={X0} y="14" width={LARGURA} height="66" rx="6" fill="#fff" stroke="#D8D2C5" strokeWidth="2" />
           <rect x={X0} y="14" width={wNat} height="66" rx="6" fill={principal} />
-          <text x={X0 + wNat + 16} y="62" fontSize="44" fontWeight="800" fill={texto} fontFamily="AR">{f.natural.escore.texto}</text>
+          <RotuloEscore w={wNat} y={62} texto={f.natural.escore.texto} cor={texto} corDentro={corSobrePrincipal} />
           <text x="0" y="134" fontSize="24" fontWeight="800" fill="#171A1F" fontFamily="OS" letterSpacing="2">{R.adaptado}</text>
           <text x="0" y="164" fontSize="22" fill="#5B6573" fontFamily="OS">barra hachurada</text>
           <rect x={X0} y="104" width={LARGURA} height="66" rx="6" fill="#fff" stroke="#D8D2C5" strokeWidth="2" />
           <rect x={X0} y="104" width={wAda} height="66" rx="6" fill={`url(#${tx[fator]})`} stroke={principal} strokeWidth="4" strokeDasharray="14 7" />
-          <text x={X0 + wAda + 16} y="152" fontSize="44" fontWeight="800" fill={texto} fontFamily="AR">{f.adaptado.escore.texto}</text>
+          <RotuloEscore w={wAda} y={152} texto={f.adaptado.escore.texto} cor={texto} corDentro={texto} halo />
           {zonas.map((z, i) => {
             // Faixa ate o inicio da proxima zona (EB 0-16 ... EA 88-100), 2 de folga de cada lado como no molde.
             const fim = i < zonas.length - 1 ? zonas[i + 1].minimo : 100
@@ -119,23 +139,23 @@ export function PaginaFator({ dados, fator, numero }: { dados: DadosRelatorioMC;
       <div className="g3" style={{ marginBottom: '3mm' }}>
         <div className="soft" style={{ background: principal, borderColor: principal, color: corSobrePrincipal, padding: '3mm 4mm' }}>
           <div className="xs" style={{ fontWeight: 700, letterSpacing: '.14em' }}>{R.natural}</div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '2.4mm' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', columnGap: '2.4mm' }}>
             <span className="num" style={{ fontSize: '28pt', lineHeight: 1.05 }}>{f.natural.escore.texto}</span>
-            <span style={{ fontFamily: 'AR', fontWeight: 700, fontSize: '10pt' }}>{f.natural.zona.nome}</span>
+            <span style={{ fontFamily: 'AR', fontWeight: 700, fontSize: '10pt', whiteSpace: 'nowrap' }}>{f.natural.zona.nome}</span>
           </div>
         </div>
         <div className="soft" style={{ background: fundoSuave, borderColor: borda, borderStyle: 'dashed', padding: '3mm 4mm' }}>
           <div className="xs" style={{ fontWeight: 700, letterSpacing: '.14em' }}>{R.adaptado}</div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '2.4mm' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', columnGap: '2.4mm' }}>
             <span className="num" style={{ fontSize: '28pt', lineHeight: 1.05, color: texto }}>{f.adaptado.escore.texto}</span>
-            <span style={{ fontFamily: 'AR', fontWeight: 700, fontSize: '10pt' }}>{f.adaptado.zona.nome}</span>
+            <span style={{ fontFamily: 'AR', fontWeight: 700, fontSize: '10pt', whiteSpace: 'nowrap' }}>{f.adaptado.zona.nome}</span>
           </div>
         </div>
         <div className="card" style={{ padding: '3mm 4mm' }}>
           <div className="xs" style={{ fontWeight: 700, letterSpacing: '.14em' }}>{R.variacao}</div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '2.4mm' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', columnGap: '2.4mm' }}>
             <span className="num" style={{ fontSize: '28pt', lineHeight: 1.05, color: '#171A1F' }}>{f.variacao.texto}</span>
-            <span style={{ fontFamily: 'AR', fontWeight: 700, fontSize: '10pt' }}>{f.textoDirecao}</span>
+            <span style={{ fontFamily: 'AR', fontWeight: 700, fontSize: '10pt', whiteSpace: 'nowrap' }}>{f.textoDirecao}</span>
           </div>
         </div>
       </div>

@@ -21,7 +21,8 @@ import { POLOS_JUNG } from '@/data/relatorio-mc/jung'
 import { LEITURAS } from '@/data/relatorio-mc/leituras'
 import { VALORES_RELATORIO } from '@/data/relatorio-mc/spranger'
 import { ZONAS } from '@/data/relatorio-mc/zonas'
-import type { ResultadoMotor } from '@/lib/motor'
+import type { CodigoAlerta, Confiabilidade, ResultadoMotor } from '@/lib/motor'
+import { comSinal, numero } from './formato'
 import { PARAGRAFOS } from './narrativa-esquema'
 
 const bancoDeLeituras = FATORES.map(
@@ -41,7 +42,7 @@ Os escores DISC são ipsativos (somam 200): compare fatores dentro da pessoa, nu
 Se a confiabilidade da aplicação for baixa, use linguagem mais cautelosa e sugira confirmar na conversa de devolutiva com o analista.
 
 LINGUAGEM E TOM
-- Escreva SEMPRE em segunda pessoa: "você", "seu", "sua".
+- Escreva SEMPRE em segunda pessoa: "você", "seu", "sua". Não use o nome da pessoa: trate sempre por "você".
 - Tom: direto, claro, humano, como especialista falando com precisão.
 - Nunca julgamento de valor (bom, ruim, melhor, pior, certo, errado).
 - Nunca linguagem clínica ou diagnóstica.
@@ -61,6 +62,7 @@ ESTILO (vale para todos os campos e prevalece sobre qualquer exemplo)
 - Um adjetivo basta. Nada de "claro e objetivo" nem "sólido e consistente".
 - Frases curtas, voz ativa, uma ideia por frase. Não comece frase com gerúndio. Corte muleta ("é importante notar que", "vale destacar") e superlativo vazio ("extremamente", "incrivelmente").
 - NUNCA nomeie o documento por dentro dele. Não escreva "este relatório", "este mapa", "este documento", "este assessment", "este laudo" nem "nesta página". Quem lê é a pessoa avaliada, e para ela o documento não precisa de nome. Escreva direto o que ela vai ver.
+- Não anuncie seções ou conteúdos que vêm depois (comunicação, liderança, competências, PDI) nem remeta a outra parte do documento. A pessoa pode receber uma versão sem essas partes; cada texto se sustenta sozinho.
 
 FORMATO DA RESPOSTA
 Responda com o JSON pedido, completo, sem texto fora dele e sem markdown.
@@ -72,21 +74,30 @@ Selecione desta lista e adapte o motivo ao perfil combinado desta pessoa. Pode i
 
 ${bancoDeLeituras}`
 
-/** Dados do cadastro que o pedido cita; o resto sai do resultado. */
+/**
+ * Dado do cadastro que o pedido cita; o resto sai do resultado. Nome e codigo
+ * (que carrega as iniciais) NAO vao: o texto volta para
+ * `assessments_resultados.narrativa`, tabela de calculo, e o R6 quer ali so o
+ * identificador. A pagina imprime o nome a partir de `assessments`.
+ */
 export type AvaliadoPedido = {
-  nome: string
-  codigo: string | null
   /** Data da conclusao do questionario. */
   emitidoEm: Date
 }
 
-const decimal = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 })
-const comSinal = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1, signDisplay: 'exceptZero' })
-
-/** "87,5". Uma casa, virgula decimal, como o relatorio imprime. */
-export function num(n: number): string {
-  return decimal.format(n)
+/** Rotulos da secao 6 do blueprint, como o facilitador le (TabelaAssessments). */
+const CONFIABILIDADE: Record<Confiabilidade, string> = { alta: 'alta', media: 'média', baixa: 'baixa' }
+const ALERTA: Record<CodigoAlerta, string> = {
+  V1: 'Tempo total',
+  V2: 'Pressa',
+  V3: 'Sem interação',
+  V4: 'Sem diferenciação',
+  V5: 'Resposta em linha',
+  V6: 'Extremos',
 }
+
+/** Diferenca ja pronta: o SISTEMA proibe a IA de calcular. */
+const diferenca = (a: number, b: number) => `${numero(Math.abs(a - b))} pontos`
 
 function fator(f: Fator): string {
   return `${f} (${FATORES_RELATORIO[f].nomeTabela})`
@@ -102,7 +113,11 @@ function fator(f: Fator): string {
  * - quantos paragrafos cada chave de texto corrido traz (R1).
  *
  * "Tipo completo" e "Pronome" da secao 23 nao entram: nao existem no resultado
- * nem no cadastro, e inventar valor para eles seria dado falso no prompt.
+ * nem no cadastro, e inventar valor para eles seria dado falso no prompt. "Nome"
+ * e "Codigo" tambem nao (R6, ver AvaliadoPedido).
+ *
+ * Escores sem "%": as paginas imprimem "87,5", e a IA copia o numero como vem.
+ * As diferencas que o esquema pede (eixo T/F, dois valores) vao prontas.
  */
 export function montarPedido(r: ResultadoMotor, avaliado: AvaliadoPedido): string {
   const nat = r.disc.natural
@@ -115,10 +130,10 @@ export function montarPedido(r: ResultadoMotor, avaliado: AvaliadoPedido): strin
   const polo = (a: 'E' | 'N' | 'T', b: 'I' | 'S' | 'F') => (pj[a] > pj[b] ? POLOS_JUNG[a].nome : POLOS_JUNG[b].nome)
 
   const linhaDisc = (f: Fator, c: typeof nat, rotulo: string) =>
-    `${rotulo}: ${num(c.escore[f])}% · Zona: ${ZONAS[c.zona[f]].nome}`
+    `${rotulo}: ${numero(c.escore[f])} · Zona: ${ZONAS[c.zona[f]].nome}`
 
   const competencias = ORDEM_COMPETENCIAS.map(
-    (k) => `${COMPETENCIAS[k].nome}: ${num(nat.competencias[k])} → ${num(ada.competencias[k])}`,
+    (k) => `${COMPETENCIAS[k].nome}: ${numero(nat.competencias[k])} → ${numero(ada.competencias[k])}`,
   ).join(' | ')
 
   // So as entradas que sao numero: o resto nao e contrato de quantidade.
@@ -127,57 +142,67 @@ export function montarPedido(r: ResultadoMotor, avaliado: AvaliadoPedido): strin
     .map(([chave, n]) => `- ${chave}: ${n}`)
     .join('\n')
 
+  // Perfil puro ou equilibrado: o "segundo mais alto" nao e predominante (e no
+  // equilibrado nenhum e). Sem este aviso a IA escreveria "o seu D alto" para
+  // um D de 50, na zona Baixo — o mesmo erro que a pagina 07 ja deixou de
+  // cometer nas pilulas dos cruzamentos.
+  const predominantes = FATORES.filter((f) => nat.escore[f] >= 51).length
+  const avisoPerfil =
+    predominantes >= 2
+      ? ''
+      : ` Este perfil natural é ${predominantes === 1 ? 'puro: só ' + fator(alto1) + ' é predominante' : 'EQUILIBRADO: nenhum fator chega a 51'}. Nos cruzamentos, descreva o contraste relativo entre os dois fatores e nunca chame de alto um fator que está nas zonas Baixo, Muito baixo ou Extremo baixo.`
+
   return `Gere as análises personalizadas para o Mapa Comportamental de:
 
 IDENTIFICAÇÃO
-Nome: ${avaliado.nome}
 Data de emissão: ${avaliado.emitidoEm.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
-Código: ${avaliado.codigo ?? 'sem código'}
 
 DISC · PERFIL NATURAL
 ${FATORES.map((f) => linhaDisc(f, nat, fator(f))).join('\n')}
 Perfil natural: ${nat.perfil}
 Ordem natural dos fatores, do mais alto ao mais baixo: ${nat.ordem.join(' > ')}
-Dois fatores mais altos: ${fator(alto1)} ${num(nat.escore[alto1])} e ${fator(alto2)} ${num(nat.escore[alto2])}
-Dois fatores mais baixos: ${fator(baixo1)} ${num(nat.escore[baixo1])} (o mais baixo) e ${fator(baixo2)} ${num(nat.escore[baixo2])}
+Dois fatores mais altos: ${fator(alto1)} ${numero(nat.escore[alto1])} e ${fator(alto2)} ${numero(nat.escore[alto2])}
+Dois fatores mais baixos: ${fator(baixo1)} ${numero(nat.escore[baixo1])} (o mais baixo) e ${fator(baixo2)} ${numero(nat.escore[baixo2])}
 
 DISC · PERFIL ADAPTADO
 ${FATORES.map((f) => linhaDisc(f, ada, `${f} adaptado`)).join('\n')}
 Perfil adaptado: ${ada.perfil}
 
 ÍNDICES
-Índice de adaptação: ${num(ix.indice_adaptacao)} (${ix.classe})
-Amplitude natural: ${num(ix.amplitude_natural)}
+Índice de adaptação: ${numero(ix.indice_adaptacao)} (${ix.classe})
+Amplitude natural: ${numero(ix.amplitude_natural)}
 Fatores polarizados: ${ix.polarizados.join(', ') || 'nenhum'}
-Variações D/I/S/C (adaptado menos natural): ${FATORES.map((f) => comSinal.format(ix.variacao[f])).join(' / ')}
+Variações D/I/S/C (adaptado menos natural): ${FATORES.map((f) => comSinal(ix.variacao[f])).join(' / ')}
 
 COMPETÊNCIAS (natural → adaptado)
 ${competencias}
 
 VALIDADE
-Confiabilidade da aplicação: ${r.validade.confiabilidade}
+Confiabilidade da aplicação: ${CONFIABILIDADE[r.validade.confiabilidade]} | Alertas: ${r.validade.alertas.map((a) => `${a.codigo} · ${ALERTA[a.codigo]}`).join('; ') || 'nenhum'}
 
 JUNG
-Extroversão: ${num(pj.E)}% | Introversão: ${num(pj.I)}% → polo: ${polo('E', 'I')}
-Intuição: ${num(pj.N)}% | Sensação: ${num(pj.S)}% → polo: ${polo('N', 'S')}
-Pensamento: ${num(pj.T)}% | Sentimento: ${num(pj.F)}% → polo: ${polo('T', 'F')}
+Extroversão: ${numero(pj.E)} | Introversão: ${numero(pj.I)} | diferença: ${diferenca(pj.E, pj.I)} → polo: ${polo('E', 'I')}
+Intuição: ${numero(pj.N)} | Sensação: ${numero(pj.S)} | diferença: ${diferenca(pj.N, pj.S)} → polo: ${polo('N', 'S')}
+Pensamento: ${numero(pj.T)} | Sentimento: ${numero(pj.F)} | diferença: ${diferenca(pj.T, pj.F)} → polo: ${polo('T', 'F')}
 Tipo Jung: ${r.jung.tipo}
 Hierarquia: 1ª ${r.jung.hierarquia[0]} | 2ª ${r.jung.hierarquia[1]} | 3ª ${r.jung.hierarquia[2]} | 4ª (Inferior) ${r.jung.hierarquia[3]}
 
 VALORES SPRANGER
-${VALORES.map((v) => `${VALORES_RELATORIO[v].nome}: ${num(r.valores.escore[v])} (${r.valores.nivel[v]})`).join('\n')}
+${VALORES.map((v) => `${VALORES_RELATORIO[v].nome}: ${numero(r.valores.escore[v])} (${r.valores.nivel[v]})`).join('\n')}
 Hierarquia Spranger: ${r.valores.ranking.map((v) => VALORES_RELATORIO[v].nome).join(' > ')}
+Diferença entre os dois mais altos: ${diferenca(r.valores.escore[r.valores.ranking[0]!], r.valores.escore[r.valores.ranking[1]!])}
 
 CRUZAMENTOS (chaves de "quatro_cruzamentos", pela ordem natural acima)
 - alto1_baixo1: ${fator(alto1)} alto × ${fator(baixo1)} baixo
 - alto1_baixo2: ${fator(alto1)} alto × ${fator(baixo2)} baixo
 - alto2_baixo1: ${fator(alto2)} alto × ${fator(baixo1)} baixo
 - alto2_baixo2: ${fator(alto2)} alto × ${fator(baixo2)} baixo
+"Alto" e "baixo" aqui são posição RELATIVA na ordem desta pessoa, não zona. Zonas reais: ${[alto1, alto2, baixo2, baixo1].map((f) => `${f} ${ZONAS[nat.zona[f]].nome}`).join(' · ')}.${avisoPerfil}
 
 PARÁGRAFOS POR CHAVE (separados por uma linha em branco, exatamente esta quantidade)
 ${paragrafos}
 
-No campo "fator" de "seis_forcas", use o rótulo em maiúsculas seguido do escore natural como está acima (ex.: "${FATORES_RELATORIO[alto1].rotulo} ${num(nat.escore[alto1])}").
+No campo "fator" de "seis_forcas", use o rótulo em maiúsculas seguido do escore natural como está acima (ex.: "${FATORES_RELATORIO[alto1].rotulo} ${numero(nat.escore[alto1])}").
 
 Gere o JSON com exatamente as chaves pedidas.`
 }

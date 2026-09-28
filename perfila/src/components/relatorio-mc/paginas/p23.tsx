@@ -50,7 +50,8 @@ export default function Pagina23({ dados }: PropsPagina) {
         <span className="lab" style={{ margin: 0 }}>{PAGINA_23.tituloFaixas}</span>
         <span style={{ flex: 1, height: '.5pt', background: '#D8D2C5' }} />
       </div>
-      <div className="g3" style={{ gap: '3.6mm' }}>
+      {/* Colunas `1fr` do molde: a do meio alarga ate caber "CIRCUNSTANCIAL", que nao quebra. */}
+      <div className="g3" style={{ gap: '3.6mm', gridTemplateColumns: '1fr 1fr 1fr' }}>
         {FAIXAS_VALOR.map((f, i) => (
           <div
             key={f.codigo}

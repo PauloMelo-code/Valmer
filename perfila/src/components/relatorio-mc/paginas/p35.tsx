@@ -33,7 +33,8 @@ export default function Pagina35({ dados }: PropsPagina) {
         <span style={{ flex: 1, height: '.5pt', background: '#D8D2C5' }} />
       </div>
       <p className="sm" style={{ marginBottom: '2.6mm' }}>{PAGINA_35.introCusto}</p>
-      <div className="g3" style={{ gap: '3.6mm', marginBottom: '4mm' }}>
+      {/* Colunas `1fr` do molde: a do meio alarga ate caber "DESENGAJAMENTO", que nao quebra. */}
+      <div className="g3" style={{ gap: '3.6mm', marginBottom: '4mm', gridTemplateColumns: '1fr 1fr 1fr' }}>
         {PAGINA_35.custos.map((c, i) => (
           <div key={c.numero} style={{ background: '#fff', border: '.6pt solid #D8D2C5', borderTop: `1.6mm solid ${TOPO[i]}`, borderRadius: '1.6mm', padding: '3mm 3.4mm' }}>
             <div className="lab" style={{ margin: 0 }}>{c.numero} ·</div>
