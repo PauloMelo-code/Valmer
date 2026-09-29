@@ -460,10 +460,19 @@ coluna de banco: PDF de relatorio, capa e video de curso, foto de mentor.
 
 | Item | HML |
 | --- | --- |
+| Imagem | `pgsty/minio:RELEASE.2026-06-18T00-00-00Z`, usuario e senha de registro **vazios** |
 | API S3 | `https://valmer-hml-miniohml.5wp0gs.easypanel.host` |
 | Bucket | `valmer-hml`, **privado** |
 | Prefixos | `relatorios/`, `cursos/capas/`, `cursos/videos/`, `mentores/` |
 | Credencial da app | conta de servico com politica so desse bucket — **nunca o root** |
+
+**A imagem nao e a oficial.** A MinIO apagou `minio/minio` do Docker Hub em
+2026-09-11, e `quay.io/minio/minio` passou a devolver 401: o servico parou e o
+redeploy falhava no pull. Em 2026-09-29 o HML trocou para o fork `pgsty/minio`,
+que mantem entrypoint, variaveis `MINIO_*` e o formato de `/data` — os arquivos
+existentes voltaram sem migracao. O PRD nasce com a mesma imagem. O fork e
+mantido pela comunidade; se ele parar, a saida e outro armazenamento S3
+(SeaweedFS, RustFS), mudando so as variaveis da app e copiando o bucket.
 
 Quatro regras, e cada uma existe por um motivo que ja custou caro em algum
 projeto:
