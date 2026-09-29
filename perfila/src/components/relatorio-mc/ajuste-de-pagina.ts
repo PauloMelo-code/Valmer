@@ -45,8 +45,9 @@ const RESPIRO_TELA_PX = 16;
  * Quanto a folha encolhe para caber na largura da tela, como num leitor de
  * PDF: no celular a A4 inteira aparece, e o detalhe vem da pinca. Tela larga:
  * 1, a folha no tamanho real. So a TELA encolhe: quem le `--escala-tela` e uma
- * regra `@media screen` (app/relatorio/[token]/page.module.css), e o PDF e a impressao continuam em
- * A4 de verdade. O piso so existe para largura zero nao virar zoom invalido.
+ * regra `@media screen` (app/relatorio/[token]/page.module.css), e o PDF e a
+ * impressao continuam em A4 de verdade. O piso so existe para largura zero nao
+ * virar escala invalida.
  */
 export function escalaDaTela(larguraDaTela: number): number {
   return Math.min(1, Math.max(0.1, (larguraDaTela - RESPIRO_TELA_PX) / FOLHA_PX));
@@ -146,15 +147,17 @@ function imagensCarregadas(raiz: ParentNode): Promise<unknown> {
  */
 export async function ajustarPaginas(raiz: HTMLElement): Promise<void> {
   raiz.removeAttribute("data-ajuste");
-  // Mede em tamanho real: o limite de encaixe abaixo e em px, e com a folha
-  // encolhida para o celular ele valeria outra coisa. Quem devolve a escala,
-  // depois do ajuste, e RelatorioMC.tsx.
-  raiz.style.removeProperty("--escala-tela");
   await document.fonts.ready;
   await imagensCarregadas(raiz);
+  // Mede em tamanho real: getBoundingClientRect enxerga o transform da escala
+  // do celular, e o limite de encaixe abaixo e em px. A escala sai e volta no
+  // mesmo passo sincrono, e o navegador nao pinta no meio: a tela nao pisca.
+  const escala = raiz.style.getPropertyValue("--escala-tela");
+  raiz.style.removeProperty("--escala-tela");
   ajustarTitulos(raiz);
   // Lido pelo gerador de PDF (pdf.ts), que roda em outro processo: pagina com
   // texto que nem reduzido coube sai com aviso, e nao cortada em silencio.
   raiz.setAttribute("data-transborda", String(ajustarBlocos(raiz)));
+  if (escala) raiz.style.setProperty("--escala-tela", escala);
   raiz.setAttribute("data-ajuste", "pronto");
 }

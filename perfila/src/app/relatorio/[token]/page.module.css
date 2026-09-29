@@ -72,20 +72,31 @@
    (components/relatorio-mc/ajuste-de-pagina.ts). Mora aqui, e não em
    relatorio-mc.css, porque aquele arquivo é gerado a partir do molde.
 
+   `transform`, e não `zoom`. O zoom refaz o layout do texto, e não na
+   proporção: caixa alta com espaçamento quebra em linha a mais, e em 390px
+   22 dos 40 blocos .zw passavam da própria caixa, alguns por cima do rodapé.
+   O transform só muda a pintura: por dentro a folha continua em 1x, com o
+   encaixe que o ajuste de página mediu. As margens devolvem ao fluxo o que a
+   escala encolheu, e a esquerda centraliza a folha já encolhida.
+
    O `screen` é o que protege o papel: o PDF e a impressão usam a mídia print
    e continuam em A4 real, uma folha colada na outra. */
 @media screen {
   .paginaMC :global(.mc31) {
-    zoom: var(--escala-tela, 1);
-    padding: 8mm 0;
+    padding: calc(8mm * var(--escala-tela, 1)) 0;
   }
 
   .paginaMC :global(.mc31 .page) {
-    margin: 0 auto 8mm;
+    transform: scale(var(--escala-tela, 1));
+    transform-origin: top left;
+    margin-top: 0;
+    margin-right: calc(210mm * (var(--escala-tela, 1) - 1));
+    margin-bottom: calc(297mm * (var(--escala-tela, 1) - 1) + 8mm * var(--escala-tela, 1));
+    margin-left: calc((100% - 210mm * var(--escala-tela, 1)) / 2);
   }
 
   .paginaMC :global(.mc31 .page:last-child) {
-    margin-bottom: 0;
+    margin-bottom: calc(297mm * (var(--escala-tela, 1) - 1));
   }
 }
 
