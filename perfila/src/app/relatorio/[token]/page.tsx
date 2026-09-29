@@ -228,7 +228,7 @@ function RelatorioMCPagina({ mapa, imprimir }: { mapa: MapaMC; imprimir: boolean
   })
 
   return (
-    <div className={styles.pagina}>
+    <div className={`${styles.pagina} ${styles.paginaMC}`}>
       <div className={styles.acoes}>
         <span className={styles.acoesMarca}>
           <MarcaImpacto size={18} />
@@ -239,8 +239,8 @@ function RelatorioMCPagina({ mapa, imprimir }: { mapa: MapaMC; imprimir: boolean
         </div>
       </div>
       {/* Sem wrapper com overflow: o Chrome so imprime a parte visivel de uma
-          caixa com rolagem, e o PDF sairia com uma folha. No telefone a A4 rola
-          de lado com a propria pagina. */}
+          caixa com rolagem, e o PDF sairia com uma folha. No telefone a A4
+          encolhe para caber na tela (`.paginaMC` em page.module.css). */}
       <DocumentoMC dados={dados} />
     </div>
   )

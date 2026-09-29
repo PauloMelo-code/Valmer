@@ -36,6 +36,22 @@ const ZW_ZOOM_MAXIMO = 1.3;
  */
 const ZW_ZOOM_MINIMO = 0.88;
 
+/** Largura da folha A4 em px CSS: 210 mm a 96 px por polegada. */
+const FOLHA_PX = (210 / 25.4) * 96;
+/** Respiro entre a folha e a borda da tela, somando os dois lados. */
+const RESPIRO_TELA_PX = 16;
+
+/**
+ * Quanto a folha encolhe para caber na largura da tela, como num leitor de
+ * PDF: no celular a A4 inteira aparece, e o detalhe vem da pinca. Tela larga:
+ * 1, a folha no tamanho real. So a TELA encolhe: quem le `--escala-tela` e uma
+ * regra `@media screen` (app/relatorio/[token]/page.module.css), e o PDF e a impressao continuam em
+ * A4 de verdade. O piso so existe para largura zero nao virar zoom invalido.
+ */
+export function escalaDaTela(larguraDaTela: number): number {
+  return Math.min(1, Math.max(0.1, (larguraDaTela - RESPIRO_TELA_PX) / FOLHA_PX));
+}
+
 /**
  * O maior zoom com que o bloco cabe, entre `minimo` e `maximo`. Funcao pura
  * (recebe o teste de encaixe), para ser testada sem navegador.
@@ -130,6 +146,10 @@ function imagensCarregadas(raiz: ParentNode): Promise<unknown> {
  */
 export async function ajustarPaginas(raiz: HTMLElement): Promise<void> {
   raiz.removeAttribute("data-ajuste");
+  // Mede em tamanho real: o limite de encaixe abaixo e em px, e com a folha
+  // encolhida para o celular ele valeria outra coisa. Quem devolve a escala,
+  // depois do ajuste, e RelatorioMC.tsx.
+  raiz.style.removeProperty("--escala-tela");
   await document.fonts.ready;
   await imagensCarregadas(raiz);
   ajustarTitulos(raiz);

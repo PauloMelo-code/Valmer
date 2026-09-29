@@ -66,6 +66,29 @@
   }
 }
 
+/* ---------- Relatório MC 3.1 na tela ----------
+   Folhas centralizadas, com respiro entre elas, e encolhidas para caber na
+   largura do celular: `--escala-tela` vem de `escalaDaTela`
+   (components/relatorio-mc/ajuste-de-pagina.ts). Mora aqui, e não em
+   relatorio-mc.css, porque aquele arquivo é gerado a partir do molde.
+
+   O `screen` é o que protege o papel: o PDF e a impressão usam a mídia print
+   e continuam em A4 real, uma folha colada na outra. */
+@media screen {
+  .paginaMC :global(.mc31) {
+    zoom: var(--escala-tela, 1);
+    padding: 8mm 0;
+  }
+
+  .paginaMC :global(.mc31 .page) {
+    margin: 0 auto 8mm;
+  }
+
+  .paginaMC :global(.mc31 .page:last-child) {
+    margin-bottom: 0;
+  }
+}
+
 /* ---------- Telefone ----------
    O `screen and` não é enfeite. A mancha do A4 declarado no `@page` logo
    abaixo mede 170mm (210mm menos 20mm de cada margem), ou ~643px de largura

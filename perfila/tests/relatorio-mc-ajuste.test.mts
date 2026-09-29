@@ -11,7 +11,26 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-const { escolherZoom } = await import("@/components/relatorio-mc/ajuste-de-pagina");
+const { escolherZoom, escalaDaTela } = await import("@/components/relatorio-mc/ajuste-de-pagina");
+
+describe("escalaDaTela", () => {
+  const FOLHA = (210 / 25.4) * 96;
+
+  it("tela larga: folha no tamanho real, nunca ampliada", () => {
+    assert.equal(escalaDaTela(1920), 1);
+    assert.equal(escalaDaTela(FOLHA + 16), 1);
+  });
+
+  it("celular: a A4 inteira cabe na largura, com respiro dos dois lados", () => {
+    const escala = escalaDaTela(390);
+    assert.ok(escala > 0.47 && escala < 0.48, `escala ${escala}`);
+    assert.ok(FOLHA * escala + 16 <= 390 + 1e-9, "a folha encolhida cabe na tela");
+  });
+
+  it("largura zero nao vira zoom invalido", () => {
+    assert.equal(escalaDaTela(0), 0.1);
+  });
+});
 
 /** Bloco que cabe ate um certo zoom, como a medicao do navegador responderia. */
 const cabeAte = (limite: number) => (zoom: number) => zoom <= limite + 1e-9;
