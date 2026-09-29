@@ -80,8 +80,37 @@ PDF v3. Os quatro cartoes do molde ficam, ordenados por percentual.
 **D9 · Niveis.** S1 = pag. 01-16, S2 = 01-28, S3 = 01-36, S4 = 01-42 (blueprint
 secao 21). O inventario e sempre completo; o nivel so recorta paginas.
 
-**D10 · IA.** Uma chamada por relatorio, JSON com as chaves da secao 18, modelo
-`claude-sonnet-5`. O que e calculo ou tabela nunca passa pela IA (secao 23).
+**D10 · IA.** JSON com as chaves da secao 18, modelo `claude-sonnet-5`. O que e
+calculo ou tabela nunca passa pela IA (secao 23).
+*Revisto em 2026-09-29:* o Valmer pediu o relatorio em menos de 30 s. Medido
+com a API real e o caso de demonstracao:
+
+| Configuracao | Tempo | Tokens de saida |
+|---|---|---|
+| 1 chamada, raciocinio alto (antes) | minutos | ~60 mil |
+| 4 partes paralelas, raciocinio alto | 155 s | 60,8 mil |
+| 4 partes, raciocinio baixo | 40 s | 9,4 mil |
+| 7 partes, raciocinio medio | 44 s | 21 mil |
+| 7 partes, baixo, 1 tentativa por vez | 21-23 s limpo, 35-49 s quando uma parte e refeita (~metade) | ~11 mil |
+| **7 partes, baixo, 2 tentativas juntas** (adotado) | **22,6 / 25,4 / 26,7 s** | ~11 mil aproveitados |
+
+O raciocinio era 80% do tempo e do custo: cada parte pensava 10 a 16 mil
+tokens para escrever ~2 mil. Com raciocinio baixo, ~12% das partes voltavam
+fora do pedido (paragrafo a menos, texto curto); refazer depois somava ~17 s.
+Com duas tentativas de cada parte correndo juntas vale a primeira dentro do
+pedido e a outra e cancelada. Custo estimado abaixo do de antes, mesmo pagando
+as duas. Detalhes em `PARTES`, `ESFORCO` e `TENTATIVAS_JUNTAS`
+(`lib/relatorio-mc/narrativa-escrita.ts`).
+
+Cada parte recebe o pedido inteiro e o recorte do esquema; chaves de varios
+paragrafos vao como lista, um paragrafo por item, e voltam a texto antes de
+gravar (o contrato de chaves nao muda). Se uma parte falha de vez, as outras
+sao canceladas na hora. A entrada se repete por parte, sem cache entre elas
+(chamadas simultaneas nao leem o cache umas das outras). A regra de "no maximo
+uma formula antitetica na resposta inteira" vira cota zero por parte.
+**Custo de qualidade, para o Valmer decidir:** com raciocinio baixo sobraram
+~6 deslizes de estilo por relatorio ("em vez de", "neste mapa"), contra ~3 no
+alto. Voltar para "medium" e mudar uma linha e custa ~15-20 s.
 
 **D11 · Textos de aprovacao.** Definicoes do botao "?" (T1) e texto de
 consentimento LGPD (T5) sao redigidos e marcados como rascunho para aprovacao.

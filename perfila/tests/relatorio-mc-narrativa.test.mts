@@ -24,12 +24,12 @@ const { VERSAO_INSTRUMENTO } = await import("@/data/inventario-mc");
 const { LEITURAS } = await import("@/data/relatorio-mc/leituras");
 const { esquemaNarrativaMC, PARAGRAFOS } = await import("@/lib/relatorio-mc/narrativa-esquema");
 const { SISTEMA, montarPedido } = await import("@/lib/relatorio-mc/narrativa-prompt");
-// A mesma copia (CJS) que narrativa.ts carrega: o instanceof de la precisa bater.
+// A mesma copia (CJS) que narrativa-escrita.ts carrega: o instanceof de la precisa bater.
 const { AnthropicError } = createRequire(import.meta.url)("@anthropic-ai/sdk") as typeof import("@anthropic-ai/sdk");
-const { gerarNarrativaMC, conferirNarrativa, escreverNarrativa, FalhaNaNarrativaMC, MODELO_NARRATIVA_MC } = await import(
-  "@/lib/relatorio-mc/narrativa"
-);
+const { gerarNarrativaMC, conferirNarrativa, escreverNarrativa, FalhaNaNarrativaMC, MODELO_NARRATIVA_MC, PARTES } =
+  await import("@/lib/relatorio-mc/narrativa");
 const { gerarRelatorioMC } = await import("@/lib/actions/relatorio-mc");
+const { relatorioPronto } = await import("@/lib/actions/inventario-mc");
 const { eq } = await import("drizzle-orm");
 
 type Narrativa = import("@/lib/relatorio-mc/narrativa-esquema").NarrativaMC;
@@ -84,17 +84,19 @@ function narrativaValida(): Narrativa {
   });
 }
 
-/** Cliente simulado: devolve as respostas na ordem e guarda os pedidos. */
-function simulado(respostas: (() => Promise<Narrativa | null>)[]) {
+/**
+ * Cliente simulado: responde cada chamada pelo pedido dela e guarda os pedidos.
+ * Pode devolver a narrativa inteira: o gerador so aproveita as chaves da parte.
+ */
+function simulado(responder: (pedido: string) => Promise<Narrativa | null>) {
   const pedidos: Params[] = [];
   const cliente: Cliente = {
     beta: {
       messages: {
         stream(params) {
           pedidos.push(params);
-          const proxima = respostas[pedidos.length - 1] ?? (() => Promise.reject(new Error("chamada a mais")));
           return {
-            finalMessage: async () => ({ stop_reason: "end_turn", parsed_output: await proxima() }),
+            finalMessage: async () => ({ stop_reason: "end_turn", parsed_output: await responder(params.messages[0]!.content) }),
           };
         },
       },
@@ -102,6 +104,10 @@ function simulado(respostas: (() => Promise<Narrativa | null>)[]) {
   };
   return { cliente, pedidos };
 }
+
+const nenhuma = () => Promise.reject(new Error("chamada a mais"));
+/** O pedido e da parte que comeca por esta chave? */
+const daParte = (pedido: string, chave: string) => pedido.includes(`Gere somente estas chaves do JSON: ${chave}`);
 
 async function mapaComResultado(sufixo: string, versao = VERSAO_INSTRUMENTO): Promise<{ id: string; token: string }> {
   const token = `${sufixo}${marca}`;
@@ -259,6 +265,18 @@ describe("narrativa MC: o pedido", () => {
 });
 
 describe("narrativa MC: conferencia", () => {
+  it("as partes em paralelo cobrem cada chave do esquema exatamente uma vez", () => {
+    const nasPartes = PARTES.flat().map(String);
+    assert.equal(new Set(nasPartes).size, nasPartes.length, "chave repetida em duas partes");
+    assert.deepEqual([...nasPartes].sort(), Object.keys(esquemaNarrativaMC.shape).sort());
+  });
+
+  it("confere so as chaves que a parte trouxe", () => {
+    const boa = narrativaValida();
+    assert.deepEqual(conferirNarrativa({ mensagem_final: boa.mensagem_final }), []);
+    assert.equal(conferirNarrativa({ mensagem_final: "curta" }).length, 2, "paragrafos e tamanho da chave presente");
+  });
+
   it("aceita a narrativa no pedido e acusa paragrafo a menos e texto longo demais", () => {
     const boa = narrativaValida();
     assert.deepEqual(conferirNarrativa(boa), []);
@@ -270,42 +288,99 @@ describe("narrativa MC: conferencia", () => {
 });
 
 describe("narrativa MC: geracao e gravacao", () => {
-  it("resposta valida grava, com o modelo e o pedido certos, e depois nao gera de novo", async () => {
+  it("resposta valida grava, duas tentativas juntas por parte, com o modelo e o pedido certos, e depois nao gera de novo", async () => {
     const mapa = await mapaComResultado("ok");
     const boa = narrativaValida();
-    const { cliente, pedidos } = simulado([async () => boa]);
+    const { cliente, pedidos } = simulado(async () => boa);
 
     const gravada = await gerarNarrativaMC(mapa.id, { cliente });
     assert.ok(gravada.ok);
     assert.equal(gravada.reaproveitada, false);
     assert.deepEqual(gravada.avisos, []);
-    assert.equal(pedidos.length, 1);
-    assert.equal(pedidos[0]!.model, MODELO_NARRATIVA_MC);
+    assert.equal(pedidos.length, PARTES.length * 2, "duas tentativas por parte, todas de uma vez");
     assert.equal(MODELO_NARRATIVA_MC, "claude-sonnet-5");
-    assert.equal(pedidos[0]!.system[0]!.text, SISTEMA);
-    assert.ok(pedidos[0]!.messages[0]!.content.includes("D (Dominante): 87,5 · Zona"));
+    for (const [i, p] of pedidos.entries()) {
+      const parte = PARTES[Math.floor(i / 2)]!;
+      assert.equal(p.model, MODELO_NARRATIVA_MC);
+      assert.equal(p.output_config.effort, "low", "raciocinio baixo: o alto levava ~2,5 min");
+      assert.equal(p.system[0]!.text, SISTEMA, "o mesmo sistema em toda parte, para o cache valer");
+      assert.ok(p.messages[0]!.content.includes("D (Dominante): 87,5 · Zona"), "toda parte recebe os numeros inteiros");
+      assert.ok(p.messages[0]!.content.includes(`Gere somente estas chaves do JSON: ${parte.join(", ")}.`));
+      assert.match(p.messages[0]!.content, /fórmula antitética não entra nenhuma vez/, "cota zero por parte");
+      // O que a API recebe como esquema: so o recorte da parte. Sem isto, cada
+      // chamada escreveria a narrativa inteira e a divisao pagaria a saida N vezes.
+      const esquema = (p.output_config.format as unknown as { schema: { properties: Record<string, { type?: string }> } })
+        .schema;
+      assert.deepEqual(Object.keys(esquema.properties).sort(), [...parte].sort());
+      // Chave de varios paragrafos vai como lista, um paragrafo por item.
+      for (const k of parte) {
+        const n = (PARAGRAFOS as Record<string, unknown>)[k];
+        if (typeof n === "number" && n > 1) assert.equal(esquema.properties[k]!.type, "array", k);
+      }
+    }
 
     const l = await linha(mapa.id);
     assert.deepEqual(l.narrativa, boa);
     assert.equal(l.narrativa_gerando_em, null);
 
-    const segunda = simulado([]);
+    const segunda = simulado(nenhuma);
     const de_novo = await gerarNarrativaMC(mapa.id, { cliente: segunda.cliente });
     assert.ok(de_novo.ok && de_novo.reaproveitada);
     assert.equal(segunda.pedidos.length, 0, "idempotente: nenhuma chamada paga");
   });
 
-  it("paragrafos a menos geram UMA nova tentativa, que diz o que corrigir", async () => {
+  it("a IA devolve os paragrafos em lista e o banco recebe o texto de sempre", async () => {
+    const boa = narrativaValida();
+    const emLista = { ...boa, sintese_combinacao_natural: boa.sintese_combinacao_natural.split("\n\n") };
+    const { cliente } = simulado(async () => emLista as unknown as Narrativa);
+    const { narrativa } = await escreverNarrativa(cliente, "pedido");
+    assert.equal(narrativa.sintese_combinacao_natural, boa.sintese_combinacao_natural);
+  });
+
+  it("uma tentativa dentro do pedido basta: vale ela, sem nova chamada, e a irma e cancelada", async () => {
+    const boa = narrativaValida();
+    const curta = { ...boa, sintese_combinacao_natural: "um so paragrafo" };
+    let daPrimeira = 0;
+    const sinais: AbortSignal[] = [];
+    const cliente: Cliente = {
+      beta: {
+        messages: {
+          stream(params, opcoes) {
+            if (!daParte(params.messages[0]!.content, "sintese_combinacao_natural")) {
+              return { finalMessage: async () => ({ stop_reason: "end_turn", parsed_output: boa }) };
+            }
+            sinais.push(opcoes!.signal!);
+            daPrimeira++;
+            // A primeira volta fora do pedido; a segunda, dentro.
+            return daPrimeira === 1
+              ? { finalMessage: async () => ({ stop_reason: "end_turn", parsed_output: curta }) }
+              : { finalMessage: async () => ({ stop_reason: "end_turn", parsed_output: boa }) };
+          },
+        },
+      },
+    };
+    const { narrativa, chamadas, refeitas } = await escreverNarrativa(cliente, "pedido");
+    assert.deepEqual(narrativa, boa);
+    assert.equal(chamadas, PARTES.length * 2, "nenhuma terceira chamada");
+    assert.deepEqual(refeitas, []);
+    assert.ok(sinais.every((s) => s.aborted), "a que sobrou foi cancelada");
+  });
+
+  it("as duas tentativas fora do pedido geram UMA nova, SO da parte, dizendo o que corrigir", async () => {
     const mapa = await mapaComResultado("rt");
     const boa = narrativaValida();
     const curta = { ...boa, sintese_combinacao_natural: texto("mensagem_final", 350).replace(/\n\n/g, " ") };
-    const { cliente, pedidos } = simulado([async () => curta, async () => boa]);
+    const { cliente, pedidos } = simulado(async (pedido) =>
+      daParte(pedido, "sintese_combinacao_natural") && !pedido.includes("tentativa anterior") ? curta : boa,
+    );
 
     const gravada = await gerarNarrativaMC(mapa.id, { cliente });
     assert.ok(gravada.ok);
-    assert.equal(pedidos.length, 2);
-    assert.match(pedidos[1]!.messages[0]!.content, /tentativa anterior saiu fora do pedido/);
-    assert.match(pedidos[1]!.messages[0]!.content, /sintese_combinacao_natural veio com 1 parágrafo/);
+    assert.equal(pedidos.length, PARTES.length * 2 + 1, "as outras partes nao sao refeitas");
+    const refeita = pedidos.at(-1)!.messages[0]!.content;
+    assert.ok(daParte(refeita, "sintese_combinacao_natural"));
+    assert.match(refeita, /tentativa anterior saiu fora do pedido/);
+    assert.match(refeita, /sintese_combinacao_natural veio com 1 parágrafo/);
     assert.deepEqual((await linha(mapa.id)).narrativa, boa);
   });
 
@@ -328,27 +403,64 @@ describe("narrativa MC: geracao e gravacao", () => {
       escreverNarrativa(cliente, "pedido"),
       (e: unknown) => e instanceof FalhaNaNarrativaMC && e.causa === "recusa" && /cyber/.test(e.message),
     );
-    assert.equal(chamadas, 1, "recusa nao paga segunda chamada");
+    assert.equal(chamadas, PARTES.length * 2, "recusa nao paga nova chamada de parte nenhuma");
   });
 
-  it("truncado por max_tokens diz isso na segunda tentativa", async () => {
+  it("parte que falha de vez cancela as irmas na hora, sem segunda tentativa paga", async () => {
+    const sinais: AbortSignal[] = [];
+    let chamadas = 0;
+    const cliente: Cliente = {
+      beta: {
+        messages: {
+          stream(params, opcoes) {
+            chamadas++;
+            const sinal = opcoes!.signal!;
+            sinais.push(sinal);
+            if (daParte(params.messages[0]!.content, PARTES[3]![0])) {
+              return {
+                finalMessage: () => Promise.reject(new AnthropicError("Failed to parse structured output")),
+                currentMessage: { stop_reason: "refusal", stop_details: { category: "cyber" } },
+              };
+            }
+            // As irmas so terminam se alguem as cancelar.
+            return {
+              finalMessage: () =>
+                new Promise((_, rejeitar) => sinal.addEventListener("abort", () => rejeitar(new Error("cancelada")))),
+            };
+          },
+        },
+      },
+    };
+    await assert.rejects(
+      escreverNarrativa(cliente, "pedido"),
+      (e: unknown) => e instanceof FalhaNaNarrativaMC && e.causa === "recusa",
+    );
+    assert.equal(chamadas, PARTES.length * 2, "nenhuma nova tentativa");
+    assert.ok(sinais.length === PARTES.length * 2 && sinais.every((s) => s.aborted), "todas as chamadas canceladas");
+  });
+
+  it("truncado por max_tokens nas duas tentativas diz isso na nova tentativa da parte", async () => {
     const pedidos: string[] = [];
     const boa = narrativaValida();
     const cliente: Cliente = {
       beta: {
         messages: {
           stream(params) {
-            pedidos.push(params.messages[0]!.content);
-            return pedidos.length === 1
+            const pedido = params.messages[0]!.content;
+            pedidos.push(pedido);
+            return daParte(pedido, PARTES[0]![0]) && !pedido.includes("tentativa anterior")
               ? { finalMessage: () => Promise.reject(new AnthropicError("Failed to parse")), currentMessage: { stop_reason: "max_tokens" } }
               : { finalMessage: async () => ({ stop_reason: "end_turn", parsed_output: boa }) };
           },
         },
       },
     };
-    const { narrativa } = await escreverNarrativa(cliente, "pedido");
+    const { narrativa, chamadas, refeitas } = await escreverNarrativa(cliente, "pedido");
     assert.deepEqual(narrativa, boa);
-    assert.match(pedidos[1]!, /max_tokens/);
+    assert.equal(chamadas, PARTES.length * 2 + 1);
+    assert.deepEqual(refeitas, [1]);
+    assert.match(pedidos.at(-1)!, /max_tokens/);
+    assert.ok(daParte(pedidos.at(-1)!, PARTES[0]![0]), "refaz a parte que truncou");
   });
 
   it("o arrendamento impede a geracao dupla, inclusive com forcar", async () => {
@@ -357,12 +469,12 @@ describe("narrativa MC: geracao e gravacao", () => {
     const presa = new Promise<void>((r) => (soltar = r));
     let chamou!: () => void;
     const chamada = new Promise<void>((r) => (chamou = r));
-    const a = simulado([async () => (chamou(), await presa, narrativaValida())]);
+    const a = simulado(async () => (chamou(), await presa, narrativaValida()));
 
     const primeira = gerarNarrativaMC(mapa.id, { cliente: a.cliente });
     await chamada; // a primeira ja tem o arrendamento e esta "na API"
 
-    const b = simulado([async () => narrativaValida()]);
+    const b = simulado(async () => narrativaValida());
     assert.deepEqual(await gerarNarrativaMC(mapa.id, { cliente: b.cliente }), { ok: false, erro: "em_geracao" });
     assert.deepEqual(await gerarNarrativaMC(mapa.id, { cliente: b.cliente, forcar: true }), { ok: false, erro: "em_geracao" });
     assert.equal(b.pedidos.length, 0);
@@ -374,7 +486,7 @@ describe("narrativa MC: geracao e gravacao", () => {
 
   it("falha da API devolve o arrendamento na hora", async () => {
     const mapa = await mapaComResultado("fa");
-    const { cliente } = simulado([() => Promise.reject(new Error("rede caiu"))]);
+    const { cliente } = simulado(() => Promise.reject(new Error("rede caiu")));
     await assert.rejects(gerarNarrativaMC(mapa.id, { cliente }), /rede caiu/);
     const l = await linha(mapa.id);
     assert.equal(l.narrativa, null);
@@ -400,9 +512,20 @@ describe("narrativa MC: geracao e gravacao", () => {
     }
   });
 
+  it("a tela final do avaliado so ve o relatorio pronto depois do texto gravado", async () => {
+    const mapa = await mapaComResultado("tf");
+    assert.equal(await relatorioPronto(mapa.token), false, "concluido, mas sem texto");
+    await gerarNarrativaMC(mapa.id, { cliente: simulado(async () => narrativaValida()).cliente });
+    assert.equal(await relatorioPronto(mapa.token), true);
+    // Token alheio, lixo ou tipo errado vindo do navegador: so "nao", sem dizer por que.
+    assert.equal(await relatorioPronto("naoexiste"), false);
+    assert.equal(await relatorioPronto(123), false);
+    assert.equal(await relatorioPronto("x".repeat(65)), false);
+  });
+
   it("mapa sem resultado nao gera", async () => {
     const legado = await mapaComResultado("lg", "LEGADO");
-    assert.deepEqual(await gerarNarrativaMC(legado.id, { cliente: simulado([]).cliente }), { ok: false, erro: "sem_resultado" });
+    assert.deepEqual(await gerarNarrativaMC(legado.id, { cliente: simulado(nenhuma).cliente }), { ok: false, erro: "sem_resultado" });
   });
 });
 

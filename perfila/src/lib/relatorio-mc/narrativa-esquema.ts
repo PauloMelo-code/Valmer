@@ -4,8 +4,10 @@
  *
  * Os nomes das chaves sao os da especificacao, literalmente: cada uma vai para
  * uma pagina fixa (mapa na secao 23, etapa 5), e renomear aqui sem renomear la
- * seria a mesma chave com dois nomes. A IA e chamada UMA vez por relatorio e
- * devolve tudo junto; o que e calculo ou tabela nunca passa por ela.
+ * seria a mesma chave com dois nomes. A IA escreve as chaves em partes
+ * paralelas (`PARTES`, em narrativa-escrita.ts), cada uma com o recorte deste esquema,
+ * e as partes juntas voltam a ser este objeto; o que e calculo ou tabela nunca
+ * passa por ela.
  *
  * DUAS DIVERGENCIAS DELIBERADAS DA SECAO 18, as duas pela mesma razao — a
  * especificacao foi escrita olhando o relatorio de UMA pessoa (a do relatorio de referencia, perfil DI):
