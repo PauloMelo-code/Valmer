@@ -49,7 +49,7 @@ A pagina 01 e a 42 nao tem `.hd`, `.body` nem `.ft`: sao absolutas sobre imagem/
 
 ## 3. Pagina por pagina
 
-### 01 · Capa (`#p01`, fundo `capa.png`, ja traz "MAPA COMPORTAMENTAL")
+### 01 · Capa (`#p01`, fundo `capa.jpg`, ja traz "MAPA COMPORTAMENTAL")
 | Elemento | Seletor | Tipo | Fonte |
 |---|---|---|---|
 | Rotulos NOME DO AVALIADO / INSTRUTOR / DATA DE EMISSAO | `#p01>div:nth-child(2|4|6)>div:nth-child(1)` | FIXO | |
@@ -409,7 +409,7 @@ nao ha campo para isso (C33).
 ## 7. Ativos desta onda (para quem vai usar)
 
 - Fontes em `perfila/public/relatorio-mc/fontes/` (subconjunto Latin-1 completo, ~230 glifos): OS = Open Sans 400/600/700/800, AR = Archivo 600/700/800/900, CZ = Cinzel 600/700/800, GA = EB Garamond 400/500/600, MS = Montserrat 500/600/700/800 (embutida, nenhum estilo usa). Caractere fora do Latin-1 cai na fonte reserva.
-- Imagens em `perfila/public/relatorio-mc/imagens/`: `capa.png` (1054x1492, fundo da 01 com o titulo), `marston.jpg` (retrato, 04), `brasao-impacto-academy.png` (135x165, 42).
+- Imagens em `perfila/public/relatorio-mc/imagens/`: `capa.jpg` (1054x1492, fundo da 01 com o titulo; o molde traz PNG de 1,3 MB, o extrair.py grava JPEG q90), `marston.jpg` (retrato, 04), `brasao-impacto-academy.png` (135x165, 42).
 - CSS escopado em `.mc31`, `@page mc31`; os estilos inline das paginas continuam usando `font-family:AR` etc.
 - `ajustarPaginas(raiz)` em `perfila/src/components/relatorio-mc/ajuste-de-pagina.ts`.
 - Conferido: as 42 paginas extraidas, com o CSS escopado e o `globals.css` do app, renderizam igual ao molde (Chrome/puppeteer, diferenca maxima de 76 pixels de antialias numa pagina A4) e o zoom de cada `.zw` sai identico.

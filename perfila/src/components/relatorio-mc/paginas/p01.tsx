@@ -1,5 +1,5 @@
 /**
- * Pagina 01 · Capa. Sem moldura: blocos absolutos sobre `capa.png`, que ja
+ * Pagina 01 · Capa. Sem moldura: blocos absolutos sobre `capa.jpg`, que ja
  * traz o titulo. Nome, instrutor e data sao do cadastro; o codigo do mapa
  * (C34) nao existe no molde e entra numa linha abaixo, no mesmo estilo dos
  * rotulos, para a capa identificar o documento sem competir com o nome.
@@ -40,7 +40,7 @@ export default function Pagina01({ dados }: PropsPagina) {
   const { nomeMaiusculo, instrutorMaiusculo, emissaoMaiuscula, codigo } = dados.identificacao
   return (
     <section className="page" id={idPagina(1)} style={{ padding: 0, background: '#121820' }}>
-      <img src="/relatorio-mc/imagens/capa.png" alt="" style={{ position: 'absolute', inset: 0, width: '210mm', height: '297mm', display: 'block' }} />
+      <img src="/relatorio-mc/imagens/capa.jpg" alt="" style={{ position: 'absolute', inset: 0, width: '210mm', height: '297mm', display: 'block' }} />
       <Campo centro="40.8mm" rotulo="NOME DO AVALIADO" valor={nomeMaiusculo} />
       <div style={{ ...SEPARADOR, left: '74.7mm' }} />
       <Campo centro="108.0mm" rotulo="INSTRUTOR" valor={instrutorMaiusculo} />

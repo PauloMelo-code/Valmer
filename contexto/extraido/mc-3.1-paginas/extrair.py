@@ -15,8 +15,11 @@ Gera:
   contexto/extraido/mc-3.1-paginas/pag01.html .. pag42.html
 """
 import base64
+import io
 import re
 from pathlib import Path
+
+from PIL import Image
 
 RAIZ = Path(__file__).resolve().parents[3]
 MOLDE = RAIZ / "contexto/referencias/mc-3.1/Mapa_Comportamental_MC_3_1_v3_editavel.html"
@@ -31,7 +34,12 @@ URL_BASE = "/relatorio-mc"
 FAMILIAS = {"OS": "open-sans", "MS": "montserrat", "AR": "archivo", "CZ": "cinzel", "GA": "eb-garamond"}
 
 # Ordem de aparicao no molde. Conferido abrindo cada arquivo.
-IMAGENS = ["capa.png", "marston.jpg", "brasao-impacto-academy.png"]
+IMAGENS = ["capa.jpg", "marston.jpg", "brasao-impacto-academy.png"]
+
+# A capa vem no molde como PNG de 1,3 MB, sem transparencia: sozinha era 3/4
+# do peso do relatorio na tela, e no celular a pagina abria pesada. Em JPEG
+# qualidade 90 fica com ~100 KB e a mesma cara, inclusive no PDF.
+CONVERTER_PARA_JPEG = {"capa.jpg"}
 
 # O script do molde nao vem para ca: virou ajuste-de-pagina.ts.
 CABECALHO_CSS = """/* ============================================================
@@ -125,6 +133,28 @@ def escopar(css: str) -> str:
     return CABECALHO_CSS + "\n".join(saida) + "\n"
 
 
+# Correcoes ao CSS do molde feitas na auditoria de 2026-09-28 (commit 3baccf7).
+# Ficavam so no arquivo gerado, e regerar as desfazia. Cada uma tem de casar
+# exatamente uma vez: se o molde mudar, o script para em vez de perder a
+# correcao calado.
+CORRECOES_CSS = {
+    # `1fr` puro nao encolhe abaixo do conteudo: texto longo alargava a coluna e
+    # a grade passava da folha. Onde a coluna TEM de alargar, a pagina pede `1fr`.
+    ".mc31 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3.5mm}":
+        ".mc31 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3.5mm}",
+    # Rotulo e valor longos encostavam um no outro.
+    ".mc31 .kv{display:flex;justify-content:space-between;border-bottom":
+        ".mc31 .kv{display:flex;justify-content:space-between;gap:2mm;border-bottom",
+}
+
+
+def corrigir(css: str) -> str:
+    for antes, depois in CORRECOES_CSS.items():
+        assert css.count(antes) == 1, f"correcao de CSS nao casou uma vez: {antes}"
+        css = css.replace(antes, depois)
+    return css
+
+
 def quebrar_linhas(html: str) -> str:
     return re.sub(rf"<({TAGS_QUEBRA})(\s)", lambda m: f"<{m.group(1)}\n{m.group(2) if m.group(2) != chr(10) else ''}", html)
 
@@ -135,14 +165,19 @@ def main() -> None:
     fonte = MOLDE.read_text(encoding="utf-8")
 
     css = fonte[fonte.index("<style>") + 7 : fonte.index("</style>")]
-    CSS_SAIDA.write_text(escopar(extrair_fontes(css)), encoding="utf-8", newline="\n")
+    CSS_SAIDA.write_text(corrigir(escopar(extrair_fontes(css))), encoding="utf-8", newline="\n")
 
     corpo = fonte[fonte.index("<body>") + 6 : fonte.rindex("</body>")]
     imagens = iter(IMAGENS)
 
     def troca_imagem(m: re.Match) -> str:
         nome = next(imagens)
-        (PUBLICO / "imagens" / nome).write_bytes(base64.b64decode(m.group(1)))
+        dados = base64.b64decode(m.group(1))
+        if nome in CONVERTER_PARA_JPEG:
+            saida = io.BytesIO()
+            Image.open(io.BytesIO(dados)).convert("RGB").save(saida, "JPEG", quality=90, optimize=True, progressive=True)
+            dados = saida.getvalue()
+        (PUBLICO / "imagens" / nome).write_bytes(dados)
         return f'src="{URL_BASE}/imagens/{nome}"'
 
     corpo, n = re.subn(r'src="data:image/\w+;base64,([A-Za-z0-9+/=]+)"', troca_imagem, corpo)
