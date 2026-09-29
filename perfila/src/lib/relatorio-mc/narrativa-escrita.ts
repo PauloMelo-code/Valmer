@@ -147,7 +147,8 @@ export type ClienteIA = {
  * esquema). Manter em sincronia com eles.
  */
 const PALAVRAS: Partial<Record<keyof NarrativaMC, readonly [number, number]>> = {
-  sintese_combinacao_natural: [300, 400],
+  // O tamanho do molde, e nao os 300-400 do blueprint: e o que a pagina 07 comporta (TETO_PAGINA_07).
+  sintese_combinacao_natural: [200, 260],
   custo_adaptacao_narrativa: [180, 240],
   fator_d_narrativa: [200, 200],
   fator_i_narrativa: [200, 200],
@@ -163,13 +164,33 @@ const PALAVRAS: Partial<Record<keyof NarrativaMC, readonly [number, number]>> = 
 }
 
 // ponytail: faixa fixa de 60% a 140% do pedido. O limite que importa e o de
-// cima (o .zw corta o que transborda, C39); se o encaixe real das paginas
-// pedir outro teto, vira numero por chave aqui.
+// cima (o .zw corta o que transborda, C39). Apertar para 120% em todas as
+// chaves foi medido em 29/09: com raciocinio baixo, mais tentativas saiam fora e
+// o relatorio ia a ~46s. O teto fica so onde a folha e apertada: TETOS e
+// TETO_PAGINA_07.
 const MINIMO = 0.6
 const MAXIMO = 1.4
 
+/**
+ * Teto em palavras onde a folha acaba antes de 140% do pedido. Pagina 08,
+ * medida em 29/09: o custo da adaptacao com 305 palavras coube a 0,893; com
+ * 315 cortou.
+ */
+const TETOS: Partial<Record<keyof NarrativaMC, number>> = {
+  custo_adaptacao_narrativa: 290,
+}
+
 const contarPalavras = (t: string) => t.split(/\s+/).filter(Boolean).length
 const contarParagrafos = (t: string) => t.split(/\n\s*\n/).filter((p) => p.trim()).length
+
+/**
+ * A pagina 07 leva a sintese e os quatro cruzamentos na mesma folha, e a
+ * folha nao cresce. Medido em 29/09: com 582 palavras somadas cortou no piso de
+ * reducao (0,88), com 546 coube a 0,917. O molde do Valmer tem ~320. As faixas
+ * por chave sozinhas deixavam passar ~700 somadas (a sintese ia ate 140% e os
+ * cruzamentos nao tinham teto), e o HML saiu com a folha cortada.
+ */
+export const TETO_PAGINA_07 = 480
 
 /**
  * O que a narrativa tem fora do pedido: paragrafos na quantidade errada ou
@@ -190,8 +211,19 @@ export function conferirNarrativa(n: Partial<NarrativaMC>): string[] {
     if (!(chave in n)) continue
     const [min, max] = faixa!
     const tem = contarPalavras(n[chave as keyof NarrativaMC] as string)
-    if (tem < min * MINIMO || tem > max * MAXIMO) {
+    const teto = Math.min(max * MAXIMO, TETOS[chave as keyof NarrativaMC] ?? Infinity)
+    if (tem < min * MINIMO || tem > teto) {
       problemas.push(`${chave} veio com ${tem} palavras; o pedido é ${min === max ? min : `${min} a ${max}`}`)
+    }
+  }
+  if (n.sintese_combinacao_natural !== undefined && n.quatro_cruzamentos !== undefined) {
+    const total =
+      contarPalavras(n.sintese_combinacao_natural) +
+      Object.values(n.quatro_cruzamentos).reduce((soma, t) => soma + contarPalavras(t), 0)
+    if (total > TETO_PAGINA_07) {
+      problemas.push(
+        `sintese_combinacao_natural e quatro_cruzamentos somam ${total} palavras; a página comporta ${TETO_PAGINA_07}: encurte os dois`,
+      )
     }
   }
   return problemas
@@ -250,6 +282,10 @@ function tamanhosDaParte(chaves: Chaves): string {
     ].filter(Boolean)
     return partes.length ? [`- ${k}: ${partes.join(', ')}`] : []
   })
+  if (chaves.includes('sintese_combinacao_natural') && chaves.includes('quatro_cruzamentos')) {
+    linhas.push(`- cada item de quatro_cruzamentos: 2 a 3 frases, até 50 palavras`)
+    linhas.push(`- sintese_combinacao_natural e quatro_cruzamentos somados: no máximo ${TETO_PAGINA_07} palavras (é o que a página comporta)`)
+  }
   return linhas.length
     ? `\nTamanho de cada chave desta chamada (conferido na volta; fora disso a chamada é refeita). Onde há mais de um parágrafo, o esquema pede uma lista: um parágrafo por item, sem linha em branco dentro do item.\n${linhas.join('\n')}`
     : ''

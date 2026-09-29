@@ -108,6 +108,15 @@ gravar (o contrato de chaves nao muda). Se uma parte falha de vez, as outras
 sao canceladas na hora. A entrada se repete por parte, sem cache entre elas
 (chamadas simultaneas nao leem o cache umas das outras). A regra de "no maximo
 uma formula antitetica na resposta inteira" vira cota zero por parte.
+**Tamanho do texto segue o molde (D5), nao o blueprint.** No HML a pagina 07
+saiu cortada: o blueprint pede sintese de 300-400 palavras e cruzamentos sem
+limite, e a folha do molde tem ~320 palavras ao todo (medido: coube com 546 a
+0,917, cortou com 582). A sintese passou a 200-260 palavras e cada cruzamento a
+2-3 frases, ate 50 palavras; a conferencia recusa a tentativa que somar mais de
+480 palavras na pagina 07 (`TETO_PAGINA_07`) ou mais de 290 no custo da
+adaptacao, pagina 08 (`TETOS`). Apertar a folga de todas as chaves para 120%
+foi testado e descartado: com raciocinio baixo, o relatorio ia a ~46 s. Com os
+tetos so onde a folha aperta: 24,3 / 22,4 / 25,0 s, nenhuma pagina cortada.
 **Custo de qualidade, para o Valmer decidir:** com raciocinio baixo sobraram
 ~6 deslizes de estilo por relatorio ("em vez de", "neste mapa"), contra ~3 no
 alto. Voltar para "medium" e mudar uma linha e custa ~15-20 s.

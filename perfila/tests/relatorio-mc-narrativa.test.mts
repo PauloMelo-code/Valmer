@@ -28,6 +28,7 @@ const { SISTEMA, montarPedido } = await import("@/lib/relatorio-mc/narrativa-pro
 const { AnthropicError } = createRequire(import.meta.url)("@anthropic-ai/sdk") as typeof import("@anthropic-ai/sdk");
 const { gerarNarrativaMC, conferirNarrativa, escreverNarrativa, FalhaNaNarrativaMC, MODELO_NARRATIVA_MC, PARTES } =
   await import("@/lib/relatorio-mc/narrativa");
+const { TETO_PAGINA_07 } = await import("@/lib/relatorio-mc/narrativa-escrita");
 const { gerarRelatorioMC } = await import("@/lib/actions/relatorio-mc");
 const { relatorioPronto } = await import("@/lib/actions/inventario-mc");
 const { eq } = await import("drizzle-orm");
@@ -58,7 +59,7 @@ function narrativaValida(): Narrativa {
   const forca = { fator: "DOMINANTE 87,5", nome: "Decide quando o grupo trava", descricao: "Uma frase." };
   const ponto = (num: number) => ({ num, titulo: "Ponto", como_aparece: "a", impacto_possivel: "b", pratica_recomendada: "c" });
   return esquemaNarrativaMC.parse({
-    sintese_combinacao_natural: texto("sintese_combinacao_natural", 350),
+    sintese_combinacao_natural: texto("sintese_combinacao_natural", 232),
     quatro_cruzamentos: { alto1_baixo1: "a", alto1_baixo2: "b", alto2_baixo1: "c", alto2_baixo2: "d" },
     custo_adaptacao_narrativa: texto("custo_adaptacao_narrativa", 210),
     fator_d_narrativa: texto("fator_d_narrativa", 200),
@@ -284,6 +285,19 @@ describe("narrativa MC: conferencia", () => {
     const problemas = conferirNarrativa(ruim);
     assert.ok(problemas.some((p) => p.startsWith("sintese_combinacao_natural veio com 1 parágrafo")));
     assert.ok(problemas.some((p) => p.startsWith("mensagem_final veio com")));
+  });
+
+  it("a pagina 07 tem teto: sintese e cruzamentos somados nao passam do que a folha comporta", () => {
+    const boa = narrativaValida();
+    // Cada chave dentro da propria faixa, e mesmo assim a soma estoura a folha:
+    // foi o que cortou a pagina 07 no HML.
+    const longo = Array(90).fill("palavra").join(" ");
+    const cheia = {
+      ...boa,
+      quatro_cruzamentos: { alto1_baixo1: longo, alto1_baixo2: longo, alto2_baixo1: longo, alto2_baixo2: longo },
+    };
+    assert.ok(conferirNarrativa(cheia).some((p) => p.includes(`a página comporta ${TETO_PAGINA_07}`)));
+    assert.deepEqual(conferirNarrativa({ quatro_cruzamentos: cheia.quatro_cruzamentos }), [], "sem a sintese na parte, nao ha soma");
   });
 });
 

@@ -84,13 +84,13 @@ export function paragrafos(texto: string | undefined | null, quantos: number): s
 export const esquemaNarrativaMC = z.object({
   sintese_combinacao_natural: z
     .string()
-    .describe('300 a 400 palavras em EXATAMENTE 4 parágrafos separados por linha em branco, sem rótulo no início: (1) o que a combinação natural significa, começando pelos fatores predominantes; (2) como aparece no cotidiano; (3) o impacto que produz, incluindo o risco simétrico; (4) como aplicar no trabalho. Específico para estes escores exatos.'),
+    .describe('200 a 260 palavras em EXATAMENTE 4 parágrafos separados por linha em branco, sem rótulo no início: (1) o que a combinação natural significa, começando pelos fatores predominantes; (2) como aparece no cotidiano; (3) o impacto que produz, incluindo o risco simétrico; (4) como aplicar no trabalho. Específico para estes escores exatos.'),
   quatro_cruzamentos: z
     .object({
-      alto1_baixo1: z.string().describe('3 a 4 frases: o fator mais alto cruzado com o mais baixo da ordem natural'),
-      alto1_baixo2: z.string().describe('3 a 4 frases: o fator mais alto cruzado com o segundo mais baixo'),
-      alto2_baixo1: z.string().describe('3 a 4 frases: o segundo fator mais alto cruzado com o mais baixo'),
-      alto2_baixo2: z.string().describe('3 a 4 frases: o segundo mais alto cruzado com o segundo mais baixo'),
+      alto1_baixo1: z.string().describe('2 a 3 frases, até 50 palavras: o fator mais alto cruzado com o mais baixo da ordem natural'),
+      alto1_baixo2: z.string().describe('2 a 3 frases, até 50 palavras: o fator mais alto cruzado com o segundo mais baixo'),
+      alto2_baixo1: z.string().describe('2 a 3 frases, até 50 palavras: o segundo fator mais alto cruzado com o mais baixo'),
+      alto2_baixo2: z.string().describe('2 a 3 frases, até 50 palavras: o segundo mais alto cruzado com o segundo mais baixo'),
     })
     .describe('Os quatro cruzamentos entre os dois fatores mais altos e os dois mais baixos da ordem natural informada no pedido. Cada texto descreve o efeito comportamental daquele par específico nesta pessoa.'),
   custo_adaptacao_narrativa: z
