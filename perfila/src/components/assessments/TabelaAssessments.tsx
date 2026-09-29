@@ -24,6 +24,15 @@ type ItemDaTabela = Assessment & Partial<Pick<AssessmentDoPortal, 'versao' | 'pe
 /** De quanto em quanto tempo a lista se atualiza enquanto algum texto esta sendo escrito. */
 const ATUALIZAR_A_CADA_MS = 15_000
 
+/**
+ * Quantos "Gerar" desta aba ainda esperam resposta. Com algum pendente, a
+ * atualizacao automatica nao dispara: o Next enfileira todo `router.refresh()`
+ * atras de uma Server Action pendente, e a de gerar leva minutos — a fila
+ * cresceria um refresh a cada 15s e soltaria todos juntos no fim. A fila do
+ * roteador e da aba, e este contador tambem.
+ */
+let geracoesPendentes = 0
+
 function eLegado(assessment: ItemDaTabela): boolean {
   return (assessment.versao ?? 'LEGADO') === 'LEGADO'
 }
@@ -64,29 +73,33 @@ function BotaoGerarRelatorio({ assessment }: { assessment: ItemDaTabela }) {
   async function gerar() {
     if (gerando) return
     setGerando(true)
+    geracoesPendentes++
     toast(`Gerando o relatório de ${assessment.avaliadoNome}. Isso leva alguns minutos.`)
 
+    let pronto = false
     try {
       const resposta = eLegado(assessment)
         ? await gerarPelaTela(assessment.token)
         : await gerarRelatorioMCPelaTela(assessment.token)
 
       if (resposta.ok) {
-        // Sem `setGerando(false)`: a linha troca de botões com o refresh, e
-        // soltar antes faria o de gerar piscar de volta nesse meio tempo.
+        pronto = true
         toast(`Relatório de ${assessment.avaliadoNome} pronto.`)
-        router.refresh()
-        return
+      } else {
+        // Recusa de regra chega com a mensagem que a pessoa resolve sozinha:
+        // falta de chave, mapa de outro parceiro, mapa não respondido.
+        toast(resposta.erro, 'aviso')
       }
-      // Recusa de regra chega com a mensagem que a pessoa resolve sozinha:
-      // falta de chave, mapa de outro parceiro, mapa não respondido.
-      toast(resposta.erro, 'aviso')
     } catch {
       // Falha de verdade chega como digest opaco em produção, então a tela
       // diz o que dá para dizer: não gerou, e nada foi cobrado duas vezes.
       toast('Não foi possível gerar o relatório agora. Tente de novo.', 'aviso')
+    } finally {
+      geracoesPendentes--
     }
-    setGerando(false)
+    // No sucesso o botão não solta: a linha troca de botões com o refresh, e
+    // soltar antes faria o de gerar piscar de volta nesse meio tempo.
+    if (!pronto) setGerando(false)
     router.refresh()
   }
 
@@ -136,7 +149,9 @@ export function TabelaAssessments({
   )
   useEffect(() => {
     if (!algumGerando) return
-    const relogio = setInterval(() => router.refresh(), ATUALIZAR_A_CADA_MS)
+    const relogio = setInterval(() => {
+      if (geracoesPendentes === 0) router.refresh()
+    }, ATUALIZAR_A_CADA_MS)
     return () => clearInterval(relogio)
   }, [algumGerando, router])
 

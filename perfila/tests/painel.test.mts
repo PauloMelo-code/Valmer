@@ -279,7 +279,7 @@ describe("painel", () => {
     assert.equal(itens.find((item) => item.id === concluidoVencido)?.situacao, "concluido");
   });
 
-  it("texto sendo escrito tira o botao de gerar, nas duas versoes, ate a trava vencer", async () => {
+  it("texto sendo escrito tira o botao de gerar, nas duas versoes, ate a trava vencer", async (t) => {
     entrarComo(facilitadorA);
     const [mc] = await db
       .insert(assessments)
@@ -297,6 +297,12 @@ describe("painel", () => {
         modified_by: SISTEMA,
       })
       .returning();
+    // Mesmo se um assert falhar: os contadores dos testes seguintes contam UM
+    // mapa concluido de A, e uma falha aqui nao pode virar duas.
+    t.after(async () => {
+      await db.update(assessments).set({ is_deleted: true, deleted_at: new Date() }).where(eq(assessments.id, mc.id));
+      await db.update(assessments).set({ narrativa_gerando_em: null }).where(eq(assessments.id, concluidoVencido));
+    });
     const [resultado] = await db
       .insert(assessmentsResultados)
       .values({
@@ -337,10 +343,6 @@ describe("painel", () => {
     const depois = await painel.assessmentsVisiveis();
     assert.equal(depois.find((i) => i.id === mc.id)?.gerandoTexto, false);
     assert.equal(depois.find((i) => i.id === concluidoVencido)?.gerandoTexto, false);
-
-    // Os contadores dos testes seguintes contam UM mapa concluido de A.
-    await db.update(assessments).set({ is_deleted: true, deleted_at: new Date() }).where(eq(assessments.id, mc.id));
-    await db.update(assessments).set({ narrativa_gerando_em: null }).where(eq(assessments.id, concluidoVencido));
   });
 
   it("listarFacilitadores e listarTransacoes sao so do admin", async () => {
