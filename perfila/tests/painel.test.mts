@@ -16,10 +16,12 @@ import { config } from "dotenv";
 config({ path: [".env.local", ".env"] });
 
 const { db } = await import("@/lib/db");
-const { usuarios, assessments, clientes, creditosTransacoes, devolutivas } = await import(
-  "@/lib/db/schema",
-);
+const { usuarios, assessments, assessmentsResultados, clientes, creditosTransacoes, devolutivas } =
+  await import("@/lib/db/schema");
 const painel = await import("@/lib/painel");
+const { PRAZO_DA_GERACAO_MS: PRAZO_LEGADO } = await import("@/lib/relatorio/persistir");
+const { PRAZO_DA_GERACAO_MS: PRAZO_MC } = await import("@/lib/relatorio-mc/narrativa");
+const { eq } = await import("drizzle-orm");
 
 const marca = `teste-${Date.now()}`;
 const SISTEMA = "00000000-0000-0000-0000-000000000000";
@@ -228,6 +230,9 @@ after(async () => {
     // Devolutiva aponta para assessment: sai antes dele.
     await tx.execute(`delete from devolutivas where facilitador_id in ('${ids.join("','")}')`);
     await tx.execute(`delete from clientes where facilitador_id in ('${ids.join("','")}')`);
+    await tx.execute(
+      `delete from assessments_resultados where assessment_id in (select id from assessments where facilitador_id in ('${ids.join("','")}'))`,
+    );
     await tx.execute(`delete from assessments where facilitador_id in ('${ids.join("','")}')`);
     await tx.execute(`delete from usuarios where id in ('${ids.join("','")}')`);
   });
@@ -272,6 +277,70 @@ describe("painel", () => {
     // Quem respondeu dentro do prazo nao pode virar "expirado" no dia
     // seguinte: o relatorio existe e a tela precisa continuar oferecendo.
     assert.equal(itens.find((item) => item.id === concluidoVencido)?.situacao, "concluido");
+  });
+
+  it("texto sendo escrito tira o botao de gerar, nas duas versoes, ate a trava vencer", async () => {
+    entrarComo(facilitadorA);
+    const [mc] = await db
+      .insert(assessments)
+      .values({
+        token: `${marca}-mc`,
+        facilitador_id: facilitadorA,
+        avaliado_nome: "Avaliado MC",
+        avaliado_email: `mc.${marca}@exemplo.com`,
+        tipo_relatorio: "S4",
+        situacao: "concluido",
+        creditos_usados: 1,
+        expira_em: AMANHA,
+        concluido_em: new Date(),
+        versao_instrumento: "MC-INV 2.2",
+        modified_by: SISTEMA,
+      })
+      .returning();
+    const [resultado] = await db
+      .insert(assessmentsResultados)
+      .values({
+        assessment_id: mc.id,
+        versao_instrumento: "MC-INV 2.2",
+        versao_motor: "teste",
+        resultado: {},
+        nat_d: 50, nat_i: 50, nat_s: 50, nat_c: 50,
+        ada_d: 50, ada_i: 50, ada_s: 50, ada_c: 50,
+        perfil_natural: "DI",
+        perfil_adaptado: "DI",
+        tipo_jung: "ENT",
+        confiabilidade: "alta",
+        narrativa_gerando_em: new Date(),
+        modified_by: SISTEMA,
+      })
+      .returning();
+    // O legado guarda a trava no proprio mapa.
+    await db.update(assessments).set({ narrativa_gerando_em: new Date() }).where(eq(assessments.id, concluidoVencido));
+
+    const agora = await painel.assessmentsVisiveis();
+    assert.equal(agora.find((i) => i.id === mc.id)?.gerandoTexto, true);
+    assert.equal(agora.find((i) => i.id === mc.id)?.temNarrativa, false);
+    assert.equal(agora.find((i) => i.id === concluidoVencido)?.gerandoTexto, true);
+    assert.equal(agora.find((i) => i.id === noPrazo)?.gerandoTexto, false, "mapa sem trava nao esta gerando");
+
+    // Processo que morreu no meio: a trava vence no prazo de cada gerador, e o
+    // botao volta. Um segundo a mais que o prazo, e nao um numero solto.
+    await db
+      .update(assessmentsResultados)
+      .set({ narrativa_gerando_em: new Date(Date.now() - PRAZO_MC - 1000) })
+      .where(eq(assessmentsResultados.id, resultado.id));
+    await db
+      .update(assessments)
+      .set({ narrativa_gerando_em: new Date(Date.now() - PRAZO_LEGADO - 1000) })
+      .where(eq(assessments.id, concluidoVencido));
+
+    const depois = await painel.assessmentsVisiveis();
+    assert.equal(depois.find((i) => i.id === mc.id)?.gerandoTexto, false);
+    assert.equal(depois.find((i) => i.id === concluidoVencido)?.gerandoTexto, false);
+
+    // Os contadores dos testes seguintes contam UM mapa concluido de A.
+    await db.update(assessments).set({ is_deleted: true, deleted_at: new Date() }).where(eq(assessments.id, mc.id));
+    await db.update(assessments).set({ narrativa_gerando_em: null }).where(eq(assessments.id, concluidoVencido));
   });
 
   it("listarFacilitadores e listarTransacoes sao so do admin", async () => {

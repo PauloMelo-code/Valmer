@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { IconButton } from '@/components/ui/IconButton'
 import { Pill } from '@/components/ui/Pill'
 import { RowActions, Table, Td, Th, Tr, tableStyles } from '@/components/ui/Table'
@@ -19,7 +19,10 @@ import styles from './TabelaAssessments.module.css'
  * e so repassam o objeto — os campos chegam aqui do mesmo jeito. Sem `versao`,
  * o mapa e tratado como LEGADO, que e o que ele era antes da versao existir.
  */
-type ItemDaTabela = Assessment & Partial<Pick<AssessmentDoPortal, 'versao' | 'perfil'>>
+type ItemDaTabela = Assessment & Partial<Pick<AssessmentDoPortal, 'versao' | 'perfil' | 'gerandoTexto'>>
+
+/** De quanto em quanto tempo a lista se atualiza enquanto algum texto esta sendo escrito. */
+const ATUALIZAR_A_CADA_MS = 15_000
 
 function eLegado(assessment: ItemDaTabela): boolean {
   return (assessment.versao ?? 'LEGADO') === 'LEGADO'
@@ -44,7 +47,10 @@ const TOM: Record<SituacaoAssessment, 'success' | 'warning' | 'neutral'> = {
  * confere sessao e dono antes de gastar a chave.
  *
  * Depois do sucesso a lista e recarregada, e a linha passa a mostrar ver e
- * baixar — os dois botoes que ja funcionavam.
+ * baixar — os dois botoes que ja funcionavam. O botao so volta se der errado.
+ * Nos dois casos a lista e relida do banco: se a resposta se perdeu no caminho
+ * com o texto ainda sendo escrito, a linha mostra "escrevendo" (`gerandoTexto`)
+ * em vez de oferecer um segundo clique.
  *
  * Cada inventario tem o seu gerador: o legado escreve o texto do relatorio
  * antigo, o MC-INV 2.2 escreve a narrativa das 42 paginas (ADR-0007, D3). As
@@ -66,20 +72,22 @@ function BotaoGerarRelatorio({ assessment }: { assessment: ItemDaTabela }) {
         : await gerarRelatorioMCPelaTela(assessment.token)
 
       if (resposta.ok) {
+        // Sem `setGerando(false)`: a linha troca de botões com o refresh, e
+        // soltar antes faria o de gerar piscar de volta nesse meio tempo.
         toast(`Relatório de ${assessment.avaliadoNome} pronto.`)
         router.refresh()
-      } else {
-        // Recusa de regra chega com a mensagem que a pessoa resolve sozinha:
-        // falta de chave, mapa de outro parceiro, mapa não respondido.
-        toast(resposta.erro, 'aviso')
+        return
       }
+      // Recusa de regra chega com a mensagem que a pessoa resolve sozinha:
+      // falta de chave, mapa de outro parceiro, mapa não respondido.
+      toast(resposta.erro, 'aviso')
     } catch {
       // Falha de verdade chega como digest opaco em produção, então a tela
       // diz o que dá para dizer: não gerou, e nada foi cobrado duas vezes.
       toast('Não foi possível gerar o relatório agora. Tente de novo.', 'aviso')
-    } finally {
-      setGerando(false)
     }
+    setGerando(false)
+    router.refresh()
   }
 
   return (
@@ -116,6 +124,21 @@ export function TabelaAssessments({
   empresas?: Record<string, string>
 }) {
   const { toast } = useToast()
+  const router = useRouter()
+
+  /**
+   * Enquanto algum texto está sendo escrito, a lista se relê sozinha: a linha
+   * vira "ver e PDF" quando o texto fica pronto, ou devolve o botão de gerar
+   * se a geração falhar — sem ninguém precisar recarregar a página.
+   */
+  const algumGerando = itens.some(
+    (item) => item.situacao === 'concluido' && !item.temNarrativa && item.gerandoTexto,
+  )
+  useEffect(() => {
+    if (!algumGerando) return
+    const relogio = setInterval(() => router.refresh(), ATUALIZAR_A_CADA_MS)
+    return () => clearInterval(relogio)
+  }, [algumGerando, router])
 
   /**
    * Copia o link do avaliado para a área de transferência.
@@ -185,6 +208,11 @@ export function TabelaAssessments({
                   {ROTULO_CONFIABILIDADE[assessment.perfil.confiabilidade]}
                 </div>
               ) : null}
+              {assessment.situacao === 'concluido' && !assessment.temNarrativa && assessment.gerandoTexto ? (
+                <div className={tableStyles.secondary} role="status">
+                  Texto do relatório sendo escrito…
+                </div>
+              ) : null}
             </Td>
 
             <Td muted rotulo="Prazo do link">
@@ -197,9 +225,19 @@ export function TabelaAssessments({
               <RowActions>
                 {/* Mapa concluído SEM narrativa não oferece ver nem baixar: o
                     documento sairia com as seções escritas em branco. Primeiro
-                    gera, depois entrega. */}
+                    gera, depois entrega. Com o texto sendo escrito, nem gerar:
+                    o botão só volta se a geração falhar. */}
                 {assessment.situacao === 'concluido' && !assessment.temNarrativa ? (
-                  <BotaoGerarRelatorio assessment={assessment} />
+                  assessment.gerandoTexto ? (
+                    <IconButton
+                      icon="refresh"
+                      label={`Escrevendo o texto do relatório de ${assessment.avaliadoNome}`}
+                      disabled
+                      aria-busy
+                    />
+                  ) : (
+                    <BotaoGerarRelatorio assessment={assessment} />
+                  )
                 ) : assessment.situacao === 'concluido' ? (
                   <>
                     {/* Aba nova nos dois: quem está numa lista filtrada não

@@ -10,12 +10,10 @@
  * servidor. Transformar leitura de tela em endpoint POST publico so aumentaria
  * a superficie exposta.
  */
-import { and, desc, eq, gte, inArray, isNotNull, lt, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   assessments,
-  assessmentsRelatorios,
-  assessmentsResultados,
   clientes,
   creditosTransacoes,
   DEGUSTACOES_INICIAIS,
@@ -26,7 +24,8 @@ import { getSession, temPermissao, type Sessao } from "@/lib/auth";
 import { initials } from "@/lib/text";
 import { categoriaAtingida, cicloDe, faltamPara, metaDaBarra } from "@/lib/beneficios";
 import type { Assessment, Facilitador, Transacao } from "@/data/facilitadores";
-import { perfisDosMapas, VERSAO_LEGADO, type PerfilDoMapa } from "@/lib/perfil-do-mapa";
+import { perfisDosMapas, type PerfilDoMapa } from "@/lib/perfil-do-mapa";
+import { estadoDoTexto, type EstadoDoTexto } from "@/lib/texto-do-mapa";
 
 const DATA_BR = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "America/Sao_Paulo",
@@ -66,12 +65,19 @@ export type AssessmentDoPortal = Assessment & {
   codigo: string | null;
   /** DISC natural e confiabilidade. Ausente enquanto nao ha resultado. */
   perfil?: PerfilDoMapa;
+  /**
+   * A IA esta escrevendo o texto deste mapa agora. A linha troca o botao de
+   * gerar por "escrevendo" ate o texto ficar pronto; se a geracao falhar, o
+   * gerador solta a trava e o botao volta. Vem do banco, e nao do clique: vale
+   * em outra aba, depois de recarregar e para a geracao automatica do fecho.
+   */
+  gerandoTexto: boolean;
 };
 
 /** Converte a linha do banco no formato que as telas esperam. */
 function paraAssessment(
   linha: LinhaAssessment,
-  comNarrativa: Set<string>,
+  texto: EstadoDoTexto,
   perfis: Map<string, PerfilDoMapa>,
 ): AssessmentDoPortal {
   // Expiracao e DERIVADA de `expira_em`, nunca lida de um campo gravado, e
@@ -96,62 +102,18 @@ function paraAssessment(
     criadoEm: data(linha.created_at),
     expiraEm: data(linha.expira_em),
     concluidoEm: linha.concluido_em ? data(linha.concluido_em) : undefined,
-    temNarrativa: comNarrativa.has(linha.id),
+    temNarrativa: texto.comNarrativa.has(linha.id),
+    gerandoTexto: texto.gerando.has(linha.id),
     versao: linha.versao_instrumento,
     codigo: linha.codigo,
     perfil: perfis.get(linha.id),
   };
 }
 
-/**
- * Quais destes assessments ja tem narrativa gravada.
- *
- * Cada inventario guarda a sua num lugar: o legado em `assessments_relatorios`
- * (uma linha por versao do texto), o MC-INV 2.2 na coluna `narrativa` do
- * resultado. Uma consulta por lugar para a lista inteira, e nao uma por linha:
- * a lista de mapas de um parceiro passa de centenas.
- */
-async function comNarrativaGravada(linhas: LinhaAssessment[]): Promise<Set<string>> {
-  const concluidos = linhas.filter((l) => l.situacao === "concluido");
-  const legado = concluidos.filter((l) => l.versao_instrumento === VERSAO_LEGADO).map((l) => l.id);
-  const novos = concluidos.filter((l) => l.versao_instrumento !== VERSAO_LEGADO).map((l) => l.id);
-
-  const [antigos, atuais] = await Promise.all([
-    legado.length === 0
-      ? []
-      : db
-          .selectDistinct({ id: assessmentsRelatorios.assessment_id })
-          .from(assessmentsRelatorios)
-          .where(
-            and(
-              inArray(assessmentsRelatorios.assessment_id, legado),
-              eq(assessmentsRelatorios.is_deleted, false),
-            ),
-          ),
-    novos.length === 0
-      ? []
-      : db
-          .select({ id: assessmentsResultados.assessment_id })
-          .from(assessmentsResultados)
-          .where(
-            and(
-              inArray(assessmentsResultados.assessment_id, novos),
-              eq(assessmentsResultados.is_deleted, false),
-              isNotNull(assessmentsResultados.narrativa),
-            ),
-          ),
-  ]);
-
-  return new Set([...antigos, ...atuais].map((g) => g.id));
-}
-
 /** Narrativa e perfil de uma lista de linhas, em consultas paralelas. */
 async function paraTelas(linhas: LinhaAssessment[]): Promise<AssessmentDoPortal[]> {
-  const [comNarrativa, perfis] = await Promise.all([
-    comNarrativaGravada(linhas),
-    perfisDosMapas(linhas),
-  ]);
-  return linhas.map((linha) => paraAssessment(linha, comNarrativa, perfis));
+  const [texto, perfis] = await Promise.all([estadoDoTexto(linhas), perfisDosMapas(linhas)]);
+  return linhas.map((linha) => paraAssessment(linha, texto, perfis));
 }
 
 function paraFacilitador(linha: typeof usuarios.$inferSelect): Facilitador {

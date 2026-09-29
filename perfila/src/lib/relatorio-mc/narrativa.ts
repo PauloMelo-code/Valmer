@@ -49,7 +49,7 @@ const GERADOR = '00000000-0000-0000-0000-000000000000'
  * DUAS chamadas em streaming, cada uma com o timeout padrao de 10 min do SDK.
  * Vencido o prazo, um clique arrenda de novo e paga outra narrativa.
  */
-const PRAZO_DA_GERACAO_MS = 25 * 60 * 1000
+export const PRAZO_DA_GERACAO_MS = 25 * 60 * 1000
 
 /** Erro de negocio: a API respondeu, mas nao com a narrativa (ou nem foi chamada). */
 export class FalhaNaNarrativaMC extends Error {

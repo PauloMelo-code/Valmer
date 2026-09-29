@@ -150,7 +150,7 @@ export async function salvarNarrativa(
  * mapa que nao esta sendo gerado, e isso o botao de gerar resolve na segunda
  * tentativa.
  */
-const PRAZO_DA_GERACAO_MS = 10 * 60 * 1000;
+export const PRAZO_DA_GERACAO_MS = 10 * 60 * 1000;
 
 /**
  * Tenta arrendar a geracao deste mapa.
