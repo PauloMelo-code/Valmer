@@ -66,7 +66,9 @@ export default function Pagina38({ dados }: PropsPagina) {
               return (
                 <div key={rotulo} style={{ background: cor.fundoSuave, borderLeft: `1.4mm solid ${cor.principal}`, borderRadius: '0 1.2mm 1.2mm 0', padding: '2mm 3mm', marginBottom: '2mm' }}>
                   <div style={{ fontFamily: 'AR', fontWeight: 800, fontSize: '12.5pt', color: cor.principal, lineHeight: 1.1 }}>{rotulo}</div>
-                  {nota ? <div className="sm">{nota}</div> : null}
+                  {/* Sem nota, a linha fica reservada: INFLUENTE e ESTAVEL do mesmo
+                      tamanho que DOMINANTE e CONFORME (pedido do Valmer). */}
+                  {nota ? <div className="sm">{nota}</div> : <div className="sm" aria-hidden="true">&nbsp;</div>}
                 </div>
               )
             })}
