@@ -21,11 +21,12 @@ import type { EstadoAplicacao, FalhaInventario, RecusaInventario } from '@/lib/i
 import { montarRoteiro, type Roteiro } from '@/lib/inventario/roteiro'
 import type { Etapa } from '@/lib/validators/inventario-mc'
 import ui from '@/styles/common.module.css'
+import { Conclusao } from './Conclusao'
 import styles from './InventarioMC.module.css'
 import { TelaOrdenar } from './TelaOrdenar'
 import { TelaPar } from './TelaPar'
 
-type Bloqueio = Exclude<FalhaInventario, 'sem_consentimento' | 'etapa_travada' | 'fora_de_ordem'>
+type Bloqueio = Exclude<FalhaInventario, 'sem_consentimento' | 'etapa_travada' | 'fora_de_ordem' | 'concluido'>
 
 type Fase =
   | { tipo: 'consentimento' }
@@ -49,7 +50,17 @@ const BLOQUEIO: Record<Bloqueio, string> = {
   invalido: 'Este link não é mais válido. Peça um novo convite a quem o enviou.',
   legado: 'Este link não é mais válido. Peça um novo convite a quem o enviou.',
   expirado: 'Este link expirou. Peça um novo convite a quem o enviou.',
-  concluido: 'Estas respostas já foram enviadas — provavelmente por outra aba aberta. O relatório está com quem enviou o convite.',
+}
+
+/**
+ * Para onde vai uma recusa do servidor. "Concluido" nao bloqueia: e o link
+ * reaberto depois, ou outra aba que fechou antes, e a pessoa cai na tela final,
+ * onde o relatorio fica para abrir.
+ */
+function faseDaRecusa(erro: FalhaInventario): Fase {
+  if (erro === 'concluido') return { tipo: 'conclusao' }
+  const invalido = erro === 'sem_consentimento' || erro === 'etapa_travada' || erro === 'fora_de_ordem'
+  return { tipo: 'bloqueado', motivo: invalido ? 'invalido' : erro }
 }
 
 const PENDENTE =
@@ -74,7 +85,7 @@ export function InventarioMC({ token, inicial }: { token: string; inicial: Estad
   const semente = inicial.ok ? inicial.semente : 0
   const roteiro = useMemo(() => montarRoteiro(semente), [semente])
   const [fase, setFase] = useState<Fase>(() =>
-    inicial.ok ? pontoDeEntrada(inicial, roteiro) : { tipo: 'bloqueado', motivo: bloqueio(inicial.erro) },
+    inicial.ok ? pontoDeEntrada(inicial, roteiro) : faseDaRecusa(inicial.erro),
   )
   const [respostas, setRespostas] = useState(inicial.ok ? inicial.respostas : {})
   const [falhou, setFalhou] = useState(false)
@@ -104,14 +115,10 @@ export function InventarioMC({ token, inicial }: { token: string; inicial: Estad
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  function bloqueio(erro: FalhaInventario): Bloqueio {
-    return erro === 'sem_consentimento' || erro === 'etapa_travada' || erro === 'fora_de_ordem' ? 'invalido' : erro
-  }
-
   async function recarregar() {
     try {
       const e = await lerEstado(token)
-      if (!e.ok) return setFase({ tipo: 'bloqueado', motivo: bloqueio(e.erro) })
+      if (!e.ok) return setFase(faseDaRecusa(e.erro))
       setRespostas(e.respostas)
       setFase(pontoDeEntrada(e, roteiro))
     } catch {
@@ -124,7 +131,7 @@ export function InventarioMC({ token, inicial }: { token: string; inicial: Estad
     // O servidor discorda de onde a pessoa esta (outra aba, consentimento
     // perdido): a verdade e a dele.
     else if (erro === 'fora_de_ordem' || erro === 'sem_consentimento') void recarregar()
-    else setFase({ tipo: 'bloqueado', motivo: erro })
+    else setFase(faseDaRecusa(erro))
   }
 
   function enviar(envio: Envio) {
@@ -384,14 +391,7 @@ export function InventarioMC({ token, inicial }: { token: string; inicial: Estad
       break
     case 'conclusao':
       titulo = CONCLUSAO.titulo
-      corpo = (
-        <>
-          <span className={styles.selo}>
-            <Icon name="check" size={26} strokeWidth={2.2} />
-          </span>
-          <p className={styles.texto}>{CONCLUSAO.texto}</p>
-        </>
-      )
+      corpo = <Conclusao token={token} />
       break
     case 'travada':
       titulo = ETAPA_TRAVADA.titulo

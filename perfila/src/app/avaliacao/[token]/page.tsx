@@ -37,7 +37,11 @@ export default async function AvaliacaoPage({ params }: { params: Promise<{ toke
   }
 
   // Quem já respondeu e reabre o link não pode cair no questionário: responderia
-  // as 28 questões de novo só para levar uma recusa no fim.
+  // as 28 questões de novo só para levar uma recusa no fim. No MC-INV 2.2 o link
+  // volta à tela final, onde o relatório fica para abrir e baixar.
+  if (avaliacao.estado === 'concluido' && avaliacao.versao !== 'LEGADO') {
+    return <InventarioMC token={token} inicial={{ ok: false, erro: 'concluido' }} />
+  }
   if (avaliacao.estado === 'concluido') {
     return (
       <Card padding="lg">

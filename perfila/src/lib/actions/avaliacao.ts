@@ -48,7 +48,8 @@ type Recusa = { ok: false; erro: FalhaAvaliacao };
 
 type Carregado =
   | { estado: "responder"; nome: string; respostas: Respostas }
-  | { estado: "concluido"; nome: string }
+  /** `versao`: o MC-INV 2.2 concluido reabre na tela final, onde o relatorio fica para abrir. */
+  | { estado: "concluido"; nome: string; versao: string }
   | { estado: "expirado"; facilitador: string; expiraEm: Date };
 
 /**
@@ -83,6 +84,7 @@ export async function carregarAvaliacao(token: string): Promise<Carregado | null
       nome: assessments.avaliado_nome,
       situacao: assessments.situacao,
       expira_em: assessments.expira_em,
+      versao: assessments.versao_instrumento,
       facilitador: usuarios.nome,
     })
     .from(assessments)
@@ -95,7 +97,7 @@ export async function carregarAvaliacao(token: string): Promise<Carregado | null
   // Concluido e verificado ANTES de expirado de proposito: um assessment pode
   // estar concluido e com a data ja vencida, e dizer "seu link expirou" a quem
   // ja respondeu seria errado e assustador.
-  if (linha.situacao === "concluido") return { estado: "concluido", nome: linha.nome };
+  if (linha.situacao === "concluido") return { estado: "concluido", nome: linha.nome, versao: linha.versao };
 
   if (expirou(linha.situacao, linha.expira_em)) {
     return { estado: "expirado", facilitador: linha.facilitador, expiraEm: linha.expira_em };

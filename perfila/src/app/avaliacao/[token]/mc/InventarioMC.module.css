@@ -299,6 +299,43 @@
   justify-content: center;
 }
 
+/* Tela final: barra de "preparando" enquanto a IA escreve o relatório.
+   Indeterminada, porque o tempo da IA varia; o texto ao lado diz quanto. */
+.preparando {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-accent-tint);
+  overflow: hidden;
+}
+
+.preparando::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  animation: preparando 1.4s ease-in-out infinite;
+}
+
+@keyframes preparando {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preparando::after {
+    animation: none;
+    width: 100%;
+    opacity: 0.4;
+  }
+}
+
 @media screen and (min-width: 720px) {
   .titulo {
     font-size: var(--fs-26);

@@ -21,6 +21,26 @@ import { PRAZO_DA_GERACAO_MS as PRAZO_MC } from "@/lib/relatorio-mc/narrativa";
 
 export type EstadoDoTexto = { comNarrativa: Set<string>; gerando: Set<string> };
 
+/**
+ * O texto do mapa deste token ja esta pronto? Para a tela final do avaliado,
+ * que so precisa de sim ou nao. O token e a credencial dele, como no resto do
+ * inventario, e o relatorio ja abre por ele em /relatorio/<token>: esta
+ * pergunta nao entrega nada que o link nao entregue. Token que nao existe, mapa
+ * nao concluido ou sem texto respondem igual, "nao".
+ */
+export async function textoProntoDoToken(token: string): Promise<boolean> {
+  const [linha] = await db
+    .select({ pronta: sql<boolean>`${assessmentsResultados.narrativa} is not null` })
+    .from(assessments)
+    .innerJoin(
+      assessmentsResultados,
+      and(eq(assessmentsResultados.assessment_id, assessments.id), eq(assessmentsResultados.is_deleted, false)),
+    )
+    .where(and(eq(assessments.token, token), eq(assessments.is_deleted, false), eq(assessments.situacao, "concluido")))
+    .limit(1);
+  return linha?.pronta === true;
+}
+
 /** A trava de geracao ainda vale? A mesma conta dos dois `arrendar`, com o prazo de cada um. */
 function arrendado(desde: Date | null, prazo: number): boolean {
   return desde !== null && Date.now() - desde.getTime() < prazo;

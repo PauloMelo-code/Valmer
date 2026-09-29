@@ -16,6 +16,7 @@ import {
   type RecusaInventario,
 } from "@/lib/inventario/aplicacao";
 import { finalizarAplicacao, type RecusaFinalizacao } from "@/lib/inventario/finalizar";
+import { textoProntoDoToken } from "@/lib/texto-do-mapa";
 
 /** Aceite do consentimento LGPD. Idempotente. */
 export async function consentir(token: string): Promise<{ ok: true } | RecusaInventario> {
@@ -48,4 +49,14 @@ export async function finalizar(
   const r = await finalizarAplicacao(token);
   if (r.ok || r.erro === "concluido") return { ok: true };
   return r;
+}
+
+/**
+ * A tela final pergunta, de tempos em tempos, se o relatorio ja pode ser
+ * aberto. So sim ou nao (ver `textoProntoDoToken`). Server Action e POST
+ * publico: o token chega do navegador e e conferido antes de ir ao banco.
+ */
+export async function relatorioPronto(token: unknown): Promise<boolean> {
+  if (typeof token !== "string" || token.length === 0 || token.length > 64) return false;
+  return textoProntoDoToken(token);
 }

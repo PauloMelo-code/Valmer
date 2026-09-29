@@ -133,8 +133,15 @@ export function textoFimDeEtapa(etapa: Exclude<NumeroEtapa, 4>): { titulo: strin
 
 export const CONCLUSAO = {
   titulo: 'Pronto, você terminou',
-  texto:
-    'Obrigado pelo seu tempo e pela sinceridade. Suas respostas foram registradas e o seu Mapa Comportamental já está sendo preparado. Quem enviou o convite vai combinar com você a entrega e a conversa de devolutiva.',
+  texto: 'Obrigado pelo seu tempo e pela sinceridade. Suas respostas foram registradas.',
+  preparando:
+    'Seu Mapa Comportamental está sendo preparado. Leva cerca de um minuto, e o botão para abrir aparece aqui mesmo, sem precisar recarregar.',
+  demorando:
+    'Está levando mais que o normal. Você pode fechar esta página e voltar pelo mesmo link mais tarde: o relatório fica aqui.',
+  pronto: 'Seu Mapa Comportamental está pronto.',
+  abrir: 'Abrir meu relatório',
+  salvar: 'Salvar em PDF',
+  devolutiva: 'Quem enviou o convite vai combinar com você a conversa de devolutiva.',
 } as const
 
 /**
