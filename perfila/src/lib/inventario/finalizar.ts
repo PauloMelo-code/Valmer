@@ -14,6 +14,7 @@ import { registrarAuditoria } from "@/lib/audit/logger";
 import { GRUPOS_DISC, GRUPOS_VALORES, PARES_JUNG, telaDoGrupo } from "@/data/inventario-mc";
 import { RespostaInvalida, calcularResultado, respostasDasTelas, type TelaGravada } from "@/lib/motor";
 import type { Etapa } from "@/lib/validators/inventario-mc";
+import { agendarAvisoDeConclusao } from "@/lib/email/avisos-do-mapa";
 import { RESPONDENTE, recusou, travarMapa, type RecusaInventario } from "./aplicacao";
 
 export type TelaFaltando = { etapa: Etapa; tela: string };
@@ -164,6 +165,9 @@ export async function finalizarAplicacao(
     return { ok: true, assessmentId: mapa.id };
   });
 
-  if (fecho.ok) agendarNarrativa(fecho.assessmentId);
+  if (fecho.ok) {
+    agendarNarrativa(fecho.assessmentId);
+    agendarAvisoDeConclusao(fecho.assessmentId);
+  }
   return fecho;
 }

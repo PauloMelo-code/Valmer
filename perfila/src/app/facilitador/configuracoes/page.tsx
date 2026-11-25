@@ -8,6 +8,7 @@ import { IconButton } from '@/components/ui/IconButton'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Toggle } from '@/components/ui/Toggle'
 import { useToast } from '@/components/ui/Toast'
+import { obterPreferencias, salvarPreferencias } from '@/lib/actions/preferencias'
 import { notificacoes } from '@/data/configuracoes'
 import ui from '@/styles/common.module.css'
 import styles from './page.module.css'
@@ -23,25 +24,15 @@ const ESTADO_INICIAL: EstadoCanais = Object.fromEntries(
 )
 
 /**
- * Onde as preferências ficam: no NAVEGADOR de quem marcou.
- *
- * Não há coluna para isto em `schema/usuarios.ts`, e criar migration não cabe
- * aqui. Guardar no navegador é o que se pode cumprir hoje sem mentir: o toggle
- * sobrevive ao F5 e à volta na semana seguinte, no mesmo computador. Muda de
- * máquina ou limpa o navegador, e volta ao padrão — a tela diz isso, em vez de
- * deixar a pessoa supor que a plataforma sabe da escolha dela.
- *
- * Quando existir coluna, este `localStorage` sai e a tela passa a ler do banco;
- * o formato aqui é o mesmo que uma coluna jsonb guardaria.
+ * Onde as preferências ficam: no SERVIDOR (`usuarios.preferencias_notificacao`).
+ * Antes ficavam no navegador, mas o servidor precisa lê-las para decidir se o
+ * aviso por e-mail sai (`lib/email/avisos-do-mapa.ts`). Coluna nula = a pessoa
+ * nunca salvou, e vale o padrão de `data/configuracoes.ts`.
  */
-const CHAVE = 'perfila:preferencias-de-notificacao'
 
 /**
- * O que veio do navegador, peneirado contra `notificacoes`.
- *
- * `localStorage` é entrada de fora: outra versão da tela pode ter gravado outro
- * formato, e a pessoa pode editar o valor à mão. Só booleano de id conhecido
- * entra; o resto cai no padrão, e nunca `undefined` chega ao Toggle.
+ * O que veio do servidor, peneirado contra `notificacoes`: só booleano de id
+ * conhecido entra; o resto cai no padrão, e nunca `undefined` chega ao Toggle.
  */
 function mesclar(guardado: unknown): EstadoCanais {
   if (typeof guardado !== 'object' || guardado === null) return ESTADO_INICIAL
@@ -66,45 +57,36 @@ export default function ConfiguracoesPage() {
   const { toast } = useToast()
   const [canais, setCanais] = useState<EstadoCanais>(ESTADO_INICIAL)
 
-  // Lido depois da montagem, e não no `useState`: `localStorage` não existe no
-  // servidor, e ler lá faria o HTML nascer com um valor e a hidratação trocar
-  // por outro.
   useEffect(() => {
-    try {
-      const guardado = window.localStorage.getItem(CHAVE)
-      if (guardado) setCanais(mesclar(JSON.parse(guardado)))
-    } catch {
-      // Navegação privada, armazenamento cheio ou JSON estragado: a tela abre
-      // no padrão. Preferência de notificação não derruba a página.
-    }
+    obterPreferencias()
+      .then((salvas) => setCanais(mesclar(salvas)))
+      .catch(() => {
+        // Sem leitura a tela abre no padrão; não derruba a página.
+      })
   }, [])
 
-  /** Grava e devolve se gravou: quem chama só avisa o que realmente aconteceu. */
-  function guardar(novo: EstadoCanais): boolean {
+  /** Grava no servidor; devolve se gravou, para o aviso dizer só o que aconteceu. */
+  async function guardar(novo: EstadoCanais): Promise<boolean> {
+    const anterior = canais
     setCanais(novo)
     try {
-      window.localStorage.setItem(CHAVE, JSON.stringify(novo))
-      return true
+      const resposta = await salvarPreferencias(novo)
+      if (resposta.ok) return true
     } catch {
-      return false
+      // cai no retorno abaixo
     }
+    setCanais(anterior)
+    return false
   }
 
-  function alternar(id: string, canal: 'email' | 'whatsapp') {
+  async function alternar(id: string, canal: 'email' | 'whatsapp') {
     const novo = { ...canais, [id]: { ...canais[id]!, [canal]: !canais[id]![canal] } }
-    if (!guardar(novo)) {
-      toast('Não foi possível guardar a preferência neste navegador', 'aviso')
-    }
+    if (!(await guardar(novo))) toast('Não foi possível guardar a preferência. Tente de novo.', 'aviso')
   }
 
-  function restaurarPadrao() {
-    // Agora restaura E grava. Antes mexia só no estado da tela, e o aviso dizia
-    // isso — a frase era honesta, o botão é que não fazia nada.
-    if (guardar(ESTADO_INICIAL)) {
-      toast('Padrão restaurado e guardado neste navegador.')
-      return
-    }
-    toast('Padrão restaurado nesta tela; este navegador não deixou guardar', 'aviso')
+  async function restaurarPadrao() {
+    if (await guardar(ESTADO_INICIAL)) toast('Padrão restaurado.')
+    else toast('Não foi possível restaurar o padrão. Tente de novo.', 'aviso')
   }
 
   return (
@@ -115,19 +97,15 @@ export default function ConfiguracoesPage() {
       />
 
       <div className={styles.coluna}>
-        {/* As DUAS colunas da tabela abaixo dependem de canal que não existe. O
-            aviso do WhatsApp já estava aqui; o de e-mail faltava, e sem ele a
-            coluna de e-mail parecia a que funciona — era a única das duas sem
-            ressalva na tela. Nenhum e-mail sai do sistema hoje. */}
+        {/* O e-mail funciona (acesso, convite do mapa e avisos); o WhatsApp
+            ainda não: depende de uma integração. */}
         <div className={`${ui.callout} ${ui.calloutWarning}`}>
           <span className={ui.calloutIcon}>
             <Icon name="alert" />
           </span>
           <span className={styles.avisoTexto}>
-            Nenhum dos dois canais está ativo. O e-mail depende do provedor de envio, ainda não
-            contratado, e o WhatsApp de uma integração. Enquanto isso, os convites e os links são
-            copiados das telas de mapas e enviados por fora. As escolhas abaixo já ficam
-            guardadas, mas <b>neste navegador</b>: em outro computador elas voltam ao padrão.
+            O canal de WhatsApp ainda não está ativo: depende de uma integração. As escolhas de
+            e-mail já valem e ficam guardadas na sua conta.
           </span>
           <Button
             variant="warning"

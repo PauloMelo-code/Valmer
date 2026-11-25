@@ -33,6 +33,7 @@ import { and, eq } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { assessments, assessmentsResultados } from '@/lib/db/schema'
 import { registrarAuditoria } from '@/lib/audit/logger'
+import { avisarRelatorioPronto } from '@/lib/email/avisos-do-mapa'
 import type { ResultadoMotor } from '@/lib/motor'
 import type { NarrativaMC } from './narrativa-esquema'
 import { montarPedido } from './narrativa-prompt'
@@ -187,6 +188,8 @@ export async function gerarNarrativaMC(
         tx,
       )
     })
+    // Texto novo gravado: agora o relatorio abre. Nunca lanca, e so manda uma vez.
+    await avisarRelatorioPronto(assessmentId)
     return { ok: true, reaproveitada: false, narrativa, avisos }
   } catch (erro) {
     console.error(`[relatorio-mc] narrativa de ${assessmentId} falhou em ${segundos()}s`, erro)

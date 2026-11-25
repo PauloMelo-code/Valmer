@@ -263,6 +263,33 @@ export const auditoria = pgTable('auditoria', {
 });
 ```
 
+## E-mail (SMTP da Hostinger)
+
+`src/lib/email/enviar.ts` expoe `enviarEmail({ para, assunto, texto, html })`
+(nodemailer; `secure` quando `SMTP_PORTA` = 465). Variaveis, lidas NA CHAMADA
+(o build nao precisa delas; sem elas o envio falha com "Envio de e-mail nao
+configurado"): `SMTP_HOST`, `SMTP_PORTA`, `SMTP_USUARIO`, `SMTP_SENHA`,
+`EMAIL_REMETENTE`. O link dos e-mails usa `BETTER_AUTH_URL` como origem publica.
+
+Fluxos (todos depois do commit; falha de e-mail nunca desfaz nada — RN-108 a 110):
+
+- **Acesso do parceiro**: `facilitadores.criar` / `enviarAcessoDoParceiro` ->
+  `lib/auth/enviar-acesso.ts` -> `auth.api.requestPasswordReset` (token 48h) ->
+  `sendResetPassword` em `lib/auth/config.ts` envia o e-mail. A biblioteca
+  engole o erro do envio; ele volta pelo `AsyncLocalStorage` de
+  `lib/email/acesso.ts`. O link do e-mail aponta para
+  `/api/auth/reset-password/<token>`, que redireciona a `/definir-senha?token=`
+  (ou `?error=INVALID_TOKEN`); a pagina grava por `auth.api.resetPassword`
+  (`actions/definir-senha.ts`). Os endpoints HTTP de pedir/gravar seguem em
+  `disabledPaths`.
+- **Convite do mapa**: `assessments.criar`, `envio-lote.criarLote` e
+  `assessments.reenviarConvite` -> `lib/email/avisos-do-mapa.ts:enviarConvite`.
+- **Conclusao e relatorio pronto**: `avisarConclusao` (fecho DISC/MC, via
+  `after`) e `avisarRelatorioPronto` (ao gravar a narrativa), este com
+  idempotencia por carimbo em `assessments`.
+
+Testes trocam o envio por `substituirEnvioParaTeste` (`tests/emails.test.mts`).
+
 ## Comandos
 
 ```bash

@@ -148,6 +148,13 @@
       "when": 1790630886708,
       "tag": "0020_catalogo_de_precos_pelas_paginas_mc",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1795620612036,
+      "tag": "0021_avisos_por_email",
+      "breakpoints": true
     }
   ]
 }

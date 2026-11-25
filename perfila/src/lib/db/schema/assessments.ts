@@ -94,6 +94,16 @@ export const assessments = pgTable(
      * apaga carimbo nenhum, e sem vencimento o mapa ficaria travado para sempre.
      */
     narrativa_gerando_em: timestamp("narrativa_gerando_em", TEMPO),
+    /**
+     * Quando o link do relatorio pronto foi enviado por e-mail ao AVALIADO e ao
+     * FACILITADOR. Duas colunas, uma por destinatario, porque cada e-mail pode
+     * falhar sozinho. O carimbo e a trava de "uma vez so por mapa": quem vai
+     * enviar o grava com UPDATE condicional (`where ... is null`), e retry da
+     * IA ou "gerar de novo" encontram o carimbo e nao reenviam. Falha de envio
+     * devolve o carimbo a nulo. Ver lib/email/avisos-do-mapa.ts.
+     */
+    relatorio_avaliado_enviado_em: timestamp("relatorio_avaliado_enviado_em", TEMPO),
+    relatorio_facilitador_enviado_em: timestamp("relatorio_facilitador_enviado_em", TEMPO),
 
     /**
      * Quantas das 28 respostas cairam em cada fator. Somam 28, entao os

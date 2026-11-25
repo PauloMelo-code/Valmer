@@ -26,6 +26,7 @@ import { creditosTransacoes, usuarios } from "@/lib/db/schema";
 import { getSession, temPermissao, type Acao, type Sessao } from "@/lib/auth";
 import { registrarAuditoria } from "@/lib/audit/logger";
 import { definirSenha } from "@/lib/auth/senha";
+import { enviarAcessoPorEmail, type EnvioDeAcesso } from "@/lib/auth/enviar-acesso";
 import { pacotePorNome } from "@/lib/precos";
 import { senhaNovaSchema } from "@/lib/validators/auth";
 import {
@@ -55,11 +56,11 @@ async function exigirSessao(acao: Acao): Promise<Sessao> {
 /**
  * Cria o parceiro com o pacote ja creditado.
  *
- * Usuario, saldo, extrato e trilha entram na mesma transacao. A senha e a
- * unica coisa de fora, e por um motivo do Better Auth: `definirSenha` fala com
- * o banco pelo `auth.$context`, que tem conexao propria e nao enxerga esta
- * transacao — chamada aqui dentro, ela gravaria a credencial de um usuario que
- * o COMMIT ainda pode desfazer.
+ * Usuario, saldo, extrato e trilha entram na mesma transacao. O e-mail de
+ * acesso e a unica coisa de fora, e por um motivo do Better Auth: o token de
+ * primeiro acesso nasce em `verificacoes` por conexao propria, que nao enxerga
+ * esta transacao — gerado aqui dentro, apontaria para um usuario que o COMMIT
+ * ainda pode desfazer.
  */
 export async function criar(dados: unknown) {
   const sessao = await exigirSessao("criar");
@@ -116,7 +117,7 @@ export async function criar(dados: unknown) {
         acao: "criar",
         tabela: TABELA,
         registroId: novo.id,
-        detalhes: `Criou o parceiro ${novo.email} com o pacote ${pacote.nome} (${pacote.creditos} creditos) e senha inicial`,
+        detalhes: `Criou o parceiro ${novo.email} com o pacote ${pacote.nome} (${pacote.creditos} creditos)`,
         dadosNovos: novo,
       },
       tx,
@@ -125,19 +126,35 @@ export async function criar(dados: unknown) {
     return novo;
   });
 
-  // ponytail: a senha e escolhida pelo admin e repassada por WhatsApp — o teto
-  // e que ela trafega por fora do sistema e nasce conhecida por duas pessoas.
-  // Quando houver provedor de e-mail, isto vira link de uso unico e o campo
-  // some do formulario.
+  // O parceiro nasce SEM senha: recebe por e-mail um link de uso unico para
+  // definir a propria (o admin nunca escolhe a senha de outra pessoa).
   //
-  // Falhar aqui continua deixando o parceiro criado, com credito, e sem
-  // credencial — o COMMIT ja aconteceu. O que mudou e o conserto: o admin
-  // repete o cadastro, recebe a recusa de e-mail duplicado, descobre que a
-  // conta existe e abre /admin/facilitadores/[id] para dar a senha
-  // (`definirSenhaDoParceiro`). Nao e mais script no banco.
-  await definirSenha(criado.id, validado.senha);
+  // ponytail: o envio e depois do COMMIT e sem fila. Se o SMTP falhar o
+  // cadastro fica de pe (com credito) e o motivo volta em `acesso`: o admin
+  // usa "Reenviar acesso" na lista. Fila com nova tentativa so se o volume de
+  // cadastros justificar. `definirSenhaDoParceiro` segue como plano B.
+  const acesso = await enviarAcessoPorEmail(criado, sessao.userId);
 
-  return criado;
+  return { ...criado, acesso };
+}
+
+/**
+ * Reenvia o link de acesso ao parceiro (botao "Reenviar acesso" da lista).
+ *
+ * Parceiro inativo nao recebe: o link serviria a quem o admin acabou de trancar
+ * para fora. A recusa de envio sobe como `RecusaDeRegra` com o motivo real.
+ */
+export async function enviarAcessoDoParceiro(id: string) {
+  const sessao = await exigirSessao("atualizar");
+
+  const parceiro = await obter(id);
+  if (!parceiro) throw new RecusaDeRegra("Parceiro nao encontrado");
+  if (!parceiro.ativo) throw new RecusaDeRegra("Parceiro inativo: reative a conta antes de enviar o acesso.");
+
+  const envio = await enviarAcessoPorEmail(parceiro, sessao.userId);
+  if (!envio.ok) throw new RecusaDeRegra(`O e-mail não saiu: ${envio.erro}.`);
+
+  return { email: parceiro.email };
 }
 
 /**
@@ -318,9 +335,8 @@ export async function atualizar(id: string, dados: unknown, updatedAtOriginal: D
 /**
  * Da uma senha nova ao parceiro.
  *
- * E o caminho de volta que faltava a `criar`: quando `definirSenha` falha
- * depois do COMMIT, o parceiro fica criado, com credito e SEM credencial, e ate
- * aqui o unico conserto era rodar `definirSenha` por script, no banco.
+ * Plano B do e-mail de acesso (`enviarAcessoDoParceiro`): quando o SMTP esta
+ * fora do ar ou o parceiro nao recebe, o admin ainda consegue destravar a conta.
  *
  * Nao exige a senha atual, ao contrario de `perfil.trocarSenha`, e nao e
  * descuido: o admin nao tem a senha do parceiro — o caso que isto resolve e
@@ -363,11 +379,14 @@ export async function definirSenhaDoParceiro(id: string, senha: unknown) {
  */
 export async function criarPelaTela(
   dados: unknown,
-): Promise<{ ok: true; id: string; nome: string; creditos: number } | { ok: false; erro: string }> {
+): Promise<
+  | { ok: true; id: string; nome: string; creditos: number; acesso: EnvioDeAcesso }
+  | { ok: false; erro: string }
+> {
   try {
     const criado = await criar(dados);
     revalidatePath("/admin", "layout");
-    return { ok: true, id: criado.id, nome: criado.nome, creditos: criado.creditos };
+    return { ok: true, id: criado.id, nome: criado.nome, creditos: criado.creditos, acesso: criado.acesso };
   } catch (erro) {
     const recusa = comoRecusa(erro);
     if (recusa) return { ok: false, erro: recusa };
@@ -422,6 +441,17 @@ export async function atualizarPelaTela(
   updatedAtOriginal: Date,
 ): Promise<Resposta> {
   return pelaTela(() => atualizar(id, dados, updatedAtOriginal));
+}
+
+/** Reenvio do acesso a partir da lista. Devolve o e-mail para o toast. */
+export async function enviarAcessoPelaTela(
+  id: string,
+): Promise<{ ok: true; email: string } | { ok: false; erro: string }> {
+  let email = "";
+  const resposta = await pelaTela(async () => {
+    email = (await enviarAcessoDoParceiro(id)).email;
+  });
+  return resposta.ok ? { ok: true, email } : resposta;
 }
 
 /** Senha nova a partir da mesma tela. */

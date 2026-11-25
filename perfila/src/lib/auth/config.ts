@@ -14,6 +14,9 @@ import { nextCookies } from "better-auth/next-js";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { contas, sessoes, usuarios, verificacoes } from "@/lib/db/schema";
+import { registrarAuditoria } from "@/lib/audit/logger";
+import { montarEmailDeAcesso, resultadoDoEnvio } from "@/lib/email/acesso";
+import { enviarEmail } from "@/lib/email/enviar";
 
 const segredo = process.env.BETTER_AUTH_SECRET;
 if (!segredo) {
@@ -84,11 +87,41 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    // Sem fluxo de confirmacao por e-mail ainda: quem cria conta e o admin,
-    // que ja conhece o parceiro. Exigir confirmacao agora trancaria todo mundo
-    // do lado de fora, porque nao ha envio de e-mail no ar (falta o Resend).
+    // Sem confirmacao de e-mail: quem cria a conta e o admin, que ja conhece o
+    // parceiro, e o link de acesso (abaixo) ja prova que o e-mail e dele.
     requireEmailVerification: false,
     minPasswordLength: 10,
+    // Primeiro acesso: o parceiro recebe por e-mail um link para DEFINIR a
+    // propria senha (o admin nunca escolhe nem ve a senha de outra pessoa, e
+    // senha nao viaja por e-mail). 48h porque o e-mail pode ser lido so no dia
+    // seguinte; o token e de uso unico. Passou do prazo, o admin usa "Reenviar
+    // acesso". Ver docs/seguranca-login.md.
+    resetPasswordTokenExpiresIn: 48 * 60 * 60,
+    // Quem redefine a senha derruba as sessoes antigas.
+    revokeSessionsOnPasswordReset: true,
+    // O erro daqui NAO sobe para quem chamou `requestPasswordReset` (a
+    // biblioteca o engole): ele volta pelo AsyncLocalStorage, ver
+    // lib/email/acesso.ts. Nada que tenha o link e logado.
+    sendResetPassword: async ({ user, url }) => {
+      const estado = resultadoDoEnvio.getStore();
+      try {
+        await enviarEmail({ para: user.email, ...montarEmailDeAcesso(user.name, url) });
+        if (estado) estado.enviado = true;
+      } catch (erro) {
+        if (estado) estado.erro = erro instanceof Error ? erro.message : "falha no envio";
+        throw erro;
+      }
+    },
+    // Trilha de quem definiu a senha pelo link. Sem senha nem token no texto.
+    onPasswordReset: async ({ user }) => {
+      await registrarAuditoria({
+        userId: user.id,
+        acao: "atualizar",
+        tabela: "usuarios",
+        registroId: user.id,
+        detalhes: `${user.email} definiu a senha pelo link enviado por e-mail`,
+      });
+    },
     // Conta na plataforma se cria pelo admin, nunca pela internet. Sem isto o
     // catch-all publica POST /api/auth/sign-up/email, e o que hoje impede o
     // cadastro e so o NOT NULL de usuarios.modified_by — uma constraint de
@@ -159,12 +192,12 @@ export const auth = betterAuth({
    * MEDIDO: `disabledPaths` compara a string do caminho, entao padrao com
    * parametro nao casa e NAO da para desligar por aqui. Ficam de pe
    * `/callback/:id` (302 para /api/auth/error?error=state_not_found, sem
-   * provedor configurado) e `/reset-password/:token` (302 com
-   * error=INVALID_TOKEN). Os dois sao inertes hoje: um exige provedor OAuth,
-   * o outro exige token de verificacao que so nasce por
-   * `/request-password-reset`, que esta 404 aqui e sem envio de e-mail no ar.
-   * Nao entram na lista porque config que nao surte efeito e pior que config
-   * ausente: passa impressao de cobertura que nao existe.
+   * provedor configurado) e `/reset-password/:token` — este ULTIMO e o link do
+   * e-mail de acesso: valida o token e redireciona para /definir-senha?token=
+   * (ou ?error=INVALID_TOKEN). Quem GRAVA a senha nao e HTTP: e a Server Action
+   * de /definir-senha por `auth.api.resetPassword`, que `disabledPaths` nao
+   * alcanca. Por isso `/request-password-reset` e `/reset-password` (POST)
+   * seguem desligados abaixo: pedir link so o admin pode, por action com RBAC.
    *
    * ponytail: lista explicita, escrita a mao. Uma versao nova da biblioteca que
    * traga endpoint novo o publica por padrao — ao subir o Better Auth, rodar
@@ -197,8 +230,9 @@ export const auth = betterAuth({
     "/account-info",
     "/list-accounts",
 
-    // Recuperacao e verificacao por e-mail: nao ha envio de e-mail no ar
-    // (falta o Resend), entao os fluxos existem sem ter como comecar.
+    // Recuperacao e verificacao por e-mail: o envio existe (SMTP), mas pedir
+    // o link e privilegio do admin (actions/facilitadores.ts), nao endpoint
+    // publico — "esqueci a senha" aberto seria disparo de e-mail por qualquer um.
     "/request-password-reset",
     "/reset-password",
     "/send-verification-email",

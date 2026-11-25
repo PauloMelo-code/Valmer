@@ -159,7 +159,6 @@ describe("facilitadores", () => {
           email: `anonimo.${marca}@exemplo.com`,
           empresa: "Consultoria Anonima",
           pacote: "Starter",
-          senha: SENHA,
         }),
       /Nao autenticado/,
     );
@@ -173,9 +172,12 @@ describe("facilitadores", () => {
       email: emailParceiro.toUpperCase(),
       empresa: "Consultoria Teste",
       pacote: "Starter",
-      senha: SENHA,
     });
     parceiroId = novo.id;
+    // O parceiro nasce sem senha (ele a define pelo link de e-mail, ver
+    // tests/emails.test.mts). Aqui o plano B do admin faz o papel do link,
+    // para os testes de login abaixo.
+    await acoes.definirSenhaDoParceiro(novo.id, SENHA);
 
     assert.equal(novo.papel, "facilitador");
     assert.equal(novo.email, emailParceiro, "e-mail normalizado");
@@ -213,32 +215,10 @@ describe("facilitadores", () => {
       email: emailParceiro,
       empresa: "Outra Consultoria",
       pacote: "Pro",
-      senha: SENHA,
     });
 
     assert.equal(resposta.ok, false);
     assert.match(resposta.ok ? "" : resposta.erro, /Ja existe um usuario com o e-mail/);
-  });
-
-  it("recusa senha curta antes de gravar", async () => {
-    entrarComo(adminId);
-
-    const resposta = await acoes.criarPelaTela({
-      nome: "Parceiro Sem Senha",
-      email: `curta.${marca}@exemplo.com`,
-      empresa: "Consultoria Teste",
-      pacote: "Starter",
-      senha: "123",
-    });
-
-    assert.equal(resposta.ok, false);
-    assert.match(resposta.ok ? "" : resposta.erro, /pelo menos 10 caracteres/);
-
-    const [criado] = await db
-      .select()
-      .from(usuarios)
-      .where(eq(usuarios.email, `curta.${marca}@exemplo.com`));
-    assert.equal(criado, undefined, "nada foi gravado");
   });
 
   it("admin vende um pacote: saldo sobe e o extrato explica", async () => {
@@ -270,7 +250,6 @@ describe("facilitadores", () => {
           email: `colega.${marca}@exemplo.com`,
           empresa: "Consultoria Teste",
           pacote: "Starter",
-          senha: SENHA,
         }),
       /Sem permissao/,
     );

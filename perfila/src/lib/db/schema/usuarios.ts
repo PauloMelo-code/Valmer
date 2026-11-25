@@ -9,7 +9,7 @@
  * A senha NAO mora aqui: ela fica em `contas`, com o resto das credenciais,
  * que e como o Better Auth organiza. Ver ADR-0004.
  */
-import { pgTable, uuid, text, integer, boolean, timestamp, check, index, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, integer, boolean, timestamp, check, index, uniqueIndex, jsonb } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { TEMPO } from "./tempo";
 import { papelUsuario, tipoRelatorio } from "./enums";
@@ -106,6 +106,14 @@ export const usuarios = pgTable(
      * graca.
      */
     degustacao_relatorio: tipoRelatorio("degustacao_relatorio").notNull().default("S1"),
+    /**
+     * Preferencias de notificacao (/facilitador/configuracoes): `{ [id]: { email,
+     * whatsapp } }`. NULL = nunca salvou, e vale o padrao de `data/configuracoes.ts`
+     * — por isso nulo e nao um objeto default: mudar o padrao de um aviso
+     * alcanca quem nunca mexeu, e quem desligou continua desligado. Valida em
+     * `validators/preferencias.ts`.
+     */
+    preferencias_notificacao: jsonb("preferencias_notificacao"),
     ativo: boolean("ativo").notNull().default(true),
 
     // --- colunas de auditoria OBRIGATORIAS (nunca omitir) ---

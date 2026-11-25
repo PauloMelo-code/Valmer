@@ -115,7 +115,14 @@ export function FormDegustacao({
       setNome('')
       setEmail('')
       router.refresh()
-      toast(`Teste grátis criado para ${avaliado}. O link está no Acervo de Mapas.`)
+      if (resposta.convite.ok) {
+        toast(`Teste grátis criado para ${avaliado}. Convite enviado para ${resposta.email}.`)
+      } else {
+        toast(
+          `Teste grátis criado, mas o e-mail não saiu: ${resposta.convite.erro}. Use Reenviar convite ou copie o link no Acervo de Mapas.`,
+          'aviso',
+        )
+      }
     })
   }
 

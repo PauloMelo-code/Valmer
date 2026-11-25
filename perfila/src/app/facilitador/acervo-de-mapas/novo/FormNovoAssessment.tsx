@@ -64,7 +64,15 @@ export function FormNovoAssessment({ creditos }: { creditos: number }) {
       // 12. Quem invalida agora é o `revalidatePath` da própria action, que
       // derruba o layout e tudo abaixo dele antes desta navegação acontecer.
       router.push('/facilitador/acervo-de-mapas')
-      toast(`Mapa comportamental criado para ${nome.trim()}. O link está na lista.`)
+      // O mapa já existe mesmo se o e-mail falhar: a falha vira aviso fixo.
+      if (resposta.convite.ok) {
+        toast(`Mapa criado para ${nome.trim()}. Convite enviado para ${resposta.email}.`)
+      } else {
+        toast(
+          `Mapa criado, mas o e-mail não saiu: ${resposta.convite.erro}. Use Reenviar convite ou copie o link na lista.`,
+          'aviso',
+        )
+      }
     })
   }
 

@@ -195,3 +195,61 @@ Cada regra segue este formato:
 - **Impacto se descumprida**: Um relatorio com percentuais derivados de
   contadores ausentes afirma numeros inventados sobre uma pessoa, assinados
   pela marca do cliente.
+
+### RN-108 - Acesso do Parceiro Sai por E-mail, e Senha Nunca Viaja
+- **Definida por**: Decisao do Paulo (e-mail por SMTP) + `docs/seguranca-login.md`
+- **Data**: 2026-11-25
+- **Modulo**: Facilitadores / Autenticacao
+- **Descricao**: O parceiro nasce SEM senha. O cadastro (`facilitadores.criar`)
+  e o botao "Reenviar acesso" (`enviarAcessoDoParceiro`) pedem ao Better Auth um
+  link de uso unico (`requestPasswordReset`, validade de 48h) que o servidor
+  envia por e-mail; o parceiro abre `/definir-senha` e escolhe a propria senha
+  (minimo 10). O admin nunca escolhe nem ve a senha de outra pessoa, e nenhuma
+  senha trafega por e-mail. `definirSenhaDoParceiro` fica como plano B.
+- **Comportamento esperado**: O e-mail e enviado DEPOIS do commit do cadastro.
+  Se o SMTP falhar o parceiro continua criado e creditado, e a tela diz
+  "Parceiro criado, mas o e-mail nao saiu: <motivo>. Use Reenviar acesso."
+  Reenviar recusa nao-admin e parceiro inativo. Sem as variaveis SMTP o envio
+  falha com "Envio de e-mail nao configurado" — nunca finge sucesso. A trilha
+  registra o evento ("Enviou o acesso por e-mail para X"), sem token.
+- **Impacto se descumprida**: Senha escolhida pelo admin nasce conhecida por
+  duas pessoas; ou o admin acredita que o parceiro recebeu o acesso com o SMTP
+  fora do ar.
+
+### RN-109 - Convite do Mapa por E-mail; Falha de Envio Nao Desfaz Nada
+- **Definida por**: Decisao do Paulo
+- **Data**: 2026-11-25
+- **Modulo**: Assessments
+- **Descricao**: Ao criar um mapa (`assessments.criar`, degustacao incluida) e
+  ao criar um lote (`criarLote`), o avaliado recebe "Voce foi convidado para
+  responder o seu mapa", com o link absoluto `/avaliacao/<token>`, o nome de
+  quem convida e a validade. "Reenviar convite" (`reenviarConvite`) manda o
+  MESMO link.
+- **Comportamento esperado**: O envio e depois do commit. Falha de e-mail nao
+  desfaz o mapa nem devolve credito; a resposta avisa que o e-mail nao saiu e
+  que da para reenviar ou copiar o link. No lote os e-mails saem um por um, sem
+  parar no primeiro erro, e o retorno lista quais falharam. Reenviar recusa mapa
+  de outro facilitador (mesmo recorte de `obter`), respondido, vencido ou
+  excluido. Trilha em cada envio, sem token.
+- **Impacto se descumprida**: Cobranca de credito sem convite entregue e sem
+  aviso, ou convite reenviado para um link morto.
+
+### RN-110 - Avisos de Conclusao e de Relatorio Pronto
+- **Definida por**: Decisao do Paulo
+- **Data**: 2026-11-25
+- **Modulo**: Assessments / Relatorio / Configuracoes
+- **Descricao**: Quando o avaliado conclui (DISC em `concluir`, MC em
+  `finalizarAplicacao`) o facilitador dono recebe "<Nome> concluiu o mapa", se a
+  preferencia "Questionario respondido" por e-mail estiver ligada. Quando a
+  narrativa e GRAVADA (nao quando so e reaproveitada), o avaliado recebe o link
+  `/relatorio/<token>` e o facilitador tambem (mesma preferencia). As
+  preferencias moram em `usuarios.preferencias_notificacao`; nula = nunca
+  salvou, vale o padrao (e-mail LIGADO para "questionario").
+- **Comportamento esperado**: Cada destinatario recebe o relatorio UMA vez por
+  mapa (`assessments.relatorio_avaliado_enviado_em` e
+  `relatorio_facilitador_enviado_em`, carimbados por UPDATE condicional antes do
+  envio). Retry da IA ou "gerar de novo" nao duplicam; se o envio falha o
+  carimbo volta a nulo e a proxima geracao tenta de novo. Falha de e-mail nunca
+  quebra o fecho nem a geracao.
+- **Impacto se descumprida**: Avaliado recebendo o mesmo relatorio varias vezes,
+  ou o fecho do questionario falhando por causa de um SMTP fora do ar.

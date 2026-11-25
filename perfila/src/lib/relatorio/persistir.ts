@@ -29,6 +29,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { assessments, assessmentsRelatorios } from "@/lib/db/schema";
 import { registrarAuditoria } from "@/lib/audit/logger";
+import { avisarRelatorioPronto } from "@/lib/email/avisos-do-mapa";
 import { resultadoDeContadores } from "@/lib/disc";
 import { gerarNarrativa } from "./gerar";
 import type { NarrativaRelatorio } from "./tipos";
@@ -138,6 +139,8 @@ export async function salvarNarrativa(
     return proxima;
   });
 
+  // Texto novo gravado: agora o relatorio abre. Nunca lanca, e so manda uma vez.
+  await avisarRelatorioPronto(alvo.id);
   return { ok: true, versao, reaproveitada: false, narrativa };
 }
 

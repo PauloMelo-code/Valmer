@@ -194,16 +194,25 @@ export function FormEnvioRapido({
         return
       }
 
-      const { criados, creditos, turma: nomeDaTurma } = resposta.dado
+      const { criados, creditos, turma: nomeDaTurma, convites } = resposta.dado
       setLista([])
       // Vai para a turma porque o produto deste envio são os LINKS: é lá que
       // eles estão, um por avaliado, prontos para copiar.
       router.push(`/facilitador/grupos-de-mapeamento/${turma!.id}`)
-      // "Gerado", não "enviado": os créditos saíram e os links existem, mas
-      // quem entrega é a pessoa — não há provedor de e-mail contratado.
-      toast(
-        `${criados} passaporte(s) gerado(s) no grupo "${nomeDaTurma}" · ${creditos} crédito(s). Copie os links abaixo e envie por fora.`,
-      )
+      // O lote já existe e foi cobrado; o e-mail é passo separado e pode
+      // falhar por destinatário. Quem falhou aparece no aviso, com o caminho
+      // (Reenviar convite ou copiar o link no grupo).
+      if (convites.falhas.length === 0) {
+        toast(
+          `${criados} passaporte(s) enviado(s) por e-mail no grupo "${nomeDaTurma}" · ${creditos} crédito(s).`,
+        )
+      } else {
+        const quais = convites.falhas.map((falha) => falha.email).join(', ')
+        toast(
+          `${criados} passaporte(s) criado(s) no grupo "${nomeDaTurma}" · ${creditos} crédito(s). E-mail enviado a ${convites.enviados}; não saiu para: ${quais}. Use Reenviar convite ou copie o link no grupo.`,
+          'aviso',
+        )
+      }
     })
   }
 
@@ -409,13 +418,11 @@ export function FormEnvioRapido({
               {turma ? ` deste grupo consome ${turma.custo} crédito(s).` : ' consome créditos.'}
             </li>
             <li>O lote é tudo-ou-nada: se o saldo não cobrir todos, nenhum é gerado.</li>
-            {/* O nome da tela promete envio desde o protótipo, mas quem
-                entrega o link ainda é a pessoa: não há provedor de e-mail
-                contratado. Dizer isso aqui evita que alguém feche a tela
-                achando que os passaportes já saíram. */}
+            {/* O convite sai por e-mail depois de o lote ser criado; se algum
+                e-mail falhar o aviso diz quais, e o link continua no grupo. */}
             <li>
-              A plataforma ainda não envia e-mail: os links ficam no grupo, prontos para copiar e
-              enviar por fora.
+              Cada pessoa recebe o convite por e-mail. Se algum não sair, o aviso diz quais, e o
+              link continua no grupo para reenviar ou copiar.
             </li>
           </ol>
           <div className={styles.saldo}>

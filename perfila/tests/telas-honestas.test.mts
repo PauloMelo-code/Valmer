@@ -96,6 +96,10 @@ describe("telas honestas", () => {
     assert.ok(comEnvelope.length > 0, "nenhum botao de envelope encontrado — o teste perdeu o alvo");
 
     for (const { caminho, texto } of comEnvelope) {
+      // Telas cujo envelope JA envia de verdade (actions de e-mail) nao tem
+      // mais o que avisar; o teste continua valendo para os envelopes que
+      // ainda dependem de envio manual.
+      if (/enviarAcessoPelaTela|reenviarConvitePelaTela|criarLotePelaTela/.test(texto)) continue;
       const avisos = chamadasDeToast(texto).filter((chamada) =>
         /provedor de e-mail/.test(chamada),
       );

@@ -24,9 +24,8 @@ export type PacoteOfertado = { nome: string; creditos: number; preco: number }
  * dentro da mesma transação que credita, então uma lista fixa aqui ofereceria
  * pacote que o servidor recusa e esconderia o que o admin acabou de criar.
  *
- * A senha é digitada aqui e repassada pelo admin porque o projeto ainda não
- * tem provedor de e-mail. Ver o comentário `ponytail:` em
- * `lib/actions/facilitadores.ts`.
+ * Não há campo de senha: o parceiro recebe por e-mail um link para definir a
+ * própria. Ver o comentário `ponytail:` em `lib/actions/facilitadores.ts`.
  */
 export function FormNovoFacilitador({ pacotes }: { pacotes: PacoteOfertado[] }) {
   const { toast } = useToast()
@@ -35,7 +34,6 @@ export function FormNovoFacilitador({ pacotes }: { pacotes: PacoteOfertado[] }) 
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [empresa, setEmpresa] = useState('')
-  const [senha, setSenha] = useState('')
   const [erro, setErro] = useState<string | null>(null)
   const [enviando, iniciarEnvio] = useTransition()
   const tituloPacotes = useId()
@@ -45,9 +43,9 @@ export function FormNovoFacilitador({ pacotes }: { pacotes: PacoteOfertado[] }) 
     setErro(null)
 
     iniciarEnvio(async () => {
-      const resposta = await criarPelaTela({ nome, email, empresa, pacote, senha })
+      const resposta = await criarPelaTela({ nome, email, empresa, pacote })
 
-      // A recusa — e-mail já cadastrado, senha curta — volta como objeto para
+      // A recusa — e-mail já cadastrado — volta como objeto para
       // ser mostrada aqui, com o formulário preenchido do lado.
       if (!resposta.ok) {
         setErro(resposta.erro)
@@ -55,9 +53,16 @@ export function FormNovoFacilitador({ pacotes }: { pacotes: PacoteOfertado[] }) 
       }
 
       router.push('/admin/facilitadores')
-      toast(
-        `${resposta.nome} cadastrado com ${resposta.creditos} créditos. Repasse a senha ao parceiro.`,
-      )
+      // Cadastro e e-mail são passos separados: o parceiro já existe mesmo se o
+      // SMTP falhar, então a falha vira aviso (que fica na tela), não erro.
+      if (resposta.acesso.ok) {
+        toast(`${resposta.nome} cadastrado com ${resposta.creditos} créditos. Acesso enviado por e-mail.`)
+      } else {
+        toast(
+          `Parceiro criado, mas o e-mail não saiu: ${resposta.acesso.erro}. Use Reenviar acesso.`,
+          'aviso',
+        )
+      }
     })
   }
 
@@ -67,7 +72,7 @@ export function FormNovoFacilitador({ pacotes }: { pacotes: PacoteOfertado[] }) 
 
       <PageHeader
         title="Novo facilitador"
-        subtitle="A conta é criada já com o pacote de créditos contratado. A senha inicial é definida aqui e repassada ao parceiro."
+        subtitle="A conta é criada já com o pacote de créditos contratado. O parceiro recebe por e-mail um link para definir a própria senha."
       />
 
       <Card padding="none" className={styles.form}>
@@ -106,22 +111,6 @@ export function FormNovoFacilitador({ pacotes }: { pacotes: PacoteOfertado[] }) 
                   placeholder="Razão social ou nome do negócio"
                   value={empresa}
                   onChange={(evento) => setEmpresa(evento.target.value)}
-                  required
-                />
-              )}
-            </Field>
-
-            {/* Campo aberto, e não mascarado: quem digita não é o dono da
-                senha — é o admin, que precisa lê-la para repassar. Mascarar
-                aqui só troca vazamento de tela por erro de digitação numa
-                senha que ninguém consegue conferir depois. */}
-            <Field label="Senha inicial">
-              {(id) => (
-                <Input
-                  id={id}
-                  placeholder="Pelo menos 10 caracteres"
-                  value={senha}
-                  onChange={(evento) => setSenha(evento.target.value)}
                   required
                 />
               )}

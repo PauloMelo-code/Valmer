@@ -92,12 +92,10 @@ export function FormularioLogin({ proximo }: { proximo?: string }) {
         {enviando ? 'Entrando…' : 'Entrar'}
       </Button>
 
-      {/* Não é um link, e isso é a informação: não existe recuperação de senha
-          automática, porque ela depende de envio de e-mail e o provedor ainda
-          não foi contratado. Quem esquece a senha hoje só volta pelo admin, em
-          /admin/facilitadores/[id]. Sem esta linha a pessoa fica na porta sem
-          saber que existe uma saída — e a única alternativa honesta seria um
-          "Esqueci minha senha" que não faz nada. */}
+      {/* Não é um link, e isso é a informação: não há "esqueci minha senha"
+          aberto ao público (qualquer um dispararia e-mail para qualquer
+          endereço). Quem esquece a senha pede ao admin, que reenvia o link de
+          acesso por e-mail em /admin/facilitadores. */}
       <p className={styles.esqueci}>
         Esqueceu a senha? Peça ao administrador da Impacto Academy para definir uma nova.
       </p>

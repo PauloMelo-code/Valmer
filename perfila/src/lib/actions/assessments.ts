@@ -15,6 +15,7 @@ import { db } from "@/lib/db";
 import { assessments, creditosTransacoes, usuarios } from "@/lib/db/schema";
 import { getSession, temPermissao, type Acao, type Sessao } from "@/lib/auth";
 import { registrarAuditoria } from "@/lib/audit/logger";
+import { enviarConvite, type Envio } from "@/lib/email/avisos-do-mapa";
 import { RecusaDeRegra } from "./recusa";
 import { novoToken, validadeDoLink } from "@/lib/assessment-link";
 import {
@@ -100,6 +101,7 @@ export async function criar(dados: unknown) {
   const agora = new Date();
   const expiraEm = validadeDoLink(agora);
 
+  let convidante = "";
   const criado = await comNovaTentativaDeCodigo(() => db.transaction(async (tx) => {
     const [dono] = await tx
       .select()
@@ -112,6 +114,7 @@ export async function criar(dados: unknown) {
     // ao facilitador com o nome que eles tem. Ver `criarPelaTela` abaixo.
     if (!dono) throw new RecusaDeRegra("Facilitador nao encontrado");
     if (!dono.ativo) throw new RecusaDeRegra("Facilitador inativo");
+    convidante = dono.nome;
 
     /**
      * O custo vem da tabela de precos (`precos_relatorios`), lido DENTRO da
@@ -208,7 +211,12 @@ export async function criar(dados: unknown) {
     return novo;
   }));
 
-  return criado;
+  // O convite sai DEPOIS do commit: falha de e-mail nao desfaz o mapa nem
+  // devolve credito. O motivo volta em `convite` e a tela avisa, apontando
+  // "Reenviar convite" ou copiar o link.
+  const convite = await enviarConvite(criado, convidante, sessao.userId);
+
+  return { ...criado, convite };
 }
 
 /**
@@ -240,11 +248,11 @@ export async function criar(dados: unknown) {
  */
 export async function criarPelaTela(
   dados: unknown,
-): Promise<{ ok: true; token: string } | { ok: false; erro: string }> {
+): Promise<{ ok: true; token: string; convite: Envio; email: string } | { ok: false; erro: string }> {
   try {
     const criado = await criar(dados);
     revalidatePath("/facilitador", "layout");
-    return { ok: true, token: criado.token };
+    return { ok: true, token: criado.token, convite: criado.convite, email: criado.avaliado_email };
   } catch (erro) {
     if (erro instanceof RecusaDeRegra) return { ok: false, erro: erro.message };
 
@@ -305,6 +313,49 @@ export async function atualizar(id: string, dados: unknown, updatedAtOriginal: D
   });
 
   return resultado[0];
+}
+
+/**
+ * Reenvia o convite do mapa (mesmo link) ao e-mail do avaliado.
+ *
+ * Mesma regra de acesso das demais actions: `obter` ja recorta por dono (o
+ * mapa de outro parceiro volta como "nao encontrado", sem confirmar que
+ * existe) e ignora o excluido. Recusa mapa respondido e mapa vencido: nao ha
+ * o que responder, e o convite levaria a uma tela de "link expirado".
+ */
+export async function reenviarConvite(id: string) {
+  const sessao = await exigirSessao("atualizar");
+
+  const mapa = await obter(id);
+  if (!mapa) throw new RecusaDeRegra("Mapa nao encontrado");
+  if (mapa.situacao === "concluido") throw new RecusaDeRegra("Este mapa já foi respondido.");
+  if (mapa.situacao === "expirado" || mapa.expira_em.getTime() < Date.now()) {
+    throw new RecusaDeRegra("O link deste mapa expirou. Crie um novo mapa para esta pessoa.");
+  }
+
+  const [dono] = await db
+    .select({ nome: usuarios.nome })
+    .from(usuarios)
+    .where(eq(usuarios.id, mapa.facilitador_id))
+    .limit(1);
+
+  const envio = await enviarConvite(mapa, dono?.nome ?? "Seu facilitador", sessao.userId, true);
+  if (!envio.ok) throw new RecusaDeRegra(`O e-mail não saiu: ${envio.erro}.`);
+
+  return { email: mapa.avaliado_email };
+}
+
+/** Reenvio a partir da lista: recusa vira objeto, como em `criarPelaTela`. */
+export async function reenviarConvitePelaTela(
+  id: string,
+): Promise<{ ok: true; email: string } | { ok: false; erro: string }> {
+  try {
+    const { email } = await reenviarConvite(id);
+    return { ok: true, email };
+  } catch (erro) {
+    if (erro instanceof RecusaDeRegra) return { ok: false, erro: erro.message };
+    throw erro;
+  }
 }
 
 /**

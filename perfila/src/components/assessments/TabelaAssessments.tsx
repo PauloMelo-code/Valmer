@@ -6,6 +6,7 @@ import { IconButton } from '@/components/ui/IconButton'
 import { Pill } from '@/components/ui/Pill'
 import { RowActions, Table, Td, Th, Tr, tableStyles } from '@/components/ui/Table'
 import { useToast } from '@/components/ui/Toast'
+import { reenviarConvitePelaTela } from '@/lib/actions/assessments'
 import { gerarPelaTela } from '@/lib/actions/relatorio'
 import { gerarRelatorioMCPelaTela } from '@/lib/actions/relatorio-mc'
 import { copiarTexto } from '@/lib/copiar'
@@ -163,6 +164,13 @@ export function TabelaAssessments({
    * de `window` no momento do clique, e não de uma variável de ambiente, para
    * o link sair com o domínio pelo qual a pessoa entrou.
    */
+  /** Reenvia o convite por e-mail; o toast diz o destino ou o motivo real. */
+  async function reenviarConvite(assessment: ItemDaTabela) {
+    const resposta = await reenviarConvitePelaTela(assessment.id)
+    if (resposta.ok) toast(`Convite enviado para ${resposta.email}`)
+    else toast(resposta.erro, 'aviso')
+  }
+
   async function copiarLink(assessment: ItemDaTabela) {
     const url = `${window.location.origin}/avaliacao/${assessment.token}`
 
@@ -287,18 +295,10 @@ export function TabelaAssessments({
                       label={`Copiar link de ${assessment.avaliadoNome}`}
                       onClick={() => copiarLink(assessment)}
                     />
-                    {/* Não existe provedor de e-mail no projeto, então o aviso
-                        aponta para a ação ao lado, que funciona de verdade:
-                        copiar o link e mandar por onde já se manda hoje. */}
                     <IconButton
                       icon="mail"
                       label={`Reenviar convite para ${assessment.avaliadoNome}`}
-                      onClick={() =>
-                        toast(
-                          'Copie o link ao lado e envie por fora: o envio automático depende do provedor de e-mail, ainda não contratado.',
-                          'aviso',
-                        )
-                      }
+                      onClick={() => reenviarConvite(assessment)}
                     />
                   </>
                 )}

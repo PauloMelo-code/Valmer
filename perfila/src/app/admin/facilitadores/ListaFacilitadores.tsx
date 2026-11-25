@@ -20,7 +20,7 @@ import {
   tableStyles,
 } from '@/components/ui/Table'
 import { useToast } from '@/components/ui/Toast'
-import { definirSituacaoPelaTela } from '@/lib/actions/facilitadores'
+import { definirSituacaoPelaTela, enviarAcessoPelaTela } from '@/lib/actions/facilitadores'
 import type { Facilitador } from '@/data/facilitadores'
 import ui from '@/styles/common.module.css'
 
@@ -43,6 +43,15 @@ export function ListaFacilitadores({
   const [busca, setBusca] = useState('')
   const [email, setEmail] = useState('')
   const [alterando, alterarSituacao] = useTransition()
+
+  /** Reenvia o link de primeiro acesso; o erro mostrado é o motivo real. */
+  function reenviar(facilitador: Facilitador) {
+    alterarSituacao(async () => {
+      const resposta = await enviarAcessoPelaTela(facilitador.id)
+      if (resposta.ok) toast(`Acesso enviado para ${resposta.email}`)
+      else toast(resposta.erro, 'aviso')
+    })
+  }
 
   /**
    * Ativar e desativar da própria lista.
@@ -171,10 +180,9 @@ export function ListaFacilitadores({
                       action — `definirSituacaoPelaTela` chama a edição com a
                       linha que acabou de ler. O cartão LEVA para /admin/creditos:
                       a venda existe e grava lá, e o aviso antigo dizendo que
-                      "ainda não está disponível" era falso. O envelope é o
-                      único que continua sem servidor, porque depende de um
-                      provedor de e-mail que o cliente ainda vai contratar — e
-                      diz o caminho manual em vez de fingir que enviou. */}
+                      "ainda não está disponível" era falso. O envelope
+                      reenvia o link de acesso por e-mail e mostra o erro real
+                      quando o SMTP falha. */}
                   <RowActions>
                     <IconButton
                       icon="card"
@@ -184,12 +192,8 @@ export function ListaFacilitadores({
                     <IconButton
                       icon="mail"
                       label={`Reenviar acesso para ${facilitador.nome}`}
-                      onClick={() =>
-                        toast(
-                          'O envio automático depende do provedor de e-mail, ainda não contratado. Abra Editar, defina a senha e repasse ao parceiro por fora.',
-                          'aviso',
-                        )
-                      }
+                      disabled={alterando}
+                      onClick={() => reenviar(facilitador)}
                     />
                     <IconButton
                       icon="edit"

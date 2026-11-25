@@ -41,6 +41,7 @@ import { envioLoteSchema } from "@/lib/validators/envio-lote";
 import { codigosDoLote, comNovaTentativaDeCodigo } from "@/lib/codigo-do-mapa";
 import { VERSAO_INSTRUMENTO } from "@/data/inventario-mc";
 import { custoDoRelatorio } from "@/lib/precos";
+import { enviarConvite } from "@/lib/email/avisos-do-mapa";
 import { RecusaDeRegra } from "./recusa";
 
 /** A trilha registra o evento na TURMA: o que aconteceu foi com ela, em lote. */
@@ -147,7 +148,7 @@ function emailsRepetidos(destinatarios: { avaliado_email: string }[]): string[] 
  * este credito saiu" apontando o passaporte. A soma continua batendo com o
  * saldo, que e o que a trigger da 0005 confere no COMMIT.
  */
-export async function criarLote(dados: unknown) {
+async function gravarLote(dados: unknown) {
   const sessao = await exigirSessao("criar");
   const validado = envioLoteSchema.parse(dados);
 
@@ -247,8 +248,33 @@ export async function criarLote(dados: unknown) {
       criados: novos.length,
       creditos: custoTotal,
       saldo: dono.creditos - custoTotal,
+      mapas: novos,
+      convidante: dono.nome,
+      quemId: sessao.userId,
     };
   }));
+}
+
+/**
+ * Cria o lote e, DEPOIS do commit, manda o convite de cada mapa por e-mail,
+ * um por um. Falha de envio nao desfaz o lote nem devolve credito, e nao para
+ * os demais: o retorno diz quantos sairam e QUAIS e-mails falharam, e o
+ * parceiro usa "Reenviar convite" ou copia o link desses.
+ *
+ * ponytail: sequencial, sem fila. Com o teto de 50 do validador sao ~50
+ * conexoes SMTP seguidas dentro da action; se o lote crescer ou o SMTP
+ * demorar, vai para a fila (ver docs/back.md).
+ */
+export async function criarLote(dados: unknown) {
+  const { mapas, convidante, quemId, ...resumo } = await gravarLote(dados);
+
+  const falhas: { email: string; erro: string }[] = [];
+  for (const mapa of mapas) {
+    const envio = await enviarConvite(mapa, convidante, quemId);
+    if (!envio.ok) falhas.push({ email: mapa.avaliado_email, erro: envio.erro });
+  }
+
+  return { ...resumo, convites: { enviados: mapas.length - falhas.length, falhas } };
 }
 
 /**

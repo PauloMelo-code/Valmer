@@ -16,6 +16,7 @@ import { assessments, assessmentsRespostas, usuarios } from "@/lib/db/schema";
 import { registrarAuditoria } from "@/lib/audit/logger";
 import { respostaSchema } from "@/lib/validators/assessment";
 import { gerarESalvar } from "@/lib/relatorio/persistir";
+import { agendarAvisoDeConclusao } from "@/lib/email/avisos-do-mapa";
 import { VERSAO_LEGADO } from "@/lib/perfil-do-mapa";
 import { questoes } from "@/data/assessment";
 import type { Respostas } from "@/lib/disc";
@@ -240,6 +241,7 @@ function agendarNarrativa(token: string): void {
 export async function concluir(
   token: string,
 ): Promise<{ ok: true; contadores: Record<FatorDisc, number> } | Recusa> {
+  let mapaId = "";
   const resultado = await db.transaction(async (tx) => {
     // `.for("update")` trava a linha ate a transacao fechar. Sem ela, uma
     // correcao de resposta que chegue entre a contagem e a gravacao faria os
@@ -306,13 +308,17 @@ export async function concluir(
       tx,
     );
 
+    mapaId = gravado!.id;
     return { ok: true, contadores } as const;
   });
 
   // Fora da transacao, de proposito: ela ja commitou aqui, e a narrativa e
   // consequencia do fecho, nao parte dele. Se a IA falhar, os contadores
   // continuam gravados.
-  if (resultado.ok) agendarNarrativa(token);
+  if (resultado.ok) {
+    agendarNarrativa(token);
+    agendarAvisoDeConclusao(mapaId);
+  }
 
   return resultado;
 }

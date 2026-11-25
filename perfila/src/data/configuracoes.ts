@@ -13,8 +13,10 @@ export const notificacoes: Notificacao[] = [
   {
     id: 'questionario',
     title: 'Questionário respondido',
-    desc: 'Notificação quando um cliente finaliza o questionário',
-    email: false,
+    desc: 'Aviso por e-mail quando um cliente finaliza o questionário, e quando o relatório dele fica pronto',
+    // Padrão LIGADO: vale só para quem nunca salvou preferência (coluna nula em
+    // usuarios.preferencias_notificacao); quem desligou continua desligado.
+    email: true,
     whatsapp: false,
   },
   {

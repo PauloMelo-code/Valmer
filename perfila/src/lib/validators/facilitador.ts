@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { emailPessoa, nomePessoa } from "./assessment";
-import { senhaNovaSchema } from "./auth";
 import { empresaOpcional, telefoneOpcional } from "./perfil";
 
 /**
@@ -34,13 +33,7 @@ export const criarFacilitadorSchema = z.object({
     .min(2, "Informe a empresa ou consultoria")
     .max(160, "Nome da empresa muito longo"),
   pacote: nomeDePacote,
-  /**
-   * A senha inicial vem do formulario porque nao ha provedor de e-mail no
-   * projeto. Mesmo schema que qualquer senha nova do sistema: o parceiro vai
-   * usar esta senha como qualquer outra, e um minimo mais frouxo aqui seria
-   * um minimo mais frouxo no login.
-   */
-  senha: senhaNovaSchema,
+  // Sem senha: o parceiro a define pelo link enviado por e-mail.
 });
 
 export const venderCreditosSchema = z.object({
