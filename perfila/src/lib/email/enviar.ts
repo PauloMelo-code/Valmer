@@ -36,19 +36,25 @@ export async function enviarEmail(email: Email): Promise<void> {
     throw new Error("Envio de e-mail não configurado (SMTP_PORTA inválida).");
   }
 
+  // trim: valor colado no painel com espaco/quebra no fim passa no login mas
+  // nao casa com o remetente (553 "not owned by user"). A senha fica intacta.
+  const usuario = process.env.SMTP_USUARIO!.trim();
   const transporte = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
+    host: process.env.SMTP_HOST!.trim(),
     port: porta,
     // 465 e SSL direto; as outras portas (587) sobem em texto e negociam STARTTLS.
     secure: porta === 465,
-    auth: { user: process.env.SMTP_USUARIO, pass: process.env.SMTP_SENHA },
+    auth: { user: usuario, pass: process.env.SMTP_SENHA },
     connectionTimeout: 10_000,
     socketTimeout: 20_000,
   });
 
   try {
     await transporte.sendMail({
-      from: process.env.EMAIL_REMETENTE,
+      from: process.env.EMAIL_REMETENTE!.trim(),
+      // Envelope (MAIL FROM) = a propria caixa logada: e o que o SMTP confere.
+      // O "De" visivel continua sendo o EMAIL_REMETENTE.
+      envelope: { from: usuario, to: email.para },
       to: email.para,
       subject: email.assunto,
       text: email.texto,
