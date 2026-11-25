@@ -176,7 +176,7 @@ describe("acesso do parceiro por e-mail", () => {
     assert.deepEqual(novo.acesso, { ok: true });
     assert.equal(caixa.length, 1);
     assert.equal(caixa[0]!.para, emailParceiro);
-    assert.equal(caixa[0]!.assunto, "Seu acesso ao Perfila");
+    assert.equal(caixa[0]!.assunto, "Seu acesso à Impacto Academy");
     assert.match(caixa[0]!.texto, /reset-password\//);
     tokenDoAcesso = /reset-password\/([^?\s]+)/.exec(caixa[0]!.texto)![1]!;
   });
